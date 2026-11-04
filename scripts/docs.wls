@@ -61,10 +61,12 @@ CheckAbort[
             "ResourceOptions" -> {"Build" -> False, "Exclude" -> archiveExclusions}], "publication"];
         If[!AllTrue[Lookup[published, {"Resource", "Site", "Check"}, None], AssociationQ],
             fail["publication returned incomplete resource, site or verification records"]];
-        publicationRecord = Join[KeyTake[published["Resource"], {"Resource", "Version", "Commit", "ArchiveSize"}],
-            <|"Site" -> published["Site"]["Site"], "DocumentationPages" -> published["Site"]["Pages"],
+        publicationRecord = Join[KeyTake[published["Resource"], {"Resource", "Version", "Commit"}],
+            <|"ArchiveBytes" -> QuantityMagnitude[UnitConvert[published["Resource"]["ArchiveSize"], "Bytes"]],
+                "Site" -> published["Site"]["Site"], "DocumentationPages" -> published["Site"]["Pages"],
                 "Verified" -> TrueQ[published["Check"]["OK"]]|>];
-        Export[FileNameJoin[{pacletDirectory, "build", "publication.json"}], publicationRecord, "RawJSON"];
+        If[!StringQ[Export[FileNameJoin[{pacletDirectory, "build", "publication.json"}], publicationRecord, "RawJSON"]],
+            fail["could not save the publication record"]];
         Print["Publication: ", publicationRecord];
         If[!TrueQ[published["Check"]["OK"]], fail["published site checks failed"]]
     ],
