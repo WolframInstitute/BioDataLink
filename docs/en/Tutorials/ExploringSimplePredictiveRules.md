@@ -243,10 +243,19 @@ errors, giving objective 7. The best one-comparison program makes six training
 errors, giving objective 8, so the extra comparison is retained under the
 declared penalty.
 
-## Evaluate the frozen rule once
+## See what each additional comparison changes
 
-Define the meaning of each program form, then apply only `chosen` to the
-held-out measurements. Subsequent figures reuse these predictions.
+Make the increase in expressiveness concrete before evaluating predictions.
+At size zero, a constant rule gives every record the same label. One comparison
+cuts the measurement plane with a single horizontal or vertical line. Two
+comparisons can combine a length and width condition using AND or OR. In this
+grammar that creates a rectangular intersection or an L-shaped union; it does
+not permit an arbitrary curved boundary.
+
+Define the meaning of each form and compare the best training program at each
+size. All three panels use the same training records, domain, axes and colors.
+No held-out labels enter this comparison. Backgrounds show predictions; point
+colors and shapes show source labels.
 
 ```wl
 ruleCondition[rule_, length_, width_] := Switch[rule["Kind"],
@@ -255,6 +264,45 @@ ruleCondition[rule_, length_, width_] := Switch[rule["Kind"],
     "Width", width > rule["WidthCm"],
     "AND", length > rule["LengthCm"] && width > rule["WidthCm"],
     "OR", length > rule["LengthCm"] || width > rule["WidthCm"]];
+lengthRange = MinMax[trainX[[All, 1]]] + {-0.4, 0.4};
+widthRange = MinMax[trainX[[All, 2]]] + {-0.2, 0.2};
+progressionPanels = Table[Show[
+    RegionPlot[Evaluate[{Not[ruleCondition[program, length, width]],
+        ruleCondition[program, length, width]}],
+        {length, First[lengthRange], Last[lengthRange]},
+        {width, First[widthRange], Last[widthRange]},
+        PlotStyle -> (Directive[Opacity[0.2], #] & /@ classColors),
+        BoundaryStyle -> Gray, PlotPoints -> 40, MaxRecursion -> 1],
+    ListPlot[Table[Pick[trainX, trainY, class], {class, {0, 1}}],
+        PlotStyle -> classColors,
+        PlotMarkers -> {{"\[FilledCircle]", 5}, {"\[FilledUpTriangle]", 6}}],
+    FrameLabel -> {"petal length (cm)", "petal width (cm)"},
+    PlotLabel -> Column[{
+        Row[{"Comparisons: ", program["Comparisons"]}],
+        Row[{program["TrainErrors"], " training errors"}]}, Alignment -> Center],
+    ImageSize -> 240], {program, bestBySize}];
+Legended[GraphicsRow[progressionPanels, ImageSize -> 760],
+    Placed[PointLegend[classColors, classNames,
+        LegendMarkers -> {"\[FilledCircle]", "\[FilledUpTriangle]"}], Below]]
+```
+
+The constant baseline makes 35 training errors, the best single comparison
+makes six, and the best two-comparison rule makes three. The second comparison
+adds a specific representational ability and reduces training errors by three;
+the previously declared penalty charges two for that addition. This connects
+the decision-region pictures to the numerical selection criterion.
+
+Longer formulas or additional predictors would define a larger family. They
+would need a fresh training/validation design before interpreting a comparison
+as evidence of improved prediction. A more elaborate decision boundary is not
+evidence of a more realistic biological mechanism.
+
+## Evaluate the frozen rule once
+
+Apply only `chosen` to the held-out measurements. Subsequent figures reuse
+these predictions.
+
+```wl
 testX = measurements[[split["Test"]]];
 testY = response[[split["Test"]]];
 testPredictions = Boole[ruleCondition[chosen, #[[1]], #[[2]]]] & /@ testX;
@@ -280,8 +328,6 @@ Open red circles identify mistakes. The display domain is set from training
 ranges plus a fixed margin, before any held-out plotting choices.
 
 ```wl
-lengthRange = MinMax[trainX[[All, 1]]] + {-0.4, 0.4};
-widthRange = MinMax[trainX[[All, 2]]] + {-0.2, 0.2};
 predictionRegion = RegionPlot[
     Evaluate[{Not[ruleCondition[chosen, length, width]],
         ruleCondition[chosen, length, width]}],
