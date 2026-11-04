@@ -9,10 +9,14 @@
   source layer and omitted structures are explicit; normalization is not inferred.
 - Expand researcher examples for discovery, provenance, pagination, verified
   downloads, matrix selection and interpretation of missing annotations.
-- Provide ten worked tutorials, including measured-data geometry, finite-state
-  encodings, predictive rule search, similarity networks, sparse measurements
-  and cellular automaton hypotheses, with computed figures and explicit limits
-  on scientific interpretation.
+- Provide eleven worked tutorials, including measured-data geometry, finite-state
+  encodings, predictive rule search, similarity networks, sparse measurements,
+  cellular automaton hypotheses and measurement panel selection, with computed
+  figures and explicit limits on scientific interpretation.
+- Develop rules progressively from constants and individual thresholds to
+  combined comparisons and wider spatial neighborhoods. Use graphs of rule
+  changes, shared predictions and perturbation stability to compare hypotheses
+  and analysis choices with fixed visual layouts.
 
 ## 0.2.0 — Broad source discovery
 

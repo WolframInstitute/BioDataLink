@@ -69,10 +69,11 @@ records local execution, not a hosted CI run.
 
 ## Documentation and packaged artifact
 
-PacletPage built 25 documentation notebooks (ten tutorials, eight symbol
-references and seven guides), the resource definition and the 0.3.0 paclet.
+At checkpoint `9f30d85`, PacletPage built 25 documentation notebooks (ten
+tutorials, eight symbol references and seven guides), the resource definition
+and the 0.3.0 paclet.
 Every saved documentation notebook was scanned; none contained Message cells.
-The six new computational tutorials contain 36 figure groups. Their inputs
+Those six new computational tutorials contained 36 figure groups. Their inputs
 were executed in fresh kernels, and the figures were inspected, including
 representative light/dark notebook appearances. Review corrected clipped
 nested legends, heatmap ticks and graph vertex sizes before the build.
@@ -87,3 +88,47 @@ download URL validation, exact selected H5AD values including an integer above
 2^53, selected axis order and the Iris digest. The packaged Python bridge,
 requirements and both new example assets match their source bytes. Generated
 Python bytecode is excluded from the archive.
+
+## Graph exploration and progressive rule complexity
+
+The subsequent documentation work adds an eleventh tutorial on choosing
+measurements to distinguish model predictions. It uses a fully declared
+synthetic prediction matrix and bounded-error observation model. Exact Wolfram
+and independent Python checks agree on the greedy measurement order, exhaustive
+panel comparisons, all interval boundaries and the nontransitivity example.
+All eight model vertices are retained as the unresolved-pair graph loses edges.
+
+The predictive tutorial now visualizes the best training rules with zero, one
+and two comparisons. Their training errors are 35, 6 and 3; the original
+selection criterion and held-out result remain unchanged. The network tutorial
+compares raw and standardized distances with identical neighbor-query
+conventions, retains source-row tooltips, and reuses stored perturbation edge
+sets for stability plots. The raw and standardized graphs have 799 and 787
+edges with 582 shared edges; their component sizes are {100, 50} and {150}.
+Neither graph has a single edge whose deletion splits a connected component.
+
+The cellular automaton tutorial adds rule-mutation and exact-observation
+equivalence graphs, then progresses from radius-zero baselines to three-site
+and five-site majority updates. Ten independent checks compare the native
+majority implementations with explicit periodic neighbor sums on five seeds
+per radius. The larger comparison generates one 32-entry lookup table;
+it does not enumerate the 2^32 possible radius-two binary lookup rules.
+
+The seven analytical tutorials now contain 50 figure groups. Source examples
+and representative light/dark outputs were inspected after these extensions;
+plot endpoint margins were corrected so zero-valued observations and final
+coverage drops remain visible. These calculations illustrate stated analysis
+and model assumptions, rather than establishing biological mechanisms.
+
+The final collection rebuild passed with 26 documentation notebooks, including
+all eleven tutorials. The archive again passed its isolated fresh-kernel load
+check. All 26 saved notebooks have zero Message cells. Saved graph galleries,
+decision regions, progression plots and the question-led guide were inspected
+in light and dark appearances. Their legends, labels and endpoint values
+remain visible in the generated documentation style.
+
+Archive inspection confirmed all 24 tracked kernel and asset files match the
+checkout byte-for-byte, with no generated Python bytecode included. The
+documentation extension changes no runtime contract. The earlier runtime and
+transport checks remain applicable; the added numerical and visual checks
+specifically cover the new tutorial computations.

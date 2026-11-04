@@ -8,7 +8,7 @@ URI: WolframInstitute/BioDataLink/guide/ComputationalExplorations
 Description: Compare measurements, representations and simple computational hypotheses with explicit evidence
 Keywords: [biology, computation, visualization, geometry, rules, observation models]
 RelatedGuides: [BioDataLink, DataAccess, Downloads]
-RelatedTutorials: [ConstructingBiologicalSimilarityNetworks, DiscretizingBiologicalMeasurements, ExploringBiologicalDataGeometry, ExploringCellularAutomatonHypotheses, ExploringSimplePredictiveRules, UnderstandingSparseMeasurements]
+RelatedTutorials: [ChoosingMeasurementsToDistinguishModels, ConstructingBiologicalSimilarityNetworks, DiscretizingBiologicalMeasurements, ExploringBiologicalDataGeometry, ExploringCellularAutomatonHypotheses, ExploringSimplePredictiveRules, UnderstandingSparseMeasurements]
 ---
 
 ## Abstract
@@ -28,6 +28,29 @@ enumerate a defined family, compare alternatives and limit conclusions to the
 observations available. They use built-in Wolfram Language and require neither
 sibling paclet. A fit to a finite observation does not identify a unique
 biological mechanism. Static rows do not establish a trajectory.
+
+Which patterns survive preprocessing? Compare
+[measurement geometry](paclet:WolframInstitute/BioDataLink/tutorial/ExploringBiologicalDataGeometry),
+[finite-state encodings](paclet:WolframInstitute/BioDataLink/tutorial/DiscretizingBiologicalMeasurements)
+and [sparse measurement semantics](paclet:WolframInstitute/BioDataLink/tutorial/UnderstandingSparseMeasurements).
+Which similarities survive perturbation? Examine
+[biological similarity networks](paclet:WolframInstitute/BioDataLink/tutorial/ConstructingBiologicalSimilarityNetworks).
+
+Which models give the same observable predictions? Explore
+[cellular-automaton hypotheses](paclet:WolframInstitute/BioDataLink/tutorial/ExploringCellularAutomatonHypotheses).
+Which additional measurement separates them? Use
+[measurement-panel selection](paclet:WolframInstitute/BioDataLink/tutorial/ChoosingMeasurementsToDistinguishModels),
+where native Wolfram Language graphs keep every candidate in a fixed position
+as panels and assumed error bounds change.
+
+A recommended progression starts with data and provenance, then geometry,
+sparse data and thresholds. Move to
+[predictive rules](paclet:WolframInstitute/BioDataLink/tutorial/ExploringSimplePredictiveRules)
+from constants through a single comparison to AND/OR combinations. Next examine
+similarity neighborhoods, then cellular-automaton rule spaces, and finally
+measurement choice from single observables to panels and noise sensitivity.
+Complexity means a stated number of comparisons, neighborhood sites or states;
+a larger rule number does not itself mean a more complex rule or biology.
 
 WL marks a built-in Wolfram Language function.
 
@@ -53,6 +76,8 @@ WL marks a built-in Wolfram Language function.
 - `CellularAutomaton` (WL) generate states from an explicitly specified update rule
 - `Graph` (WL) represent a chosen relation without implying a causal interaction
 - `Outer` (WL) enumerate a defined collection of comparisons
+- `Subsets` (WL) compare every measurement panel in a small finite family
+- `VertexCoordinates` (WL) hold model positions fixed while graph relationships change
 
 ## References
 

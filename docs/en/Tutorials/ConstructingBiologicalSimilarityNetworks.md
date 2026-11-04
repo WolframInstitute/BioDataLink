@@ -16,8 +16,9 @@ ancestry or physical contacts. This distinction matters when using a network
 as the starting point for a Ruliobiology model of local interactions.
 
 This tutorial constructs networks from four floral measurements, compares two
-edge rules, and measures sensitivity to neighborhood size and hypothetical
-measurement perturbations. All inputs run offline on the attributed Iris copy
+edge rules and two distance scales, and measures sensitivity to neighborhood
+size and hypothetical measurement perturbations. All inputs run offline on the
+attributed Iris copy
 included with BioDataLink. The resulting graphs describe these 150 records;
 they do not establish population structure beyond the sample.
 
@@ -127,15 +128,20 @@ neighbors were computed in four standardized dimensions. A short edge in the
 display does not certify a short four-dimensional distance; projections can
 hide differences. Reuse identical coordinates and colors in every graph so
 that apparent changes come from edges, rather than a new layout.
+Native vertex tooltips retain the source row and recorded species when the
+graphs are evaluated in an interactive notebook, without adding 150 visible labels.
 
 ```wl
 displayCoordinates = PrincipalComponents[standardized][[All, 1 ;; 2]];
+vertexTooltips = MapThread[#1 -> Placed[Column[{
+        Row[{"Source row: ", #1}], #2}], Tooltip] &, {sourceRows, species}];
 Clear[drawNetwork];
-drawNetwork[edges_, title_, size_] := Graph[sourceRows, edges,
+drawNetwork[edges_, title_, size_, edgeStyles_: Directive[GrayLevel[0.5], Opacity[0.35]]] := Graph[sourceRows, edges,
     VertexCoordinates -> displayCoordinates,
+    VertexLabels -> vertexTooltips,
     VertexStyle -> Thread[sourceRows -> Lookup[colorBySpecies, species]],
     VertexSize -> {"Scaled", 0.018},
-    EdgeStyle -> Directive[GrayLevel[0.5], Opacity[0.35]],
+    EdgeStyle -> edgeStyles,
     PlotLabel -> title, ImageSize -> size];
 Legended[GraphicsRow[{
     drawNetwork[unionEdges, "Union: either record chooses the other", 300],
@@ -147,6 +153,82 @@ The same vertices can have different connectivity under the two definitions.
 Mutual neighborhoods remove one-sided links and may isolate observations.
 Neither definition is automatically the correct one for biology. Species
 labels supply a visual annotation here and did not enter neighbor selection.
+
+## Does connectivity depend on the measurement scale?
+
+All four original measurements use centimetres, so ordinary Euclidean distance
+in their original units is another defensible descriptive convention. It gives
+more weight to traits that vary more in centimetres. Standardization gives a
+one-standard-deviation change equal weight in every trait. Neither choice
+removes the need to justify a distance for a particular biological question.
+
+Construct a second neighbor index on the original measurements. Keep the same
+source rows, candidate-query size, cached fifteen-neighbor prefixes,
+eight-neighbor union rule and display coordinates. Gray edges
+occur under both scales; purple edges occur only in the scale shown by that
+panel. The vertex colors still indicate the recorded species labels.
+
+```wl
+rawNeighborIndex = Nearest[measurements -> "Index",
+    DistanceFunction -> EuclideanDistance];
+rawNeighbors = Table[Take[DeleteCases[
+    rawNeighborIndex[measurements[[i]], 16], i], 15], {i, Length[sourceRows]}];
+rawEdges = edgeSet[rawNeighbors, 8, False];
+sharedScaleEdges = Intersection[rawEdges, unionEdges];
+sharedScaleLookup = AssociationThread[sharedScaleEdges,
+    ConstantArray[True, Length[sharedScaleEdges]]];
+sharedEdgeStyle = Directive[GrayLevel[0.5], Opacity[0.5]];
+changedEdgeStyle = Directive[RGBColor[0.65, 0.25, 0.75], Opacity[0.8], AbsoluteThickness[1.2]];
+scaleEdgeStyles[edges_] := Thread[edges ->
+    (If[KeyExistsQ[sharedScaleLookup, #], sharedEdgeStyle, changedEdgeStyle] & /@ edges)];
+Legended[GraphicsRow[{
+    drawNetwork[rawEdges, "Distance in centimetres", 300, scaleEdgeStyles[rawEdges]],
+    drawNetwork[unionEdges, "Distance in standardized units", 300, scaleEdgeStyles[unionEdges]]},
+    ImageSize -> 640],
+    Placed[LineLegend[{sharedEdgeStyle, changedEdgeStyle},
+        {"edge in both networks", "edge unique to the displayed scale"}], Below]]
+```
+
+Because coordinates are fixed, an edge change cannot be explained by a new
+graph layout. The shared display remains a two-dimensional projection of the
+standardized measurements, even for the graph whose neighbors were selected
+in centimetres. Read distances from the original numerical definition, not
+from the apparent length of an edge on the page.
+
+Compare connectivity as well as edge overlap. Two vertices are in the same
+2-edge-connected component when at least two edge-disjoint paths connect
+them. Comparing that partition with ordinary connected components tests
+whether removing a single edge could split an existing component.
+See [KEdgeConnectedComponents (WL)](https://reference.wolfram.com/language/ref/KEdgeConnectedComponents.html).
+
+```wl
+scaleGraphs = Graph[sourceRows, #] & /@ {rawEdges, unionEdges};
+<|"EdgeCounts" -> (EdgeCount /@ scaleGraphs),
+    "SharedEdges" -> Length[sharedScaleEdges],
+    "EdgeJaccardOverlap" -> N[Length[sharedScaleEdges]/Length[Union[rawEdges, unionEdges]]],
+    "ComponentSizes" -> (ReverseSort[Length /@ ConnectedComponents[#]] & /@ scaleGraphs),
+    "NoSingleEdgeSplitsAComponent" ->
+        (Sort[Sort /@ ConnectedComponents[#]] ===
+            Sort[Sort /@ KEdgeConnectedComponents[#, 2]] & /@ scaleGraphs)|>
+```
+
+In the evaluated setup, the centimetre and standardized graphs have 799 and
+787 edges respectively, with 582 shared edges and a Jaccard overlap of about
+0.580. The first graph has
+components of 100 and 50 records; the second connects all 150 records.
+Both return `True` for the single-edge test. Thus the visually narrow
+connection in the standardized display is not an individual graph-theoretic
+bridge, whose deletion would increase the number of components.
+
+The inputs here use machine precision. Nearly tied distances can change order
+under numerical or search settings, so preserve the displayed neighbor-query
+convention when reproducing exact edge counts.
+
+These observations answer a robustness question about this analysis:
+connectivity depends on the scale convention. They do not establish that
+plants communicate through the displayed connections, or that a species
+boundary is present or absent in nature. The same issue applies when a
+similarity graph is supplied as a hypothetical neighborhood for a rule model.
 
 ## Treat neighborhood size as an assumption
 
@@ -196,16 +278,18 @@ the number of shared edges divided by the number of edges in either graph.
 
 ```wl
 amplitudes = {0.01, 0.05, 0.15};
-stability = BlockRandom[SeedRandom[20261104];
-    Table[Table[Module[{perturbed, index, near, edges},
+repetitions = 12;
+perturbationEdges = BlockRandom[SeedRandom[20261104];
+    Table[Table[Module[{perturbed, index, near},
         perturbed = standardized + RandomVariate[
             NormalDistribution[0, amplitude], Dimensions[standardized]];
         index = Nearest[perturbed -> "Index", DistanceFunction -> EuclideanDistance];
         near = Table[Take[DeleteCases[index[perturbed[[i]], 9], i], 8],
             {i, Length[sourceRows]}];
-        edges = edgeSet[near, 8, False];
-        N[Length[Intersection[unionEdges, edges]]/Length[Union[unionEdges, edges]]]],
-        {12}], {amplitude, amplitudes}]];
+        edgeSet[near, 8, False]],
+        {repetitions}], {amplitude, amplitudes}]];
+stability = Map[N[Length[Intersection[unionEdges, #]]/Length[Union[unionEdges, #]]] &,
+    perturbationEdges, {2}];
 BoxWhiskerChart[stability, ChartLabels -> (ToString /@ amplitudes),
     FrameLabel -> {"Perturbation SD (standardized units)", "Edge Jaccard overlap"},
     PlotRange -> {0, 1}, PlotLabel -> "Sensitivity to hypothetical measurement changes",
@@ -217,6 +301,73 @@ similar. Overlap below one is a sensitivity result conditional on this noise
 model. It is not a confidence interval or a probability that an edge is real.
 All repetitions start from the same measured records and differ only in
 simulated perturbations; repetitions do not add independent plant samples.
+
+## Which connections persist when individual edges change?
+
+An overlap distribution does not identify the changing connections. Reuse the
+stored edge sets at perturbation SD 0.05, without rerunning the neighbor search.
+Count how many of the twelve repetitions contain each edge. The left graph
+contains every edge seen at least once; darker, wider edges occurred more
+often. The right graph keeps only edges present in all twelve repetitions.
+Every source row remains a vertex, including any that might become isolated.
+
+```wl
+selectedAmplitude = First[FirstPosition[amplitudes, 0.05]];
+edgeRepeatCounts = Counts[Flatten[perturbationEdges[[selectedAmplitude]], 1]];
+observedEdges = Keys[edgeRepeatCounts];
+repeatEdgeStyle[count_] := Directive[GrayLevel[0.5],
+    Opacity[0.5 + 0.5 count/repetitions], AbsoluteThickness[0.6 + 1.2 count/repetitions]];
+repeatStyles = Thread[observedEdges -> (repeatEdgeStyle /@ Values[edgeRepeatCounts])];
+alwaysEdges = Keys[Select[edgeRepeatCounts, # == repetitions &]];
+Legended[GraphicsRow[{
+    drawNetwork[observedEdges, "Edges observed in at least one repetition", 300, repeatStyles],
+    drawNetwork[alwaysEdges, "Edges observed in all twelve repetitions", 300,
+        repeatEdgeStyle[repetitions]]}, ImageSize -> 640],
+    Placed[LineLegend[repeatEdgeStyle /@ {1, 6, 12},
+        {"1 of 12 repetitions", "6 of 12 repetitions", "12 of 12 repetitions"}], Below]]
+```
+
+Across these repetitions, 1150 distinct edges appear. Of the original 787
+edges, 480 occur in all twelve repetitions. The all-twelve graph remains
+connected across all 150 records. Thus the identity of individual edges can
+be sensitive while the coarse conclusion of connectedness persists under
+this particular perturbation experiment.
+
+Vary the required number of repetitions rather than choosing only one cutoff.
+Count retained edges and records in the largest connected component at each
+cutoff. Both curves below are fractions, but they have different denominators:
+all 1150 observed edges, and all 150 source records respectively.
+
+```wl
+minimumRepetitions = Range[repetitions];
+thresholdGraphs = Table[
+    Graph[sourceRows, Keys[Select[edgeRepeatCounts, # >= minimum &]]],
+    {minimum, minimumRepetitions}];
+retainedEdgeFractions = N[(EdgeCount /@ thresholdGraphs)/Length[observedEdges]];
+largestComponentFractions = N[
+    (Max[Length /@ ConnectedComponents[#]] & /@ thresholdGraphs)/Length[sourceRows]];
+ListLinePlot[{retainedEdgeFractions, largestComponentFractions},
+    DataRange -> {1, repetitions}, PlotMarkers -> Automatic,
+    Frame -> True, FrameLabel -> {"Minimum repetitions containing an edge", "Fraction"},
+    FrameTicks -> {{Automatic, None}, {minimumRepetitions, None}},
+    PlotLegends -> Placed[{"Edges retained / all observed edges",
+        "Records in largest component / all records"}, Below],
+    PlotRange -> {{0.8, repetitions + 0.2}, {0, 1.05}}, ImageSize -> 540]
+```
+
+All twelve threshold graphs remain connected here, while the retained edge
+fraction falls to 480/1150, about 0.417. Connectivity alone therefore hides
+substantial changes in local neighborhoods. A rule that reads those neighbors
+could still change behavior; that requires a separate, explicitly defined
+dynamical experiment.
+
+These repetition counts are conditional sensitivity summaries. They are not
+confidence levels, estimated probabilities of a true biological edge, or
+independent confirmation of an interaction. The thresholded graph is a derived
+summary of the simulated edge sets and need not itself be an eight-neighbor
+graph. Reusing the stored edge lists avoids rebuilding neighbor indices for
+this summary; much larger analyses should accumulate edge counts as results arrive
+when retaining every replicate is unnecessary.
 
 ## Applications to biological rule models
 
@@ -243,3 +394,4 @@ demonstrates why fitting one static statistic is insufficient.
 - [PrincipalComponents (WL)](https://reference.wolfram.com/language/ref/PrincipalComponents.html) defines the projection used for display.
 - [ConnectedComponents (WL)](https://reference.wolfram.com/language/ref/ConnectedComponents.html) defines connectivity in the constructed graph.
 - [Graph (WL)](https://reference.wolfram.com/language/ref/Graph.html) documents fixed vertex coordinates and graph properties.
+- [VertexLabels (WL)](https://reference.wolfram.com/language/ref/VertexLabels.html) documents native tooltip labels for retaining source identities.

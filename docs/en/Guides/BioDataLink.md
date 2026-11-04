@@ -8,7 +8,7 @@ URI: WolframInstitute/BioDataLink/guide/BioDataLink
 Description: Find biological data sources, retrieve verified files and read supported local measurements
 Keywords: [biology, datasets, gene expression, provenance]
 RelatedGuides: [Catalog, ComputationalExplorations, DataAccess, Downloads, Providers, Sources]
-RelatedTutorials: [ConstructingBiologicalSimilarityNetworks, DiscretizingBiologicalMeasurements, DownloadingBiologicalData, ExploringBiologicalData, ExploringBiologicalDataGeometry, ExploringCellularAutomatonHypotheses, ExploringSimplePredictiveRules, FindingDataSources, ReadingAnnDataSlices, UnderstandingSparseMeasurements]
+RelatedTutorials: [ChoosingMeasurementsToDistinguishModels, ConstructingBiologicalSimilarityNetworks, DiscretizingBiologicalMeasurements, DownloadingBiologicalData, ExploringBiologicalData, ExploringBiologicalDataGeometry, ExploringCellularAutomatonHypotheses, ExploringSimplePredictiveRules, FindingDataSources, ReadingAnnDataSlices, UnderstandingSparseMeasurements]
 ---
 
 ## Abstract

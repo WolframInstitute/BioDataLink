@@ -144,6 +144,7 @@ format helpers remain private.
 - [Data File Downloads guide source](docs/en/Guides/Downloads/Downloads.md)
 - [Data Sources guide source](docs/en/Guides/Sources/Sources.md)
 - [Online Study Search guide source](docs/en/Guides/Providers/Providers.md)
+- [Choosing Measurements to Distinguish Models tutorial source](docs/en/Tutorials/ChoosingMeasurementsToDistinguishModels.md)
 - [Constructing Biological Similarity Networks tutorial source](docs/en/Tutorials/ConstructingBiologicalSimilarityNetworks.md)
 - [Discretizing Biological Measurements tutorial source](docs/en/Tutorials/DiscretizingBiologicalMeasurements.md)
 - [Downloading and Inspecting Biological Data tutorial source](docs/en/Tutorials/DownloadingBiologicalData.md)
@@ -163,6 +164,21 @@ representations, rule search, network sensitivity and explicit observation
 models. Figures are computed from the displayed inputs. The examples use
 built-in Wolfram Language; sibling Ruliology and Ruliobiology paclets are not
 required.
+
+For a gradual reading path:
+
+1. Start with discovery, provenance, downloads and a supported local import.
+2. Examine geometry, sparse measurements and explicit threshold encodings.
+3. Compare predictive rules from constants to one threshold and AND/OR combinations.
+4. Build similarity neighborhoods and test their sensitivity.
+5. Compare cellular-automaton observations while increasing the specified neighborhood.
+6. Choose additional observables, progressing from one measurement to panels and error-bound sensitivity.
+
+This progression adds explicit comparisons, neighborhood sites, states and
+observation assumptions. Rule numbers and attractive graphs do not measure
+biological complexity. The [Computational Explorations guide](docs/en/Guides/ComputationalExplorations/ComputationalExplorations.md)
+connects each stage to its scientific question; the index above remains
+alphabetical for reference.
 
 These links lead to Markdown sources. `make notebooks` builds paclet
 documentation notebooks; build and visual inspection are separate checks.

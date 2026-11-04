@@ -62,9 +62,9 @@ The local development milestone adds:
   positions, duplicate labels, missing annotations and omitted-structure lists.
 - Scientist-facing examples for metadata review, named JSON selections,
   pagination termination, verified downloads and measurement interpretation.
-- Ten worked tutorials with computed figures, including measurement geometry,
+- Eleven worked tutorials with computed figures, including measurement geometry,
   discretization, similarity networks, sparse-data semantics and finite rule
-  comparisons, using built-in Wolfram Language.
+  comparisons and measurement-panel selection, using built-in Wolfram Language.
 - An attributed UCI Iris copy for offline tabular examples and a synthetic
   H5AD fixture checked against independently specified values.
 

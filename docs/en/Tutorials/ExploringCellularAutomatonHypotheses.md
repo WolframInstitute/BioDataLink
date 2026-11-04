@@ -5,7 +5,7 @@ Title: Exploring Cellular Automaton Hypotheses
 Context: WolframInstitute`BioDataLink`
 Paclet: WolframInstitute/BioDataLink
 URI: WolframInstitute/BioDataLink/tutorial/ExploringCellularAutomatonHypotheses
-Keywords: [application, cellular automata, rule space, identifiability, observation map, biology]
+Keywords: [application, cellular automata, rule space, identifiability, observation map, mutation graph, model complexity, biology]
 RelatedGuides: [BioDataLink, ComputationalExplorations, DataAccess]
 ---
 
@@ -212,6 +212,212 @@ the model assumption; they do not increase biological replication or validate
 the ring topology. A different boundary condition or observation time would
 define a different experiment.
 
+## Are the compatible rules connected by small changes?
+
+A list of accepted rules does not reveal whether a small program change can
+move between them. Construct a mutation graph: each vertex is one of the same
+21 compatible rule numbers, and an undirected edge changes exactly one of the
+eight rule-table outputs. The empirical criterion, seed, boundary and step
+count remain unchanged. No additional rule is admitted for this graph.
+
+An elementary rule number encodes eight binary outputs. Flipping bit 0 changes
+the output for neighborhood 000, while flipping bit 7 changes the output for
+111. [BitXor (WL)](https://reference.wolfram.com/language/ref/BitXor.html) makes
+each of these eight possible changes explicit. A membership association avoids
+searching the accepted list repeatedly:
+
+```wl
+compatibleSet = AssociationThread[compatibleRules,
+    ConstantArray[True, Length[compatibleRules]]];
+mutationEdges = Flatten[Table[
+    With[{neighbor = BitXor[rule, 2^bit]},
+        If[rule < neighbor && KeyExistsQ[compatibleSet, neighbor],
+            UndirectedEdge[rule, neighbor], Nothing]],
+    {rule, compatibleRules}, {bit, 0, 7}], 1];
+ruleCoordinates = CirclePoints[Length[compatibleRules]];
+changedNeighborhood[UndirectedEdge[a_, b_]] :=
+    IntegerDigits[IntegerLength[BitXor[a, b], 2] - 1, 2, 3];
+mutationGraph = Graph[compatibleRules, mutationEdges,
+    VertexCoordinates -> ruleCoordinates, VertexLabels -> "Name",
+    EdgeLabels -> (# -> Placed[
+        Row[{"changed neighborhood: ", Row[changedNeighborhood[#]]}], Tooltip] & /@ mutationEdges),
+    PlotLabel -> Row[{Length[compatibleRules], " compatible rules; ",
+        Length[mutationEdges], " single-output changes"}], ImageSize -> 520]
+```
+
+Only three pairs are connected: 26–154, 82–210 and 85–117. The other 15 vertices
+are isolated under this move. Hovering over an edge identifies the local
+neighborhood whose output changes. The circular positions are a display
+convention, not a geometric distance between programs.
+
+Isolation does not make a rule implausible. It says that none of its eight
+single-output changes also passes this particular comparison. Paths through
+rejected rules, changes of several outputs, other initial states or another
+observation criterion could connect a different graph. These edges describe
+edits to mathematical rule tables, not observed genetic mutations or a
+probability law for biological evolution.
+
+This adapts the distinction between rule changes and observed behavior in
+Ruliology's
+[cellular-automaton rule-space tutorial](https://www.wolframcloud.com/obj/wolframinstitute/DeployedResources/Paclet/WolframInstitute/Ruliology/Documentation/tutorial/AnalyzingCellularAutomatonRuleSpace.html).
+An undirected graph is sufficient here because no fitness ordering or
+selection process has been defined.
+
+## Which additional observations would separate the rules?
+
+A mutation edge and an observational ambiguity edge answer different
+questions. Two distant rule tables can give the same measured summary. For
+the same 21 rules, compute three exact integer observables from the already
+stored traces: occupied sites at step 32, neighboring pairs with different
+states at step 32, and occupied sites at step 1.
+
+These extra values are model predictions. Iris supplies neither a spatial
+neighbor measurement nor an observation at model step 1. We are asking which
+observations could distinguish candidates if a suitable observation process
+were available, rather than pretending those measurements already exist.
+
+```wl
+modelObservations = AssociationThread[compatibleRules, Table[
+    <|"FinalCount" -> Total[traces[[rule + 1, -1]]],
+      "NeighborDifferences" -> Total[Abs[traces[[rule + 1, -1]] -
+          RotateLeft[traces[[rule + 1, -1]]]]],
+      "FirstStepCount" -> Total[traces[[rule + 1, 2]]]|>,
+    {rule, compatibleRules}]];
+observationPanels = {{"FinalCount"},
+    {"FinalCount", "NeighborDifferences"},
+    {"FinalCount", "NeighborDifferences", "FirstStepCount"}};
+observationClasses = Table[GatherBy[compatibleRules,
+    Lookup[modelObservations[#], panel] &], {panel, observationPanels}];
+ambiguityEdges = (Flatten[
+    (UndirectedEdge @@@ Subsets[#, {2}]) & /@ #, 1] &) /@ observationClasses;
+<|"ClassesPerPanel" -> (Length /@ observationClasses),
+  "UnresolvedRulePairs" -> (Length /@ ambiguityEdges)|>
+```
+
+Here an edge means that two rules have **exactly the same observation vector**.
+Equality of these integer vectors is transitive, so its groups are genuine
+equivalence classes for the specified observation panel. This is separate
+from the original tolerance around a fixed empirical target. A pairwise
+“close enough” relation need not be transitive and would not justify the same
+interpretation of connected components.
+
+Keep every vertex in the same position across all three graphs. Add
+observations cumulatively, so an unresolved pair can lose its edge but cannot
+gain one. Orange marks rules 51 and 204 for the comparison below:
+
+```wl
+panelTitles = {"Final occupied count", "+ neighbor differences", "+ step-1 occupied count"};
+observationGraphFigure = GraphicsRow[Table[
+    Graph[compatibleRules, ambiguityEdges[[panel]],
+        VertexCoordinates -> ruleCoordinates, VertexLabels -> "Name",
+        VertexLabelStyle -> 9,
+        VertexStyle -> {51 -> ColorData[97][2], 204 -> ColorData[97][2]},
+        EdgeStyle -> Directive[GrayLevel[0.55], Opacity[0.8]],
+        PlotLabel -> Column[{panelTitles[[panel]],
+            Row[{Length[observationClasses[[panel]]], " classes; ",
+                Length[ambiguityEdges[[panel]]], " unresolved pairs"}]}, Alignment -> Center],
+        ImagePadding -> 22, ImageSize -> 245], {panel, 3}], ImageSize -> 760]
+```
+
+The panels leave 172, 47 and 9 unresolved pairs, respectively. Their 2, 10
+and 14 classes all refer to the same accepted rules. More detailed model
+observations separate some candidates, while the remaining groups identify
+ambiguities that this panel still cannot resolve. A group is equivalence
+under these observables and this run, not equivalence of the update rules for
+all possible initial states.
+
+Rule 51 flips every binary site at each step; rule 204 copies it. Both return
+the initial array after the even number of steps used here, so the final
+occupied count and final neighbor differences cannot separate them. The
+first-step count does: this seed has 41 occupied sites, so copying leaves 41
+while flipping gives 55. This illustrates a concrete reason to sample a
+transient, rather than only an endpoint. Copying rule 204 and shifting rules
+170 and 240 still share a group: these counts do not identify which sites
+changed. Site-resolved observations would test a different prediction. The
+[measurement-selection tutorial](ChoosingMeasurementsToDistinguishModels.md)
+extends the question to finite measurement-panel budgets and imperfect
+measurement resolution.
+
+## Increase the neighborhood while keeping the comparison fixed
+
+Now increase what a local update can read. A radius-zero rule sees only its
+own current site. A radius-one rule sees that site and one neighbor on each
+side. A radius-two rule sees five sites in total. Keep the initial state,
+periodic boundary and 32-step observation window fixed.
+
+For unrestricted binary lookup rules of radius *r*, there are
+`2^(2 r + 1)` input neighborhoods and one binary output choice for each.
+The rule-space size is therefore `2^(2^(2 r + 1))`: 4 rules at radius 0,
+256 at radius 1, and 4,294,967,296 at radius 2. Exhaustively repeating the
+previous search at radius 2 would be a different computational undertaking.
+
+Instead, define one transparent larger-neighborhood rule: output 1 when at
+least three of five sites are 1. This is a totalistic rule, meaning that only
+the count of occupied input sites matters, not their arrangement. It is one
+of 64 radius-two binary totalistic lookup rules, a small restricted family
+within the full space. The following constructs just 32 outputs to specify
+this one rule; it does not enumerate billions of candidate rules.
+
+```wl
+majorityRuleNumber[radius_] := FromDigits[
+    Boole[Total[#] >= radius + 1] & /@ Tuples[{1, 0}, 2 radius + 1], 2];
+comparisonSpecs = {{0, 2, 0}, {2, 2, 0},
+    {majorityRuleNumber[1], 2, 1}, {majorityRuleNumber[2], 2, 2}};
+comparisonNames = {"constant 0 (radius 0)", "copy (radius 0)",
+    "majority (radius 1)", "majority (radius 2)"};
+comparisonTraces = CellularAutomaton[#, initial, steps] & /@ comparisonSpecs;
+complexityTraceFigure = GraphicsGrid[Partition[Table[
+    ArrayPlot[comparisonTraces[[i]], ColorRules -> stateColors,
+        Frame -> True, FrameTicks -> {{{1, "0"}, {17, "16"}, {33, "32"}}, None},
+        FrameLabel -> {"Step (downward)", "Site"},
+        PlotLabel -> comparisonNames[[i]], ImageSize -> 320], {i, 4}], 2],
+    ImageSize -> 700]
+```
+
+The three-site majority is elementary rule 232; the five-site lookup number
+is 4276676736. Constant and copying updates provide simple reference cases.
+The two majority rules use the same voting principle but have access to
+different local information. Increased radius does not, by itself, explain
+the biological measurements or guarantee a closer summary match.
+
+Compare the same two final-state observables across these four deliberately
+chosen programs. The dashed line applies only to the occupied fraction; no
+empirical neighbor-disagreement value was supplied:
+
+```wl
+comparisonFractions = Mean /@ comparisonTraces[[All, -1]];
+comparisonDisagreements = disagreement /@ comparisonTraces[[All, -1]];
+comparisonTicks = Transpose[{Range[4],
+    {"constant\nr = 0", "copy\nr = 0", "majority\nr = 1", "majority\nr = 2"}}];
+complexityObservationFigure = GraphicsRow[{
+    ListPlot[Transpose[{Range[4], comparisonFractions}],
+        Frame -> True, FrameTicks -> {{Automatic, None}, {comparisonTicks, None}},
+        FrameLabel -> {None, "Final occupied fraction"},
+        GridLines -> {None, {N[targetFraction]}},
+        GridLinesStyle -> Directive[Red, Dashed], PlotMarkers -> Automatic,
+        PlotRange -> {{0.5, 4.5}, {-0.05, 1.05}}, ImageSize -> 330],
+    ListPlot[Transpose[{Range[4], comparisonDisagreements}],
+        Frame -> True, FrameTicks -> {{Automatic, None}, {comparisonTicks, None}},
+        FrameLabel -> {None, "Final neighbor disagreement"}, PlotMarkers -> Automatic,
+        PlotRange -> {{0.5, 4.5}, {-0.05, 1.05}}, ImageSize -> 330]}, ImageSize -> 700]
+```
+
+In this run, copying comes closest to the empirical fraction because the
+initial fraction was constructed to match it. The majority rules reduce
+neighbor disagreement while also lowering the occupied fraction. The wider
+neighborhood therefore does not improve agreement with this particular
+constraint. Zero disagreement is achieved by the constant-zero rule as well;
+that statistic alone does not identify a useful biological organization.
+
+These are illustrative programs, not four fitted winners or a search over
+all radius-two rules. The unrestricted larger family can express more
+responses to local configurations, while the two retained summaries still
+discard most of each trace. Evaluating a richer family scientifically would
+require observations that constrain its additional inputs: for example,
+measured five-site neighborhoods and subsequent state changes, with an
+explicit mapping from biological measurements to sites and states. Iris
+provides none of that spatial or temporal information.
+
 ## Applications: design observations that distinguish rules
 
 The practical lesson is to define what is observed before interpreting a rule
@@ -239,3 +445,6 @@ measured traits with held-out evaluation.
 - [CellularAutomaton (WL)](https://reference.wolfram.com/language/ref/CellularAutomaton.html) specifies numbered rules, periodic initial lists and time-step output.
 - [ArrayPlot (WL)](https://reference.wolfram.com/language/ref/ArrayPlot.html) specifies matrix orientation, row coordinates and color rules.
 - [BlockRandom (WL)](https://reference.wolfram.com/language/ref/BlockRandom.html) isolates the recorded simulation seeds from the surrounding session.
+- [BitXor (WL)](https://reference.wolfram.com/language/ref/BitXor.html) changes specified binary outputs in a numbered rule table.
+- [Graph (WL)](https://reference.wolfram.com/language/ref/Graph.html) retains explicit vertices, including isolated rules, with their source rule numbers.
+- [VertexCoordinates (WL)](https://reference.wolfram.com/language/ref/VertexCoordinates.html) fixes vertex positions across observation comparisons.

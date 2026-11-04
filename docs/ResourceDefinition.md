@@ -61,9 +61,10 @@ unspecified and no whole-file checksum is computed. Optional dependencies are
 not installed automatically. This is a local development milestone; no
 published release is implied.
 
-Ten worked tutorials connect discovery and import to measurement geometry,
+Eleven worked tutorials connect discovery and import to measurement geometry,
 finite-state encodings, sparse-data interpretation, similarity networks,
-held-out rule comparison and explicit cellular-automaton observation models.
+held-out rule comparison, explicit cellular-automaton observation models and
+measurement selection under stated error bounds.
 Computed figures use attributed Iris measurements or clearly labeled synthetic
 inputs. These examples use built-in Wolfram Language and do not require a
 sibling modeling paclet.
