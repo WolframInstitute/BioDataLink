@@ -8,7 +8,7 @@ URI: WolframInstitute/BioDataLink/guide/Providers
 Description: Search public BioStudies and GEO study metadata with pagination and retrieval information
 Keywords: [online, study metadata, BioStudies, GEO, search]
 RelatedGuides: [BioDataLink, Catalog, Sources]
-RelatedTutorials: [FindingDataSources]
+RelatedTutorials: [FindingCircadianRhythms, FindingDataSources]
 ---
 
 ## Abstract

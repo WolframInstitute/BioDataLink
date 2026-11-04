@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.3.2 — 2026-11-04
+
+- Add five case-study tutorials on real public data: single-cell expression in
+  human blood (10x Genomics PBMC 3k), open and closed adenylate kinase
+  structures (PDB 4AKE and 1AKE), sequence-composition patterns in the *Borrelia
+  burgdorferi* chromosome, a comparison of SARS-CoV-2, RaTG13 and SARS-CoV
+  genomes, and circadian rhythms in an hourly mouse liver time series
+  (GEO GSE11923).
+- Bundle the subsets behind these tutorials with provenance records, licenses
+  and SHA-256 hashes. `make example-data` rebuilds them from pinned downloads
+  through `BioDatasetDownload`; offline tests check the bundled files.
+- Make tutorial and reference inputs copy-ready: figure-only setup sits in
+  `With` beside each plot, one-use variables are removed and several
+  computations use shorter built-in functions.
+- Record figure rules: accessible category palettes, color maps chosen by
+  the kind of value, area-scaled marks and checks for clipped plot ranges.
+- Close the tutorial Initialization group by default in generated notebooks,
+  with a visible opener for inspecting helpers. Check closure before and after
+  native initialization, including cached and changed-helper builds.
+- Add a single-cell example to the README quick start.
+- Keep all cells and genes visible in the PCA plots and show the full range of
+  protein backbone-angle changes. Check regenerated PBMC content independently
+  of its changing retrieval timestamp while retaining fixed provenance checks.
+
 ## 0.3.1 — 2026-11-04
 
 - Simplify the eleven tutorials and eight symbol references with shorter Wolfram

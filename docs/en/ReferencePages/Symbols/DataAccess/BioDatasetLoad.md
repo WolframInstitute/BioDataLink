@@ -101,8 +101,7 @@ The AnnData format reads one matrix selection and aligned axis metadata:
 Load the bundled synthetic expression file:
 
 ```wl
-file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
-BioDatasetLoad[File[file]]
+BioDatasetLoad[File[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}]]]
 ```
 
 ---
@@ -110,9 +109,8 @@ BioDatasetLoad[File[file]]
 Plot its sparse matrix. These values are synthetic, not experimental measurements:
 
 ```wl
-file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
-data = BioDatasetLoad[File[file]];
-MatrixPlot[data["ExpressionMatrix"], PlotLegends -> Automatic, FrameLabel -> {"cell", "gene"}]
+MatrixPlot[BioDatasetLoad[File[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}]]]["ExpressionMatrix"],
+    PlotLegends -> Automatic, FrameLabel -> {"cell", "gene"}]
 ```
 
 ## Scope
@@ -120,8 +118,7 @@ MatrixPlot[data["ExpressionMatrix"], PlotLegends -> Automatic, FrameLabel -> {"c
 Inspect cell metadata in matrix row order:
 
 ```wl
-file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
-BioDatasetLoad[File[file]]["CellMetadata"]
+BioDatasetLoad[File[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}]]]["CellMetadata"]
 ```
 
 ---
@@ -133,8 +130,7 @@ This optional-backend example is not evaluated during documentation builds:
 
 ```wl
 #| eval: false
-file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-anndata.h5ad"}];
-BioDatasetLoad[File[file], "Format" -> "AnnData", "Cells" -> {1, 2}, "Genes" -> {1, 2, 3}]
+BioDatasetLoad[File[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-anndata.h5ad"}]], "Format" -> "AnnData", "Cells" -> {1, 2}, "Genes" -> {1, 2, 3}]
 ```
 
 The repeated `"g1"` variable labels and missing annotations test preservation
@@ -149,8 +145,7 @@ the configured Python interpreter and is not evaluated during documentation buil
 
 ```wl
 #| eval: false
-file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-anndata.h5ad"}];
-BioDatasetLoad[File[file], "Format" -> "AnnData", "Layer" -> {"Layers", "normalized"}]
+BioDatasetLoad[File[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-anndata.h5ad"}]], "Format" -> "AnnData", "Layer" -> {"Layers", "normalized"}]
 ```
 
 The layer name comes from the file. It does not verify a transformation, so
@@ -161,27 +156,19 @@ The layer name comes from the file. It does not verify a transformation, so
 Reject a file exceeding a deliberately small byte limit:
 
 ```wl
-file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
-BioDatasetLoad[File[file], "MaxFileBytes" -> 1]
+BioDatasetLoad[File[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}]], "MaxFileBytes" -> 1]
 ```
 
 ## Applications
 
-Load the synthetic matrix and its aligned metadata:
+Load the synthetic matrix, then use its aligned metadata to select rows labeled
+`"treated"` and the column labeled `"gene-A"`:
 
 ```wl
-file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
-data = BioDatasetLoad[File[file]];
-cells = Normal[data["CellMetadata"]];
-genes = Normal[data["GeneMetadata"]];
-```
-
-Select rows labeled `"treated"` and the column labeled `"gene-A"`:
-
-```wl
-rows = Flatten[Position[Lookup[cells, "Condition"], "treated"]];
-column = First[FirstPosition[Lookup[genes, "ID"], "gene-A"]];
-AssociationThread[Lookup[cells[[rows]], "ID"], Normal[data["ExpressionMatrix"][[rows, column]]]]
+Module[{data = BioDatasetLoad[File[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}]]], rows, column},
+    rows = Flatten[Position[Normal[data["CellMetadata"][All, "Condition"]], "treated"]];
+    column = First[FirstPosition[Normal[data["GeneMetadata"][All, "ID"]], "gene-A"]];
+    AssociationThread[Normal[data["CellMetadata"][rows, "ID"]], Normal[data["ExpressionMatrix"][[rows, column]]]]]
 ```
 
 The selected values are 0 and 2 for `"cell-2"` and `"cell-3"`.
@@ -193,9 +180,7 @@ invented for this example; the selection is not evidence of a treatment response
 Record the local file hash with its declared scale and provenance:
 
 ```wl
-file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
-data = BioDatasetLoad[File[file]];
-KeyTake[data, {"ContentHash", "Normalization", "Provenance"}]
+KeyTake[BioDatasetLoad[File[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}]]], {"ContentHash", "Normalization", "Provenance"}]
 ```
 
 The hash identifies the imported bytes. The scale and source information are
@@ -206,8 +191,7 @@ declarations from the file, not independently verified scientific evidence.
 Position-selection options require the AnnData format:
 
 ```wl
-file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
-BioDatasetLoad[File[file], "Genes" -> {1}]
+BioDatasetLoad[File[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}]], "Genes" -> {1}]
 ```
 
 Catalog identifiers and URLs are not local file inputs. Support for a file

@@ -97,21 +97,16 @@ BioDatasetQuery["GEO", "CRISPR", "APIKey" -> {"Environment", "NCBI_API_KEY"}]
 ### Cursor
 
 Request a second page only if the source provides a continuation cursor.
-These inputs make up to two online queries:
+This input makes up to two online queries:
 
 ```wl
 #| eval: false
-page = BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3];
+With[{page = BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3]},
+    Which[FailureQ[page], page, page["NextCursor"] === None, None,
+        True, BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3, "Cursor" -> page["NextCursor"]]]]
 ```
 
-Continue only when a cursor is available:
-
-```wl
-#| eval: false
-If[page["NextCursor"] =!= None, BioDatasetQuery["BioStudies", "CRISPR", "Cursor" -> page["NextCursor"]]]
-```
-
-A `"NextCursor"` value of `None` means pagination has ended. Do not pass it
+A `Failure` is returned unchanged. A `"NextCursor"` value of `None` means pagination has ended. Do not pass it
 as a new cursor or use a changing total to infer how many pages remain.
 
 ### PageSize
@@ -138,32 +133,20 @@ Review accession, title and organism together after one bounded online query:
 
 ```wl
 #| eval: false
-page = BioDatasetQuery["GEO", "CRISPR AND Homo sapiens[Organism]", "PageSize" -> 5];
-```
-
-Display the fields needed to review the matches:
-
-```wl
-#| eval: false
-page["Records"][All, {"ID", "Title", "Organism"}]
+With[{page = BioDatasetQuery["GEO", "CRISPR AND Homo sapiens[Organism]", "PageSize" -> 5]},
+    If[FailureQ[page], page, page["Records"][All, {"ID", "Title", "Organism"}]]]
 ```
 
 The organism annotation is supplied by GEO. It can be a string or a list of
 strings. Inspect the original record and sampling design before deciding that
 the returned studies are comparable.
 
-Retain the query and retrieval evidence for an online search:
+Retain the provider, query, endpoint and retrieval time of an online search:
 
 ```wl
 #| eval: false
-page = BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3];
-```
-
-Keep the provider, query, endpoint and retrieval time:
-
-```wl
-#| eval: false
-KeyTake[page, {"Provider", "Query", "SourceURL", "RetrievedAt"}]
+With[{page = BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3]},
+    If[FailureQ[page], page, KeyTake[page, {"Provider", "Query", "SourceURL", "RetrievedAt"}]]]
 ```
 
 This records a particular search, not a frozen release of the provider's

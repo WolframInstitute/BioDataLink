@@ -28,6 +28,64 @@ This hash was computed from the retrieved file, not supplied by the publisher.
 `iris.provenance.json` retains the retrieval time, source, citation, license
 and column interpretation.
 
+## Real-data case studies
+
+Five folders hold real public data for the worked case-study tutorials. The
+`provenance.json` files record source URLs, SHA-256 hashes of downloaded bytes,
+retrieval times, citations, license statements and transformations. PBMC3k
+keeps this information in the `Provenance` field of `pbmc3k-subset.json`.
+The hashes were computed from files retrieved on 2026-11-04, not supplied by the
+publishers. Dataset licenses are separate from the paclet code's MIT license.
+
+| Folder | Contents | Source and license | Tutorial |
+| --- | --- | --- | --- |
+| `PBMC3k` | Single-cell UMI counts, 2,700 cells × 513 genes | 10x Genomics, CC BY 4.0 | Analyzing Single-Cell Expression in Human Blood |
+| `AdenylateKinase` | PDB entries 4AKE and 1AKE | wwPDB, CC0 1.0 | Comparing Protein Conformations |
+| `BorreliaB31` | Chromosome sequence and gene annotation, NC_001318.1 | NCBI RefSeq | Reading the Composition of a Bacterial Genome |
+| `Coronaviruses` | Genomes and gene annotations, NC_045512.2, MN996532.2, NC_004718.3 | NCBI RefSeq and GenBank | Comparing Coronavirus Genomes |
+| `LiverCircadian` | Hourly mouse liver expression, 2,046 probes × 48 times | NCBI GEO GSE11923 | Finding Circadian Rhythms in Gene Expression |
+
+NCBI places no restrictions on the use or distribution of GenBank, RefSeq or
+GEO data, although submitters may claim rights in submitted data; see the
+[NCBI policies](https://www.ncbi.nlm.nih.gov/home/about/policies/). Cite the
+original studies listed in each provenance record.
+
+`AdenylateKinase`, `BorreliaB31` and `Coronaviruses` store each downloaded file
+unchanged, compressed with gzip. Decompressing a file gives the bytes whose
+SHA-256 is recorded. Wolfram Language imports the compressed files directly.
+
+`PBMC3k/pbmc3k-subset.json` is BioDataLink JSON derived from the Cell Ranger
+1.1.0 filtered gene-barcode matrices of the
+[3k PBMCs from a Healthy Donor](https://www.10xgenomics.com/datasets/3-k-pbm-cs-from-a-healthy-donor-1-standard-1-1-0)
+dataset. It keeps all 2,700 barcodes and unchanged UMI counts for the union of
+four gene sets: the 300 genes with the highest analytic Pearson residual
+variance (overdispersion 100, clipped at the square root of the number of
+cells) over cells with 200 to 2,500 detected genes and under 5% mitochondrial
+counts; 15 marker genes; the 13 `MT-` genes; and 200 genes sampled with seed
+20261104 among genes detected in at least 3 barcodes. Gene metadata flag each
+set and record the source row; cell metadata record totals over all 32,738
+genes. The file's `Provenance` field repeats the source, license and archive
+hash.
+
+`LiverCircadian/GSE11923-liver-subset.tsv.gz` keeps every probe annotated to
+19 clock genes in the GPL1261 annotation, plus 2,000 other probes sampled with
+seed 20261104, excluding Affymetrix control probes. The GEO matrix metadata
+identifies the values as MAS5 signals, copied as text; gene symbols come from
+the platform annotation, and a blank symbol means none was annotated.
+
+For the liver series, the paper reports GCRMA expression estimates and MAS5
+present/absent calls. The bundled subset preserves the deposited MAS5 matrix;
+it does not reproduce the paper's preprocessing or rhythm-detection pipeline.
+
+Maintainers can rebuild these folders from the pinned downloads with
+`make example-data`, which needs network access and curl 8.4 or later. Set
+`BIODATALINK_CURL` to choose a curl executable. A changed upstream file fails
+its hash check instead of silently replacing the bundled data.
+Each rebuild records its actual retrieval time. The PBMC integrity test hashes
+compact JSON after removing only `Provenance.RetrievedAt`, so a fresh retrieval
+of identical data passes while counts, axes, selection and fixed provenance
+remain pinned. `BioDatasetLoad` still reports a hash of the actual file bytes.
+
 ## Synthetic expression examples
 
 `toy-expression.json` contains invented integer values and cell/gene labels for

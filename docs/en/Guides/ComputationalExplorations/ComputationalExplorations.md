@@ -6,9 +6,9 @@ Context: WolframInstitute`BioDataLink`
 Paclet: WolframInstitute/BioDataLink
 URI: WolframInstitute/BioDataLink/guide/ComputationalExplorations
 Description: Compare measurements, representations and simple computational hypotheses with explicit evidence
-Keywords: [biology, computation, visualization, geometry, rules, observation models]
+Keywords: [biology, computation, visualization, single cell, protein structure, genomes, time series, geometry, rules, observation models]
 RelatedGuides: [BioDataLink, DataAccess, Downloads]
-RelatedTutorials: [ChoosingMeasurementsToDistinguishModels, ConstructingBiologicalSimilarityNetworks, DiscretizingBiologicalMeasurements, ExploringBiologicalDataGeometry, ExploringCellularAutomatonHypotheses, ExploringSimplePredictiveRules, UnderstandingSparseMeasurements]
+RelatedTutorials: [AnalyzingSingleCellExpression, ChoosingMeasurementsToDistinguishModels, ComparingCoronavirusGenomes, ComparingProteinConformations, ConstructingBiologicalSimilarityNetworks, DiscretizingBiologicalMeasurements, ExploringBiologicalDataGeometry, ExploringCellularAutomatonHypotheses, ExploringSimplePredictiveRules, FindingCircadianRhythms, ReadingBacterialGenomeComposition, UnderstandingSparseMeasurements]
 ---
 
 ## Abstract
@@ -17,6 +17,22 @@ A useful analysis begins with an observation: which organism or sample was
 measured, what each row represents, which variables were recorded and which
 values are missing. The tutorials connect those questions to computed figures
 and small, explicit experiments in Wolfram Language.
+
+Five case studies analyze real public data bundled with BioDataLink. Which cell
+groups have distinct marker patterns? Follow
+[single-cell expression](paclet:WolframInstitute/BioDataLink/tutorial/AnalyzingSingleCellExpression)
+from raw counts to provisional cell annotations. How do two structures of an
+enzyme differ? Align
+[protein conformations](paclet:WolframInstitute/BioDataLink/tutorial/ComparingProteinConformations)
+and compare regional displacements. Which compositional patterns are consistent
+with replication-associated asymmetry? Examine a
+[bacterial genome](paclet:WolframInstitute/BioDataLink/tutorial/ReadingBacterialGenomeComposition).
+How do related viral sequences differ? Compare
+[coronavirus genomes](paclet:WolframInstitute/BioDataLink/tutorial/ComparingCoronavirusGenomes)
+using exact shared words and genome composition. Which transcripts show approximately daily
+variation? Explore
+[circadian rhythms](paclet:WolframInstitute/BioDataLink/tutorial/FindingCircadianRhythms)
+in an hourly liver time series.
 
 Actual UCI Iris measurements support examples of geometry, discretization,
 networks and static prediction. Clearly labeled synthetic measurements support
@@ -56,6 +72,16 @@ WL marks a built-in Wolfram Language function.
 
 ## Functions
 
+### Analyze Real Biological Data
+
+- `BioDatasetLoad` read the bundled single-cell count matrix with its gene selection and provenance
+- `BioMoleculeValue` (WL) extract chains, coordinates and backbone angles from a protein structure
+- `DimensionReduce` (WL) place cells on a two-dimensional map that keeps their neighbors close
+- `FindGeometricTransform` (WL) superimpose two structures on their rigid core
+- `FindGraphCommunities` (WL) group cells by communities of a neighborhood graph
+- `Fourier` (WL) split time series into periodic components
+- `LeastSquares` (WL) fit a rhythm to every time series at once
+
 ### Keep the Measurements and Their Meaning Together
 
 - `BioDatasetDownload` retrieve a chosen file with optional size and content checks
@@ -81,6 +107,12 @@ WL marks a built-in Wolfram Language function.
 
 ## References
 
+- [10x Genomics 3k PBMCs from a Healthy Donor](https://www.10xgenomics.com/datasets/3-k-pbm-cs-from-a-healthy-donor-1-standard-1-1-0)
+- [GEO series GSE11923, mouse liver time series](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE11923)
+- [NCBI RefSeq NC_001318.1, *Borrelia burgdorferi* B31 chromosome](https://www.ncbi.nlm.nih.gov/nuccore/NC_001318.1)
+- [NCBI RefSeq NC_045512.2, SARS-CoV-2 Wuhan-Hu-1](https://www.ncbi.nlm.nih.gov/nuccore/NC_045512.2)
+- [Protein Data Bank entry 1AKE](https://www.rcsb.org/structure/1AKE)
+- [Protein Data Bank entry 4AKE](https://www.rcsb.org/structure/4AKE)
 - [Ruliobiology finite cellular automata](https://www.wolframcloud.com/obj/wolframinstitute/DeployedResources/Paclet/WolframInstitute/Ruliobiology/Documentation/ref/FiniteCellularAutomaton.html)
 - [Ruliology rule-space tutorial](https://www.wolframcloud.com/obj/wolframinstitute/DeployedResources/Paclet/WolframInstitute/Ruliology/Documentation/tutorial/AnalyzingCellularAutomatonRuleSpace.html)
 - [UCI Iris dataset](https://archive.ics.uci.edu/dataset/53/iris)

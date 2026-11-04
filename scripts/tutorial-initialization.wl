@@ -61,7 +61,12 @@ restoreTutorialCells[cells_List, plan_Association] := Module[{first, boundary, l
     initialization = initialization /. Cell[boxes_, "Input", options___] :>
         Cell[boxes, "Input", Sequence @@ DeleteCases[{options}, HoldPattern[InitializationCell -> _]],
             InitializationCell -> flags[[++index]]];
-    Join[Take[cells, first - 1], Take[cells, {boundary + 1, links - 1}], initialization, Drop[cells, links - 1]]
+    initialization[[1]] = initialization[[1]] /. Cell[title_, "Section", options___] :>
+        Cell[title, "Section", Sequence @@ DeleteCases[{options}, HoldPattern[ShowGroupOpener -> _]],
+            ShowGroupOpener -> True];
+    (* One closed group: readers see the heading and can open it to inspect the helpers. *)
+    Join[Take[cells, first - 1], Take[cells, {boundary + 1, links - 1}],
+        {Cell[CellGroupData[initialization, Closed]]}, Drop[cells, links - 1]]
 ];
 restoreTutorialInitialization[file_String] := Module[{plan, notebook},
     plan = Lookup[initializationPlans, FileBaseName[file], None];

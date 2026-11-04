@@ -23,14 +23,16 @@ whole file, with no claim about prediction on new plants. The
 checks the exact file and its CC BY 4.0 attribution. UCI documents differences
 from Fisher's historical article; the distributed values are retained here.
 
+Evaluate the final Initialization group, then load the data below. Later inputs
+reuse the named data and analysis results introduced in the text.
+
 ## Keep the observation and variables explicit
 
 Load the local file and preserve its row order. The source row is a record
 position, not a time coordinate or evidence of independent sampling:
 
 ```wl
-irisFile = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "iris.csv"}];
-rows = DeleteCases[Import[irisFile, "CSV"], {} | {""}];
+rows = DeleteCases[Import[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "iris.csv"}], "CSV"], {} | {""}];
 measurements = rows[[All, 1 ;; 4]];
 species = rows[[All, 5]];
 variableNames = {"sepal length", "sepal width", "petal length", "petal width"};
@@ -44,9 +46,8 @@ First inspect the four distributions. Use the same 0.2 cm bin width so the
 horizontal scales retain their measurement meaning:
 
 ```wl
-GraphicsGrid[Partition[Table[
-    Histogram[measurements[[All, j]], {0.2}, "Count",
-        AxesLabel -> {variableNames[[j]] <> " (cm)", "records"}], {j, 4}], 2]]
+GraphicsGrid[Partition[Table[Histogram[measurements[[All, j]], {0.2},
+    AxesLabel -> {variableNames[[j]] <> " (cm)", "records"}], {j, 4}], 2]]
 ```
 
 All four variables share a physical unit, but they have different spreads.
@@ -61,11 +62,9 @@ column mean and divides by its sample standard deviation. A difference of one
 in the second representation means one standard deviation in this file:
 
 ```wl
-columnMeans = Mean[measurements];
-columnScales = StandardDeviation[measurements];
-standardized = (# - columnMeans)/columnScales & /@ measurements;
-Dataset[MapThread[<|"Variable" -> #1, "MeanCm" -> #2, "StandardDeviationCm" -> #3|> &,
-    {variableNames, columnMeans, columnScales}]]
+standardized = Standardize[measurements];
+TableForm[{Mean[measurements], StandardDeviation[measurements]},
+    TableHeadings -> {{"mean (cm)", "standard deviation (cm)"}, variableNames}]
 ```
 
 These means and scales were fitted to all 150 records for description. A
@@ -95,11 +94,9 @@ is not a measured classification accuracy.
 Count the fraction of total variance represented by each component:
 
 ```wl
-varianceFractions = (Variance[#]/Total[Variance[#]] &) /@ {rawScores, scaledScores};
-BarChart[Transpose[varianceFractions], ChartLayout -> "Grouped",
+BarChart[Transpose[Normalize[Variance[#], Total] & /@ {rawScores, scaledScores}],
     ChartLabels -> {{"PC1", "PC2", "PC3", "PC4"}, None},
-    ChartLegends -> {"centimetre variables", "standardized variables"},
-    AxesLabel -> {None, "variance fraction"}]
+    ChartLegends -> {"centimetre variables", "standardized variables"}, AxesLabel -> {None, "variance fraction"}]
 ```
 
 The denominator changes when variables are standardized. A larger first
@@ -114,11 +111,9 @@ rows and columns stay in source order in both panels; the diagonal compares a
 record with itself. The two colour scales have different units:
 
 ```wl
-rawDistances = Outer[EuclideanDistance, measurements, measurements, 1];
-scaledDistances = Outer[EuclideanDistance, standardized, standardized, 1];
-Grid[{MapThread[MatrixPlot[#1, PlotLegends -> Automatic,
+Grid[{MapThread[MatrixPlot[DistanceMatrix[#1], PlotLegends -> Automatic,
     FrameLabel -> {"source row", "source row"}, PlotLabel -> #2] &,
-    {{rawDistances, scaledDistances}, {"distance in cm", "standardized distance"}}]}]
+    {{measurements, standardized}, {"distance in cm", "standardized distance"}}]}]
 ```
 
 Source ordering puts the species blocks together, making the block structure
@@ -140,10 +135,9 @@ seeds = Range[20];
 clusterRuns = Table[ClusteringComponents[data, 3, 1, Method -> "KMeans",
     DistanceFunction -> EuclideanDistance, RandomSeeding -> seed],
     {data, {measurements, standardized}}, {seed, seeds}];
-coassignmentFractions = Mean[coassignment /@ #] & /@ clusterRuns;
-Grid[{MapThread[MatrixPlot[#1, PlotRange -> {0, 1}, PlotLegends -> Automatic,
+GraphicsRow[MapThread[MatrixPlot[Mean[coassignment /@ #1], PlotRange -> {0, 1}, PlotLegends -> Automatic,
     FrameLabel -> {"source row", "source row"}, PlotLabel -> #2] &,
-    {coassignmentFractions, {"centimetre variables", "standardized variables"}}]}]
+    {clusterRuns, {"centimetre variables", "standardized variables"}}]]
 ```
 
 A coassignment fraction is the proportion of these 20 runs in which two
@@ -160,16 +154,14 @@ representation. Also compare the two representations at seed 1:
 ```wl
 recordPairs = Subsets[Range[Length[measurements]], {2}];
 pairRuns = Map[pairRelations, clusterRuns, {2}];
-seedDisagreement = Function[runs, disagreement[First[runs], #] & /@ runs] /@ pairRuns;
-scaleDisagreement = disagreement[pairRuns[[1, 1]], pairRuns[[2, 1]]];
-ListLinePlot[Transpose[{seeds, #}] & /@ seedDisagreement, PlotRange -> {0, 1},
-    Frame -> True, FrameLabel -> {"random seed", "fraction of pair relations changed"},
+ListLinePlot[Table[disagreement[First[runs], run], {runs, pairRuns}, {run, runs}], DataRange -> MinMax[seeds],
+    PlotRange -> {0, 1}, Frame -> True, FrameLabel -> {"random seed", "fraction of pair relations changed"},
     PlotLegends -> {"centimetre variables", "standardized variables"}]
 ```
 
 ```wl
 <|"RecordPairs" -> Length[recordPairs],
-    "FractionChangedByScalingAtSeed1" -> scaleDisagreement|>
+    "FractionChangedByScalingAtSeed1" -> disagreement[pairRuns[[1, 1]], pairRuns[[2, 1]]]|>
 ```
 
 The comparison holds the dataset and requested cluster count fixed. It does

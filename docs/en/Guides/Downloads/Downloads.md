@@ -8,7 +8,7 @@ URI: WolframInstitute/BioDataLink/guide/Downloads
 Description: Download an explicit HTTPS data file with size limits and optional checksum verification
 Keywords: [download, data files, checksum, provenance, HTTPS]
 RelatedGuides: [BioDataLink, Catalog, ComputationalExplorations, DataAccess, Providers, Sources]
-RelatedTutorials: [DiscretizingBiologicalMeasurements, DownloadingBiologicalData, ExploringBiologicalDataGeometry, ExploringSimplePredictiveRules, ReadingAnnDataSlices]
+RelatedTutorials: [ComparingCoronavirusGenomes, ComparingProteinConformations, DiscretizingBiologicalMeasurements, DownloadingBiologicalData, ExploringBiologicalDataGeometry, ExploringSimplePredictiveRules, ReadingAnnDataSlices, ReadingBacterialGenomeComposition]
 ---
 
 ## Abstract

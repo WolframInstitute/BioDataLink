@@ -1,0 +1,32 @@
+{
+	"Title": "High-temporal resolution profiling of mouse liver (GEO GSE11923)",
+	"Citation": "Hughes ME, DiTacchio L, Hayes KR, Vollmers C, Pulivarthy S, Baggs JE, Panda S, Hogenesch JB (2009). Harmonics of circadian gene transcription in mammals. PLoS Genetics 5(4): e1000442. https://doi.org/10.1371/journal.pgen.1000442",
+	"Accession": "GSE11923",
+	"Platform": "GPL1261",
+	"License": "NCBI places no restrictions on the use or distribution of GenBank, RefSeq or GEO data; submitters may claim rights in submitted data. See https://www.ncbi.nlm.nih.gov/home/about/policies/",
+	"Files": [
+		{
+			"SourceURL": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE11nnn/GSE11923/matrix/GSE11923_series_matrix.txt.gz",
+			"File": "GSE11923_series_matrix.txt.gz",
+			"SHA256": "2dd9f79ce8562155e003e43984e49b1ed8d190f4ac197f6d612274d21eab39ab",
+			"ByteCount": 4753724,
+			"RetrievedAt": "2026-11-04T18:55:56Z"
+		},
+		{
+			"SourceURL": "https://ftp.ncbi.nlm.nih.gov/geo/platforms/GPL1nnn/GPL1261/annot/GPL1261.annot.gz",
+			"File": "GPL1261.annot.gz",
+			"SHA256": "394c103cf4ca99500d06369e4fb2b9b9bffc2c10fd3cbeb0b0d64c51c3fc95f8",
+			"ByteCount": 8389179,
+			"RetrievedAt": "2026-11-04T18:56:53Z"
+		}
+	],
+	"LocalFile": "GSE11923-liver-subset.tsv.gz",
+	"Design": "Male C57BL/6J mouse liver sampled hourly from CT18 to CT65 in constant darkness; each time point pools 3-5 mice and is hybridized to one Affymetrix Mouse 430 2.0 array.",
+	"Values": "MAS5 signal values copied verbatim from the GEO series matrix; its sample data_processing fields specify Affymetrix Microarray Suite 5.0 expression quantitation. No transformation applied to the bundled values.",
+	"Transformations": [
+		"Kept every probe annotated to Arntl, Bhlhe40, Bhlhe41, Ciart, Clock, Cry1, Cry2, Dbp, Hlf, Nfil3, Npas2, Nr1d1, Nr1d2, Per1, Per2, Per3, Rora, Rorc, Tef in GPL1261.annot.",
+		"Added 2000 probes sampled with seed 20261104 from the remaining non-AFFX probes.",
+		"Rows sorted by probe ID; gene symbols taken from GPL1261.annot; blank symbols mean no annotation."
+	],
+	"PublishedAnalysis": "The paper reports GCRMA expression estimates and MAS5 present/absent calls. This subset preserves the deposited MAS5 matrix; it is not a reproduction of the paper's processed analysis."
+}

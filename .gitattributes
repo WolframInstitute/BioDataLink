@@ -8,6 +8,7 @@
 *.jpg binary
 *.gif binary
 *.pdf binary
+*.gz binary
 
 # Preserve the attributed upstream CSV byte-for-byte, including its final blank record.
 BioDataLink/Assets/Examples/iris.csv -text whitespace=-blank-at-eof

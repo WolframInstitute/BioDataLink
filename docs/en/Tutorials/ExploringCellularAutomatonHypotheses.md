@@ -22,6 +22,9 @@ The plant measurements are real; the lattice, binary states and updates are
 constructed hypotheses. There is no measured temporal or spatial sequence in
 this dataset to identify a cellular automaton rule.
 
+Evaluate the final Initialization group, then load the data below. Later inputs
+reuse the named data and analysis results introduced in the text.
+
 ## Define one empirical constraint
 
 Use the attributed UCI Iris file bundled with BioDataLink. Its four variables
@@ -29,29 +32,24 @@ are floral measurements in centimetres. The source includes 50 records per
 species; the pooled fraction below is specific to this balanced sample, not an
 estimate for a naturally occurring mixture of the species. See
 [UCI Iris](https://archive.ics.uci.edu/dataset/53/iris) and
-[Downloading and Inspecting Biological Data](DownloadingBiologicalData.md)
+[Downloading Biological Data](paclet:WolframInstitute/BioDataLink/tutorial/DownloadingBiologicalData)
 for provenance, historical differences and the retained source bytes.
 
 Choose a petal-width threshold of 1.5 cm before comparing rules. This is an
 illustrative analyst choice, not a known biological switching point:
 
 ```wl
-irisFile = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "iris.csv"}];
-rows = DeleteCases[Import[irisFile, "CSV"], {} | {""}];
-widths = rows[[All, 4]];
+widths = DeleteCases[Import[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "iris.csv"}], "CSV"], {} | {""}][[All, 4]];
 threshold = 1.5;
-measuredStates = Boole[# >= threshold] & /@ widths;
-targetFraction = Mean[measuredStates];
+targetFraction = Mean[Boole[Thread[widths >= threshold]]];
 <|"PlantRecords" -> Length[widths], "WidthThresholdCm" -> threshold,
-    "RecordsAtOrAboveThreshold" -> Total[measuredStates],
-    "FractionAtOrAboveThreshold" -> N[targetFraction]|>
+    "RecordsAtOrAboveThreshold" -> targetFraction Length[widths], "FractionAtOrAboveThreshold" -> N[targetFraction]|>
 ```
 
 Inspect the actual measurements and the chosen cutoff:
 
 ```wl
-Histogram[widths, {0, 2.6, 0.1}, "Count", GridLines -> {{threshold}, None},
-    AxesLabel -> {"Petal width (cm)", "Plant records"}]
+Histogram[widths, {0, 2.6, 0.1}, GridLines -> {{threshold}, None}, AxesLabel -> {"Petal width (cm)", "Plant records"}]
 ```
 
 Binning in the histogram serves display only. The fraction was computed from
@@ -68,11 +66,8 @@ does not come from the CSV, and adjacency has no measured biological meaning.
 
 ```wl
 siteCount = 96;
-occupiedCount = Round[siteCount targetFraction];
-initial = BlockRandom[SeedRandom[20261104]; RandomSample[
-    Join[ConstantArray[1, occupiedCount], ConstantArray[0, siteCount - occupiedCount]]]];
-<|"EmpiricalFraction" -> N[targetFraction],
-    "ModelInitialFraction" -> N[Mean[initial]],
+initial = BlockRandom[SeedRandom[20261104]; RandomSample[PadRight[ConstantArray[1, Round[siteCount targetFraction]], siteCount]]];
+<|"EmpiricalFraction" -> N[targetFraction], "ModelInitialFraction" -> N[Mean[initial]],
     "RoundingDifference" -> N[Mean[initial] - targetFraction]|>
 ```
 
@@ -80,8 +75,7 @@ Plot the constructed initial state. Black denotes state 1 and white state 0;
 neither represents a directly observed molecular state:
 
 ```wl
-ArrayPlot[{initial}, Frame -> True, FrameTicks -> {{None, None}, {Automatic, None}},
-    FrameLabel -> {None, "Hypothetical site index"}]
+ArrayPlot[{initial}, FrameTicks -> {{None, None}, {Automatic, None}}, FrameLabel -> {None, "Hypothetical site index"}]
 ```
 
 For each elementary cellular automaton, a site's next binary state depends on
@@ -115,7 +109,7 @@ Compare nine rules using the same initial state, scale and color mapping.
 Array rows increase downward, so the top row is step zero:
 
 ```wl
-GraphicsGrid[Partition[Table[ArrayPlot[traces[[rule + 1]], Frame -> True,
+GraphicsGrid[Partition[Table[ArrayPlot[traces[[rule + 1]],
     FrameTicks -> {{{1, "0"}, {17, "16"}, {33, "32"}}, None},
     FrameLabel -> {"Step (downward)", "Site"}, PlotLabel -> Row[{"Rule ", rule}]],
     {rule, {0, 30, 54, 90, 110, 150, 170, 204, 232}}], 3]]
@@ -144,10 +138,8 @@ This is a numerical comparison criterion chosen for the example; it is not a
 sampling confidence interval. Count compatible rules and retain their numbers:
 
 ```wl
-tolerance = 1/siteCount;
-compatibleRules = Pick[rules, (Abs[# - targetFraction] <= tolerance &) /@ finalFractions];
-<|"ComparisonStep" -> steps, "Tolerance" -> N[tolerance],
-    "CompatibleRuleCount" -> Length[compatibleRules],
+compatibleRules = Pick[rules, Thread[Abs[finalFractions - targetFraction] <= 1/siteCount]];
+<|"ComparisonStep" -> steps, "Tolerance" -> N[1/siteCount], "CompatibleRuleCount" -> Length[compatibleRules],
     "CompatibleRules" -> compatibleRules|>
 ```
 
@@ -157,9 +149,8 @@ selection illustrates variation among accepted models; it is not a ranking of
 biological plausibility:
 
 ```wl
-orderedCompatible = SortBy[compatibleRules, finalDisagreements[[# + 1]] &];
-selectedRules = DeleteDuplicates[Join[{170, 204}, orderedCompatible[[
-    DeleteDuplicates[{1, Ceiling[Length[orderedCompatible]/2], Length[orderedCompatible]}]]]]];
+selectedRules = With[{ordered = SortBy[compatibleRules, finalDisagreements[[# + 1]] &]},
+    DeleteDuplicates[Join[{170, 204}, ordered[[{1, Ceiling[Length[ordered]/2], -1}]]]]];
 ListLinePlot[fractions[[selectedRules + 1]], DataRange -> {0, steps}, PlotRange -> {0, 1},
     AxesLabel -> {"Model step", "Occupied fraction"},
     PlotLegends -> ("Rule " <> ToString[#] & /@ selectedRules), GridLines -> {None, {N[targetFraction]}}]
@@ -177,11 +168,10 @@ the final fraction for each selected rule using these new arrangements. This
 tests dependence on the unobserved model initial condition:
 
 ```wl
-alternativeInitials = BlockRandom[SeedRandom[20261105]; Table[RandomSample[initial], {20}]];
-seedFractions = Table[N[Mean[Last[CellularAutomaton[rule, seed, steps]]]],
-    {rule, selectedRules}, {seed, alternativeInitials}];
-BoxWhiskerChart[seedFractions, ChartLabels -> selectedRules, PlotRange -> {0, 1},
-    FrameLabel -> {"Rule", "Final occupied fraction"}, GridLines -> {None, {N[targetFraction]}}]
+With[{alternatives = BlockRandom[SeedRandom[20261105]; Table[RandomSample[initial], {20}]]},
+    BoxWhiskerChart[Table[N[Mean[Last[CellularAutomaton[rule, seed, steps]]]], {rule, selectedRules}, {seed, alternatives}],
+        ChartLabels -> selectedRules, PlotRange -> {0, 1}, FrameLabel -> {"Rule", "Final occupied fraction"},
+        GridLines -> {None, {N[targetFraction]}}]]
 ```
 
 Identity and shift preserve the fraction for every permutation on the ring.
@@ -199,19 +189,16 @@ eight rule-table outputs. The empirical criterion, seed, boundary and step
 count remain unchanged. No additional rule is admitted for this graph.
 
 An elementary rule number encodes eight binary outputs. Flipping bit 0 changes
-the output for neighborhood 000, while flipping bit 7 changes the output for
-111. [BitXor (WL)](https://reference.wolfram.com/language/ref/BitXor.html) makes
-each of these eight possible changes explicit. A membership association avoids
-searching the accepted list repeatedly:
+the output for neighborhood 000, while flipping bit 7 changes the output for 111.
+[BitXor (WL)](https://reference.wolfram.com/language/ref/BitXor.html) marks
+the outputs on which two rules differ, so two compatible rules are joined when
+exactly one bit of their `BitXor` is set:
 
 ```wl
-compatibleSet = AssociationThread[compatibleRules, ConstantArray[True, Length[compatibleRules]]];
-mutationEdges = Flatten[Table[With[{neighbor = BitXor[rule, 2^bit]},
-    If[rule < neighbor && KeyExistsQ[compatibleSet, neighbor], UndirectedEdge[rule, neighbor], Nothing]],
-    {rule, compatibleRules}, {bit, 0, 7}], 1];
 ruleCoordinates = CirclePoints[Length[compatibleRules]];
-Graph[compatibleRules, mutationEdges, VertexCoordinates -> ruleCoordinates, VertexLabels -> "Name",
-    EdgeLabels -> (# -> Placed[changedNeighborhood[#], Tooltip] & /@ mutationEdges)]
+With[{edges = UndirectedEdge @@@ Select[Subsets[compatibleRules, {2}], DigitCount[BitXor @@ #, 2, 1] == 1 &]},
+    Graph[compatibleRules, edges, VertexCoordinates -> ruleCoordinates, VertexLabels -> "Name",
+        EdgeLabels -> (# -> Placed[changedNeighborhood[#], Tooltip] & /@ edges)]]
 ```
 
 Only three pairs are connected: 26–154, 82–210 and 85–117. The other 15 vertices
@@ -246,21 +233,11 @@ observations could distinguish candidates if a suitable observation process
 were available, rather than pretending those measurements already exist.
 
 ```wl
-modelObservations = AssociationThread[compatibleRules, Table[
-    <|"FinalCount" -> Total[traces[[rule + 1, -1]]],
-      "NeighborDifferences" -> Total[Abs[traces[[rule + 1, -1]] -
-          RotateLeft[traces[[rule + 1, -1]]]]],
-      "FirstStepCount" -> Total[traces[[rule + 1, 2]]]|>,
-    {rule, compatibleRules}]];
-observationPanels = {{"FinalCount"},
-    {"FinalCount", "NeighborDifferences"},
-    {"FinalCount", "NeighborDifferences", "FirstStepCount"}};
-observationClasses = Table[GatherBy[compatibleRules,
-    Lookup[modelObservations[#], panel] &], {panel, observationPanels}];
-ambiguityEdges = (Flatten[
-    (UndirectedEdge @@@ Subsets[#, {2}]) & /@ #, 1] &) /@ observationClasses;
-<|"ClassesPerPanel" -> (Length /@ observationClasses),
-  "UnresolvedRulePairs" -> (Length /@ ambiguityEdges)|>
+modelObservations = AssociationThread[compatibleRules,
+    {Total[Last[#]], Total[Abs[Last[#] - RotateLeft[Last[#]]]], Total[#[[2]]]} & /@ traces[[compatibleRules + 1]]];
+observationClasses = Table[GatherBy[compatibleRules, Take[modelObservations[#], k] &], {k, 3}];
+ambiguityEdges = Flatten[UndirectedEdge @@@ Subsets[#, {2}] & /@ #] & /@ observationClasses;
+<|"ClassesPerPanel" -> Length /@ observationClasses, "UnresolvedRulePairs" -> Length /@ ambiguityEdges|>
 ```
 
 Here an edge means that two rules have **exactly the same observation vector**.
@@ -275,10 +252,9 @@ observations cumulatively, so an unresolved pair can lose its edge but cannot
 gain one. Highlight rules 51 and 204 for the comparison below:
 
 ```wl
-panelTitles = {"Final occupied count", "+ neighbor differences", "+ step-1 occupied count"};
-GraphicsRow[Table[Graph[compatibleRules, ambiguityEdges[[panel]],
-    VertexCoordinates -> ruleCoordinates, VertexLabels -> "Name",
-    GraphHighlight -> {51, 204}, PlotLabel -> panelTitles[[panel]]], {panel, 3}]]
+GraphicsRow[MapThread[Graph[compatibleRules, #1, VertexCoordinates -> ruleCoordinates, VertexLabels -> "Name",
+        GraphHighlight -> {51, 204}, PlotLabel -> #2] &,
+    {ambiguityEdges, {"Final occupied count", "+ neighbor differences", "+ step-1 occupied count"}}]]
 ```
 
 The panels leave 172, 47 and 9 unresolved pairs, respectively. Their 2, 10
@@ -296,7 +272,7 @@ while flipping gives 55. This illustrates a concrete reason to sample a
 transient, rather than only an endpoint. Copying rule 204 and shifting rules
 170 and 240 still share a group: these counts do not identify which sites
 changed. Site-resolved observations would test a different prediction. The
-[measurement-selection tutorial](ChoosingMeasurementsToDistinguishModels.md)
+[measurement-selection tutorial](paclet:WolframInstitute/BioDataLink/tutorial/ChoosingMeasurementsToDistinguishModels)
 extends the question to finite measurement-panel budgets and imperfect
 measurement resolution.
 
@@ -321,14 +297,11 @@ within the full space. The following constructs just 32 outputs to specify
 this one rule; it does not enumerate billions of candidate rules.
 
 ```wl
-comparisonSpecs = {{0, 2, 0}, {2, 2, 0},
-    {majorityRuleNumber[1], 2, 1}, {majorityRuleNumber[2], 2, 2}};
-comparisonNames = {"constant 0 (radius 0)", "copy (radius 0)",
-    "majority (radius 1)", "majority (radius 2)"};
-comparisonTraces = CellularAutomaton[#, initial, steps] & /@ comparisonSpecs;
-GraphicsGrid[Partition[Table[ArrayPlot[comparisonTraces[[i]], Frame -> True,
-    FrameTicks -> {{{1, "0"}, {17, "16"}, {33, "32"}}, None},
-    FrameLabel -> {"Step (downward)", "Site"}, PlotLabel -> comparisonNames[[i]]], {i, 4}], 2]]
+comparisonTraces = CellularAutomaton[#, initial, steps] & /@
+    {{0, 2, 0}, {2, 2, 0}, {majorityRuleNumber[1], 2, 1}, {majorityRuleNumber[2], 2, 2}};
+GraphicsGrid[Partition[MapThread[ArrayPlot[#1, FrameTicks -> {{{1, "0"}, {17, "16"}, {33, "32"}}, None},
+        FrameLabel -> {"Step (downward)", "Site"}, PlotLabel -> #2] &,
+    {comparisonTraces, {"constant 0 (radius 0)", "copy (radius 0)", "majority (radius 1)", "majority (radius 2)"}}], 2]]
 ```
 
 The three-site majority is elementary rule 232; the five-site lookup number
@@ -342,14 +315,13 @@ chosen programs. The horizontal grid line applies only to the occupied fraction;
 empirical neighbor-disagreement value was supplied:
 
 ```wl
-comparisonFractions = Mean /@ comparisonTraces[[All, -1]];
-comparisonDisagreements = disagreement /@ comparisonTraces[[All, -1]];
-comparisonTicks = Transpose[{Range[4], {"constant r=0", "copy r=0", "majority r=1", "majority r=2"}}];
-GraphicsRow[{
-    ListPlot[comparisonFractions, Ticks -> {comparisonTicks, Automatic}, PlotRange -> {{0.5, 4.5}, {-0.05, 1.05}},
-        AxesLabel -> {None, "Final occupied fraction"}, GridLines -> {None, {N[targetFraction]}}],
-    ListPlot[comparisonDisagreements, Ticks -> {comparisonTicks, Automatic}, PlotRange -> {{0.5, 4.5}, {-0.05, 1.05}},
-        AxesLabel -> {None, "Final neighbor disagreement"}]}]
+With[{finals = comparisonTraces[[All, -1]],
+        ticks = Transpose[{Range[4], {"constant r=0", "copy r=0", "majority r=1", "majority r=2"}}]},
+    GraphicsRow[{
+        ListPlot[Mean /@ finals, Ticks -> {ticks, Automatic}, PlotRange -> {{0.5, 4.5}, {-0.05, 1.05}},
+            AxesLabel -> {None, "Final occupied fraction"}, GridLines -> {None, {N[targetFraction]}}],
+        ListPlot[disagreement /@ finals, Ticks -> {ticks, Automatic}, PlotRange -> {{0.5, 4.5}, {-0.05, 1.05}},
+            AxesLabel -> {None, "Final neighbor disagreement"}]}]]
 ```
 
 In this run, copying comes closest to the empirical fraction because the
@@ -386,7 +358,7 @@ single-cell snapshots alone do not supply observed state transitions.
 For this Iris example, collecting additional temporal and spatial information
 would be necessary to argue for dynamics. Even many more rules cannot recover
 information that the observation map deliberately discarded. The companion
-[Exploring Simple Predictive Rules](ExploringSimplePredictiveRules.md) shows a
+[Exploring Simple Predictive Rules](paclet:WolframInstitute/BioDataLink/tutorial/ExploringSimplePredictiveRules) shows a
 different, directly testable objective: predicting a recorded label from
 measured traits with held-out evaluation.
 
@@ -395,7 +367,7 @@ measured traits with held-out evaluation.
 - [CellularAutomaton (WL)](https://reference.wolfram.com/language/ref/CellularAutomaton.html) specifies numbered rules, periodic initial lists and time-step output.
 - [ArrayPlot (WL)](https://reference.wolfram.com/language/ref/ArrayPlot.html) specifies matrix orientation, row coordinates and color rules.
 - [BlockRandom (WL)](https://reference.wolfram.com/language/ref/BlockRandom.html) isolates the recorded simulation seeds from the surrounding session.
-- [BitXor (WL)](https://reference.wolfram.com/language/ref/BitXor.html) changes specified binary outputs in a numbered rule table.
+- [BitXor (WL)](https://reference.wolfram.com/language/ref/BitXor.html) identifies the binary outputs on which two numbered rule tables differ.
 - [Graph (WL)](https://reference.wolfram.com/language/ref/Graph.html) retains explicit vertices, including isolated rules, with their source rule numbers.
 - [VertexCoordinates (WL)](https://reference.wolfram.com/language/ref/VertexCoordinates.html) fixes vertex positions across observation comparisons.
 

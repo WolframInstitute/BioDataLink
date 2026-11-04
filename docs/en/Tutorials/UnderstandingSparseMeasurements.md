@@ -27,8 +27,7 @@ Evaluate the Initialization section at the end of this tutorial. Read the
 bundled synthetic file and inspect the returned record:
 
 ```wl
-file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
-data = BioDatasetLoad[File[file]]
+data = BioDatasetLoad[File[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}]]]
 ```
 
 The matrix has three observation rows and two variable columns. Its metadata
@@ -37,14 +36,13 @@ interface, not real biological objects. The file declares integer counts.
 
 ```wl
 counts = data["ExpressionMatrix"];
-cellIDs = Lookup[Normal[data["CellMetadata"]], "ID"];
-geneIDs = Lookup[Normal[data["GeneMetadata"]], "ID"];
 ```
 
 Plot the counts with their row and column identifiers:
 
 ```wl
-MatrixPlot[counts, FrameTicks -> matrixTicks[cellIDs, geneIDs], PlotLegends -> Automatic]
+MatrixPlot[counts, PlotLegends -> Automatic,
+    FrameTicks -> matrixTicks[Normal[data["CellMetadata"][All, "ID"]], Normal[data["GeneMetadata"][All, "ID"]]]]
 ```
 
 The entries are `{{3, 0}, {0, 5}, {2, 1}}`. JSON schema version 1 represents
@@ -66,10 +64,8 @@ is exactly ten times its first profile; this deliberate relationship will make
 the effect of rescaling visible later.
 
 ```wl
-firstProfile = Join[Normal[counts[[1]]], {2, 0}];
-panelA = {firstProfile, 10 firstProfile,
-    Join[Normal[counts[[2]]], {0, 1}],
-    Join[Normal[counts[[3]]], {0, 0}]};
+panelA = With[{firstProfile = Join[Normal[counts[[1]]], {2, 0}]},
+    {firstProfile, 10 firstProfile, Join[Normal[counts[[2]]], {0, 1}], Join[Normal[counts[[3]]], {0, 0}]}];
 panelB = {{0, 2, 4, 0}, {1, 0, 0, 3}, {0, 3, 1, 0}, {2, 1, 0, 2}};
 panelVariables = "gene-" <> # & /@ {"A", "B", "C", "D", "E", "F"};
 panelObservations = Flatten[Outer[StringJoin, {"A", "B"}, ToString /@ Range[4]]];
@@ -86,18 +82,17 @@ values = SparseArray[Join[Join[#, {0, 0}] & /@ panelA,
     Join[{0, 0}, #] & /@ panelB]];
 available = SparseArray[Join[ConstantArray[{1, 1, 1, 1, 0, 0}, 4],
     ConstantArray[{0, 0, 1, 1, 1, 1}, 4]]];
-status = MapThread[If[#2 == 0, "unmeasured",
-        If[#1 == 0, "recorded zero", "positive count"]] &,
-    {Normal[values], Normal[available]}, 2];
 ```
 
 Use separate categories for a recorded zero, a positive count and an
 unmeasured position:
 
 ```wl
-ArrayPlot[status, PlotLegends -> Automatic,
-    ColorRules -> {"recorded zero" -> LightGray, "positive count" -> Blue, "unmeasured" -> Orange},
-    FrameTicks -> matrixTicks[panelObservations, panelVariables]]
+With[{status = MapThread[If[#2 == 0, "unmeasured", If[#1 == 0, "recorded zero", "positive count"]] &,
+        {Normal[values], Normal[available]}, 2]},
+    ArrayPlot[status, PlotLegends -> Automatic,
+        ColorRules -> {"recorded zero" -> LightGray, "positive count" -> Blue, "unmeasured" -> Orange},
+        FrameTicks -> matrixTicks[panelObservations, panelVariables]]]
 ```
 
 This categorical figure separates missingness from numerical intensity. The
@@ -112,11 +107,10 @@ Compare the number of measured variables with the number having positive
 recorded counts in each observation:
 
 ```wl
-measuredPerObservation = Normal[Total[available, {2}]];
-positivePerObservation = Normal[Total[Unitize[values], {2}]];
-BarChart[Transpose[{measuredPerObservation, positivePerObservation}],
-    ChartLabels -> {panelObservations, None}, ChartLegends -> {"measured variables", "positive counts"},
-    AxesLabel -> {None, "number of variables"}]
+With[{measured = Normal[Total[available, {2}]], positive = Normal[Total[Unitize[values], {2}]]},
+    BarChart[Transpose[{measured, positive}],
+        ChartLabels -> {panelObservations, None}, ChartLegends -> {"measured variables", "positive counts"},
+        AxesLabel -> {None, "number of variables"}]]
 ```
 
 Every synthetic observation covers four variables, while its positive-count
@@ -132,13 +126,10 @@ by the number of observations in which it was measured. Dividing by all eight
 rows instead treats every unmeasured position as an observed zero.
 
 ```wl
-totalsPerVariable = Normal[Total[values]];
-measuredPerVariable = Normal[Total[available]];
-zeroFilledMeans = N[totalsPerVariable/Length[panelObservations]];
-measuredMeans = N[totalsPerVariable/measuredPerVariable];
-BarChart[Transpose[{zeroFilledMeans, measuredMeans}],
-    ChartLabels -> {panelVariables, None}, ChartLegends -> {"all rows, with zero padding", "measured rows only"},
-    AxesLabel -> {None, "mean synthetic count"}]
+With[{totals = Normal[Total[values]], measured = Normal[Total[available]]},
+    BarChart[Transpose[N[{totals/Length[panelObservations], totals/measured}]],
+        ChartLabels -> {panelVariables, None}, ChartLegends -> {"all rows, with zero padding", "measured rows only"},
+        AxesLabel -> {None, "mean synthetic count"}]]
 ```
 
 Variables A, B, E and F are measured in four rows, so the zero-filled mean is
@@ -196,11 +187,9 @@ interpreter path before running it.
 
 ```wl
 #| eval: false
-h5ad = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-anndata.h5ad"}];
-slice = BioDatasetLoad[File[h5ad],
-    "Format" -> "AnnData", "PythonExecutable" -> "/path/to/biodatalink-h5ad/bin/python",
-    "Cells" -> {1, 2}, "Genes" -> {1, 2, 3}];
-slice["GeneMetadata"][All, {"SourceIndex", "ID"}]
+With[{h5ad = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-anndata.h5ad"}]},
+    BioDatasetLoad[File[h5ad], "Format" -> "AnnData", "PythonExecutable" -> "/path/to/biodatalink-h5ad/bin/python",
+        "Cells" -> {1, 2}, "Genes" -> {1, 2, 3}]["GeneMetadata"][All, {"SourceIndex", "ID"}]]
 ```
 
 The checked fixture has `"g1"` at source positions 1 and 2 and `"g3"` at
@@ -217,14 +206,12 @@ for an experimental study.
 
 ```wl
 fractions = N[#/Total[#] & /@ panelA];
-countDistances = Outer[EuclideanDistance, N[panelA], N[panelA], 1];
-fractionDistances = Outer[EuclideanDistance, fractions, fractions, 1];
 ```
 
 Each distance matrix has its own color scale and units:
 
 ```wl
-GraphicsRow[{distancePlot[countDistances, "counts"], distancePlot[fractionDistances, "fractions"]}]
+GraphicsRow[{distancePlot[DistanceMatrix[N[panelA]], "counts"], distancePlot[DistanceMatrix[fractions], "fractions"]}]
 ```
 
 Rows A1 and A2 have identical fractions because one count profile is ten times
@@ -239,13 +226,8 @@ useful. Division by a positive row total and `Log[1 + x]` preserve exact zeros.
 Subtracting each variable's mean generally changes those zeros:
 
 ```wl
-logFractions = Log[1 + fractions];
-columnMeans = Mean[fractions];
-centeredFractions = (# - columnMeans &) /@ fractions;
-storedNonzeros = Total[Flatten[Unitize[#]]] & /@
-    {panelA, fractions, logFractions, centeredFractions};
-BarChart[storedNonzeros, ChartLabels -> {"counts", "fractions", "log", "centered"},
-    AxesLabel -> {None, "nonzero entries among 16 positions"}]
+BarChart[Total[Unitize[Flatten[#]]] & /@ {panelA, fractions, Log[1 + fractions], Standardize[fractions, Mean, 1 &]},
+    ChartLabels -> {"counts", "fractions", "log", "centered"}, AxesLabel -> {None, "nonzero entries among 16 positions"}]
 ```
 
 Only these tiny matrices are materialized. For large data, preserve a sparse
@@ -264,11 +246,10 @@ This optional example makes the chosen layer and axes explicit:
 
 ```wl
 #| eval: false
-layerSlice = BioDatasetLoad[File[h5ad],
-    "Format" -> "AnnData", "PythonExecutable" -> "/path/to/biodatalink-h5ad/bin/python",
-    "Cells" -> {1, 2}, "Genes" -> {1, 2, 3},
-    "Layer" -> {"Layers", "normalized"}];
-KeyTake[layerSlice, {"SourceLayer", "SelectedCells", "SelectedGenes", "Normalization"}]
+With[{h5ad = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-anndata.h5ad"}]},
+    KeyTake[BioDatasetLoad[File[h5ad], "Format" -> "AnnData", "PythonExecutable" -> "/path/to/biodatalink-h5ad/bin/python",
+            "Cells" -> {1, 2}, "Genes" -> {1, 2, 3}, "Layer" -> {"Layers", "normalized"}],
+        {"SourceLayer", "SelectedCells", "SelectedGenes", "Normalization"}]]
 ```
 
 The reader returns the selected matrix and annotations, not a full AnnData
@@ -288,17 +269,14 @@ Candidate A exactly reproduces all measured entries but predicts 20 in every
 unmeasured position. Candidate B predicts zero everywhere. No rule search is
 performed and neither candidate is a fitted biological model.
 
-```wl
-candidateA = Normal[values] + 20 (1 - Normal[available]);
-candidateB = ConstantArray[0, Dimensions[values]];
-candidateScores = N[{paddedMSE[#], maskedMSE[#]} & /@ {candidateA, candidateB}];
-```
-
 Compare mean squared errors on all padded positions and on measured positions:
 
 ```wl
-BarChart[candidateScores, ChartLabels -> {{"candidate A", "candidate B"}, None},
-    ChartLegends -> {"zero-padded error", "measured-only error"}, AxesLabel -> {None, "squared synthetic counts"}]
+With[{candidateA = Normal[values] + 20 (1 - Normal[available]),
+        candidateB = ConstantArray[0, Dimensions[values]]},
+    BarChart[N[{paddedMSE[#], maskedMSE[#]} & /@ {candidateA, candidateB}],
+        ChartLabels -> {{"candidate A", "candidate B"}, None},
+        ChartLegends -> {"zero-padded error", "measured-only error"}, AxesLabel -> {None, "squared synthetic counts"}]]
 ```
 
 On measured entries, candidate A has zero error and candidate B has positive

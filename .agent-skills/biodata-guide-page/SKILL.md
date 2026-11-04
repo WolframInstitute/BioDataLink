@@ -39,6 +39,10 @@ currently supports and link to references for detailed limits.
 Put detailed coverage and complete tutorial navigation in these guides. Keep
 the root README limited to installation, a small quickstart and the main
 documentation links, following [page roles](../../GUIDE.md#page-roles-and-navigation).
+If a guide includes a figure, keep its short plotting setup and call in one
+copyable input; use `With` for local values and state any data prerequisites.
+Put extended workflows and helpers in a linked tutorial, whose final
+Initialization group remains closed by default.
 
 Check that the hub reaches the guide, related pages exist, and filename,
 metadata and URI agree. Use destination titles for related-page links and one

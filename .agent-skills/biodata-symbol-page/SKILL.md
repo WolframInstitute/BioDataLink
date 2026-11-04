@@ -18,7 +18,11 @@ identifier semantics, count/normalization status and relevant limits. Use the
 formatting and headerless tables. Keep implementation history in design notes.
 Preserve the native Usage, Details & Options and Examples structure. Use short
 idiomatic inputs and presentation defaults; move extended workflow discussion
-to a tutorial rather than expanding every reference example.
+to a tutorial rather than expanding every reference example. Keep a figure and
+its short local setup in one copyable input, using `With` when it clarifies
+the computation. Reference examples still stand alone after context loading.
+Tutorial helpers belong in a final, closed Initialization group; do not place
+extended tutorial setup in a symbol page.
 
 Start with a small useful result. Examples evaluated in ordinary builds use
 local fixtures; explicitly identify synthetic data and online operations.

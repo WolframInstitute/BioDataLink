@@ -60,18 +60,22 @@ structures. The result is not a complete AnnData object. Normalization is
 unspecified and no whole-file checksum is computed. Optional dependencies are
 not installed automatically.
 
-Eleven worked tutorials connect discovery and import to measurement geometry,
+Sixteen worked tutorials connect discovery and import to measurement geometry,
 finite-state encodings, sparse-data interpretation, similarity networks,
 held-out rule comparison, explicit cellular-automaton observation models and
-measurement selection under stated error bounds.
-Computed figures use attributed Iris measurements or clearly labeled synthetic
-inputs. These examples use built-in Wolfram Language and do not require a
-sibling modeling paclet.
+measurement selection under stated error bounds. Five case studies analyze real
+public data: single-cell expression in human blood, open and closed structures
+of an enzyme, a bacterial chromosome, three coronavirus genomes and an hourly
+liver time series. Computed figures use these datasets, attributed Iris
+measurements or clearly labeled synthetic inputs. The examples use built-in
+Wolfram Language and do not require a sibling modeling paclet.
 
 The source registry is provided by Identifiers.org under CC BY 4.0. Its license
 and attribution are retained alongside the bundled data; the paclet code is MIT.
-The UCI Iris example is also CC BY 4.0, with its source citation, units and
-retrieved-content hash retained beside the unmodified data.
+The UCI Iris example and the 10x Genomics single-cell subset are CC BY 4.0, the
+Protein Data Bank structures are CC0, and the NCBI sequences and GEO time series
+follow NCBI's data policies. Each example keeps its source citation, retrieval
+record and content hash beside the data.
 
 After installing a built paclet archive, load its main context with
 <code>Needs["WolframInstitute\`BioDataLink\`"]</code>.

@@ -22,25 +22,26 @@ attributed Iris copy
 included with BioDataLink. The resulting graphs describe these 150 records;
 they do not establish population structure beyond the sample.
 
+Evaluate the final Initialization group, then load the data below. Later inputs
+reuse the named data and analysis results introduced in the text.
+
 ## Define the observations and the distance
 
 The [UCI Iris record](https://archive.ics.uci.edu/dataset/53/iris) gives four
 measurements in centimetres and a species label. The bundled bytes retain the
 distributed values, including the historical differences noted by UCI.
-See [Downloading and Inspecting Biological Data](DownloadingBiologicalData.md)
+See [Downloading Biological Data](paclet:WolframInstitute/BioDataLink/tutorial/DownloadingBiologicalData)
 for the checked hash and CC BY 4.0 attribution.
 
 ```wl
-irisFile = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "iris.csv"}];
-rows = DeleteCases[Import[irisFile, "CSV"], {} | {""}];
+rows = DeleteCases[Import[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "iris.csv"}], "CSV"], {} | {""}];
 measurements = N[rows[[All, 1 ;; 4]]];
 species = rows[[All, 5]];
 sourceRows = Range[Length[rows]];
 speciesNames = DeleteDuplicates[species];
 speciesColors = ColorData[97] /@ Range[3];
 colorBySpecies = AssociationThread[speciesNames, speciesColors];
-Take[MapThread[<|"SourceRow" -> #1, "MeasurementsCm" -> #2,
-    "Species" -> #3|> &, {sourceRows, measurements, species}], 3]
+Take[MapThread[<|"SourceRow" -> #1, "MeasurementsCm" -> #2, "Species" -> #3|> &, {sourceRows, measurements, species}], 3]
 ```
 
 The source row is an identifier within this file. It is not a measured time
@@ -59,12 +60,11 @@ that all four traits have equal biological importance. It also gives correlated
 traits separate contributions to the distance.
 
 ```wl
-centers = Mean /@ Transpose[measurements];
-scales = StandardDeviation /@ Transpose[measurements];
-standardized = (# - centers)/scales & /@ measurements;
+standardized = With[{centers = Mean /@ Transpose[measurements], scales = StandardDeviation /@ Transpose[measurements]},
+    (# - centers)/scales & /@ measurements];
 <|"Observations" -> Length[standardized],
     "Variables" -> Length[First[standardized]],
-    "PositiveScales" -> AllTrue[scales, Positive]|>
+    "PositiveScales" -> AllTrue[StandardDeviation /@ Transpose[measurements], Positive]|>
 ```
 
 For new data, resolve missing measurements and constant columns before
@@ -81,12 +81,8 @@ the query record itself; an identical measurement from a different record
 remains a possible neighbor.
 
 ```wl
-neighborIndex = Nearest[standardized -> "Index",
-    DistanceFunction -> EuclideanDistance];
-neighbors = Table[Take[DeleteCases[
-    neighborIndex[standardized[[i]], 16], i], 15], {i, Length[sourceRows]}];
-Take[MapThread[<|"SourceRow" -> #1, "NearestRows" -> Take[#2, 3]|> &,
-    {sourceRows, neighbors}], 3]
+neighbors = neighborLists[standardized];
+Take[MapThread[<|"SourceRow" -> #1, "NearestRows" -> Take[#2, 3]|> &, {sourceRows, neighbors}], 3]
 ```
 
 Precompute at most 15 neighbors per record once, then reuse their prefixes.
@@ -115,11 +111,10 @@ Native vertex tooltips retain the source row and recorded species when the
 graphs are evaluated in an interactive notebook, without adding 150 visible labels.
 
 ```wl
-displayCoordinates = PrincipalComponents[standardized][[All, 1 ;; 2]];
-vertexTooltips = MapThread[#1 -> Placed[{#1, #2}, Tooltip] &, {sourceRows, species}];
-baseNetwork = Graph[sourceRows, {}, VertexCoordinates -> displayCoordinates,
-    VertexLabels -> vertexTooltips,
-    VertexStyle -> Thread[sourceRows -> Lookup[colorBySpecies, species]]];
+baseNetwork = With[{displayCoordinates = PrincipalComponents[standardized][[All, 1 ;; 2]],
+        vertexTooltips = MapThread[#1 -> Placed[{#1, #2}, Tooltip] &, {sourceRows, species}]},
+    Graph[sourceRows, {}, VertexCoordinates -> displayCoordinates, VertexLabels -> vertexTooltips,
+        VertexStyle -> Thread[sourceRows -> Lookup[colorBySpecies, species]]]];
 Legended[GraphicsRow[MapThread[Graph[EdgeAdd[baseNetwork, #1], PlotLabel -> #2] &,
     {{unionEdges, mutualEdges}, {"Union", "Mutual"}}]], SwatchLegend[speciesColors, speciesNames]]
 ```
@@ -144,10 +139,7 @@ only in the scale shown by that panel; the other edges occur under both scales.
 The vertex colors still indicate the recorded species labels.
 
 ```wl
-rawNeighborIndex = Nearest[measurements -> "Index", DistanceFunction -> EuclideanDistance];
-rawNeighbors = Table[Take[DeleteCases[rawNeighborIndex[measurements[[i]], 16], i], 15],
-    {i, Length[sourceRows]}];
-rawEdges = edgeSet[rawNeighbors, 8, False];
+rawEdges = edgeSet[neighborLists[measurements], 8, False];
 sharedScaleEdges = Intersection[rawEdges, unionEdges];
 GraphicsRow[MapThread[Graph[
     HighlightGraph[EdgeAdd[baseNetwork, #1], Complement[#1, sharedScaleEdges]], PlotLabel -> #2] &,
@@ -167,14 +159,13 @@ whether removing a single edge could split an existing component.
 See [KEdgeConnectedComponents (WL)](https://reference.wolfram.com/language/ref/KEdgeConnectedComponents.html).
 
 ```wl
-scaleGraphs = Graph[sourceRows, #] & /@ {rawEdges, unionEdges};
-<|"EdgeCounts" -> (EdgeCount /@ scaleGraphs),
-    "SharedEdges" -> Length[sharedScaleEdges],
-    "EdgeJaccardOverlap" -> N[Length[sharedScaleEdges]/Length[Union[rawEdges, unionEdges]]],
-    "ComponentSizes" -> (ReverseSort[Length /@ ConnectedComponents[#]] & /@ scaleGraphs),
-    "NoSingleEdgeSplitsAComponent" ->
-        (Sort[Sort /@ ConnectedComponents[#]] ===
-            Sort[Sort /@ KEdgeConnectedComponents[#, 2]] & /@ scaleGraphs)|>
+With[{scaleGraphs = Graph[sourceRows, #] & /@ {rawEdges, unionEdges}},
+    <|"EdgeCounts" -> (EdgeCount /@ scaleGraphs),
+        "SharedEdges" -> Length[sharedScaleEdges],
+        "EdgeJaccardOverlap" -> N[Length[sharedScaleEdges]/Length[Union[rawEdges, unionEdges]]],
+        "ComponentSizes" -> (ReverseSort[Length /@ ConnectedComponents[#]] & /@ scaleGraphs),
+        "NoSingleEdgeSplitsAComponent" ->
+            (Sort[Sort /@ ConnectedComponents[#]] === Sort[Sort /@ KEdgeConnectedComponents[#, 2]] & /@ scaleGraphs)|>]
 ```
 
 In the evaluated setup, the centimetre and standardized graphs have 799 and
@@ -210,15 +201,14 @@ It need not be a species, cell type or biological compartment. Count components
 and summarize degree, the number of incident edges, across all tested values:
 
 ```wl
-kValues = Range[15];
-unionGraphs = Graph[sourceRows, edgeSet[neighbors, #, False]] & /@ kValues;
-mutualGraphs = Graph[sourceRows, edgeSet[neighbors, #, True]] & /@ kValues;
-Grid[{{ListLinePlot[{Length[ConnectedComponents[#]] & /@ unionGraphs,
-    Length[ConnectedComponents[#]] & /@ mutualGraphs}, DataRange -> {1, 15}, PlotRange -> All,
-    Frame -> True, FrameLabel -> {"neighbors requested", "connected components"}, PlotLegends -> {"Union", "Mutual"}],
-    ListLinePlot[{Mean[VertexDegree[#]] & /@ unionGraphs, Mean[VertexDegree[#]] & /@ mutualGraphs},
-        DataRange -> {1, 15}, PlotRange -> All, Frame -> True, FrameLabel -> {"neighbors requested", "mean degree"},
-        PlotLegends -> {"Union", "Mutual"}]} }]
+With[{unionGraphs = Graph[sourceRows, edgeSet[neighbors, #, False]] & /@ Range[15],
+        mutualGraphs = Graph[sourceRows, edgeSet[neighbors, #, True]] & /@ Range[15]},
+    Grid[{{ListLinePlot[{Length[ConnectedComponents[#]] & /@ unionGraphs,
+        Length[ConnectedComponents[#]] & /@ mutualGraphs}, DataRange -> {1, 15}, PlotRange -> All,
+        Frame -> True, FrameLabel -> {"neighbors requested", "connected components"}, PlotLegends -> {"Union", "Mutual"}],
+        ListLinePlot[{Mean[VertexDegree[#]] & /@ unionGraphs, Mean[VertexDegree[#]] & /@ mutualGraphs},
+            DataRange -> {1, 15}, PlotRange -> All, Frame -> True, FrameLabel -> {"neighbors requested", "mean degree"},
+            PlotLegends -> {"Union", "Mutual"}]}}]]
 ```
 
 The requested number is a directed neighbor count before symmetrization.
@@ -239,10 +229,9 @@ amplitudes = {0.01, 0.05, 0.15};
 repetitions = 12;
 perturbationEdges = BlockRandom[SeedRandom[20261104];
     Table[perturbedEdges[standardized, amplitude, 8], {amplitude, amplitudes}, {repetitions}]];
-stability = Map[N[Length[Intersection[unionEdges, #]]/Length[Union[unionEdges, #]]] &,
-    perturbationEdges, {2}];
-BoxWhiskerChart[stability, ChartLabels -> amplitudes, PlotRange -> {0, 1},
-    FrameLabel -> {"Perturbation SD (standardized units)", "Edge Jaccard overlap"}]
+With[{stability = Map[N[Length[Intersection[unionEdges, #]]/Length[Union[unionEdges, #]]] &, perturbationEdges, {2}]},
+    BoxWhiskerChart[stability, ChartLabels -> amplitudes, PlotRange -> {0, 1},
+        FrameLabel -> {"Perturbation SD (standardized units)", "Edge Jaccard overlap"}]]
 ```
 
 Edges near a neighbor cutoff can change even when the overall geometry looks
@@ -261,13 +250,12 @@ The right graph keeps only edges present in all twelve repetitions.
 Every source row remains a vertex, including any that might become isolated.
 
 ```wl
-selectedAmplitude = First[FirstPosition[amplitudes, 0.05]];
-edgeRepeatCounts = Counts[Flatten[perturbationEdges[[selectedAmplitude]], 1]];
+edgeRepeatCounts = Counts[Flatten[perturbationEdges[[First[FirstPosition[amplitudes, 0.05]]]], 1]];
 observedEdges = Keys[edgeRepeatCounts];
-alwaysEdges = Keys[Select[edgeRepeatCounts, # == repetitions &]];
-GraphicsRow[{Graph[HighlightGraph[EdgeAdd[baseNetwork, observedEdges], alwaysEdges],
-    PlotLabel -> "Any repetition; highlighted in all twelve"],
-    Graph[EdgeAdd[baseNetwork, alwaysEdges], PlotLabel -> "All twelve repetitions"]}]
+With[{alwaysEdges = Keys[Select[edgeRepeatCounts, # == repetitions &]]},
+    GraphicsRow[{Graph[HighlightGraph[EdgeAdd[baseNetwork, observedEdges], alwaysEdges],
+        PlotLabel -> "Any repetition; highlighted in all twelve"],
+        Graph[EdgeAdd[baseNetwork, alwaysEdges], PlotLabel -> "All twelve repetitions"]}]]
 ```
 
 Across these repetitions, 1150 distinct edges appear. Of the original 787
@@ -282,15 +270,11 @@ cutoff. Both curves below are fractions, but they have different denominators:
 all 1150 observed edges, and all 150 source records respectively.
 
 ```wl
-minimumRepetitions = Range[repetitions];
-thresholdGraphs = Table[Graph[sourceRows, Keys[Select[edgeRepeatCounts, # >= minimum &]]],
-    {minimum, minimumRepetitions}];
-retainedEdgeFractions = N[(EdgeCount /@ thresholdGraphs)/Length[observedEdges]];
-largestComponentFractions = N[
-    (Max[Length /@ ConnectedComponents[#]] & /@ thresholdGraphs)/Length[sourceRows]];
-ListLinePlot[{retainedEdgeFractions, largestComponentFractions}, DataRange -> {1, repetitions},
-    Frame -> True, FrameLabel -> {"minimum repetitions", "fraction"}, PlotRange -> {0, 1.05},
-    PlotLegends -> {"edge fraction", "largest-component record fraction"}]
+With[{thresholdGraphs = Table[Graph[sourceRows, Keys[Select[edgeRepeatCounts, # >= minimum &]]], {minimum, repetitions}]},
+    ListLinePlot[{N[(EdgeCount /@ thresholdGraphs)/Length[observedEdges]],
+            N[(Max[Length /@ ConnectedComponents[#]] & /@ thresholdGraphs)/Length[sourceRows]]},
+        DataRange -> {1, repetitions}, Frame -> True, FrameLabel -> {"minimum repetitions", "fraction"},
+        PlotRange -> {0, 1.05}, PlotLegends -> {"edge fraction", "largest-component record fraction"}]]
 ```
 
 All twelve threshold graphs remain connected here, while the retained edge
@@ -323,7 +307,7 @@ through each transformation. If multiple cells come from one donor, thousands
 of vertices do not imply thousands of independent donors.
 
 The next step is to ask which model observations would discriminate between
-rules. [Exploring Cellular Automaton Hypotheses](ExploringCellularAutomatonHypotheses.md)
+rules. [Exploring Cellular Automaton Hypotheses](paclet:WolframInstitute/BioDataLink/tutorial/ExploringCellularAutomatonHypotheses)
 demonstrates why fitting one static statistic is insufficient.
 
 ## Computational references
@@ -340,19 +324,12 @@ Evaluate these helper definitions before the examples above. The data choices
 and analysis parameters remain in the main examples.
 
 ```wl
-edgeSet[neighborLists_, k_, mutual_] := Module[{pairs, membership},
-    pairs = Flatten[MapIndexed[
-        Thread[{ConstantArray[First[#2], k], Take[#1, k]}] &,
-        neighborLists], 1];
-    If[TrueQ[mutual],
-        membership = AssociationThread[DirectedEdge @@@ pairs,
-            ConstantArray[True, Length[pairs]]];
-        pairs = Select[pairs, KeyExistsQ[membership, DirectedEdge @@ Reverse[#]] &]];
-    DeleteDuplicates[UndirectedEdge @@@ (Sort /@ pairs)]
-];
-perturbedEdges[data_, amplitude_, k_] := Module[{perturbed, index, near},
-    perturbed = data + RandomVariate[NormalDistribution[0, amplitude], Dimensions[data]];
-    index = Nearest[perturbed -> "Index", DistanceFunction -> EuclideanDistance];
-    near = Table[Take[DeleteCases[index[perturbed[[i]], k + 1], i], k], {i, Length[data]}];
-    edgeSet[near, k, False]];
+neighborLists[data_] := With[{nearest = Nearest[data -> "Index"]},
+    Table[Take[DeleteCases[nearest[data[[i]], 16], i], 15], {i, Length[data]}]];
+edgeSet[lists_, k_, mutual_] := Module[{pairs = Flatten[MapIndexed[Thread[{First[#2], Take[#1, k]}] &, lists], 1], chosen},
+    chosen = AssociationThread[pairs -> True];
+    If[mutual, pairs = Select[pairs, KeyExistsQ[chosen, Reverse[#]] &]];
+    DeleteDuplicates[UndirectedEdge @@@ (Sort /@ pairs)]];
+perturbedEdges[data_, amplitude_, k_] :=
+    edgeSet[neighborLists[data + RandomVariate[NormalDistribution[0, amplitude], Dimensions[data]]], k, False];
 ```

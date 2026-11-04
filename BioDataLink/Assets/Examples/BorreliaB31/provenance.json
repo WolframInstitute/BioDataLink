@@ -1,0 +1,26 @@
+{
+	"Title":"Borreliella (Borrelia) burgdorferi B31 linear chromosome, RefSeq NC_001318.1",
+	"Citation":"Fraser CM, Casjens S, Huang WM, et al. (1997). Genomic sequence of a Lyme disease spirochaete, Borrelia burgdorferi. Nature 390: 580-586. https://doi.org/10.1038/37551",
+	"License":"NCBI places no restrictions on the use or distribution of GenBank, RefSeq or GEO data; submitters may claim rights in submitted data. See https://www.ncbi.nlm.nih.gov/home/about/policies/",
+	"Files":[
+		{
+			"SourceURL":"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=NC_001318.1&rettype=fasta&retmode=text",
+			"File":"NC_001318.1.fasta",
+			"SHA256":"fe3ef476bc7ce076bc388a08162440de10163f49272b0c4f2d2030dfce5ddfae",
+			"ByteCount":923796,
+			"RetrievedAt":"2026-11-04T18:55:06Z",
+			"LocalFile":"NC_001318.1.fasta.gz"
+		},
+		{
+			"SourceURL":"https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=NC_001318.1&retmode=text",
+			"File":"NC_001318.1.gff3",
+			"SHA256":"d4f774c31a316e7303fb06d038bf663c1e2b66683b4afadadd7d12d4249c960a",
+			"ByteCount":524379,
+			"RetrievedAt":"2026-11-04T18:55:10Z",
+			"LocalFile":"NC_001318.1.gff3.gz"
+		}
+	],
+	"Transformations":[
+		"Each upstream file is stored gzip-compressed; decompressed bytes match the recorded SHA-256."
+	]
+}

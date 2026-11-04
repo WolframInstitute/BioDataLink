@@ -12,7 +12,7 @@ from a verified download or import.
 The paclet is `WolframInstitute/BioDataLink`, with context
 `` WolframInstitute`BioDataLink` ``. Kernel code lives in
 `BioDataLink/Kernel/`, tests in `BioDataLink/Tests/`, and documentation sources
-in `docs/en/`. Use the areas documented in [README.md](README.md).
+in `docs/en/`. Follow the existing feature areas under `BioDataLink/Kernel/`.
 Keep one implementation and one canonical reference page for each symbol.
 
 Call `PackageInitialize` once in `BioDataLink/Kernel/BioDataLink.wl`.
@@ -36,6 +36,7 @@ required behavior; a new wrapper needs a clear functional difference.
 | Documentation notebooks from Markdown | `make notebooks` |
 | Build a paclet archive | `make build` |
 | Build and check publication artifacts without cloud writes | `make check-publish` |
+| Rebuild real-data example assets from pinned downloads (network) | `make example-data` |
 | Complete local validation | `make all` |
 | Install local git hooks | `make hooks` |
 

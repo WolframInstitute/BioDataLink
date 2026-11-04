@@ -1,0 +1,62 @@
+{
+	"Title":"SARS-CoV-2 Wuhan-Hu-1 (NC_045512.2), bat coronavirus RaTG13 (MN996532.2) and SARS-CoV Tor2 (NC_004718.3) genomes",
+	"Citation":[
+		"Wu F, Zhao S, Yu B, et al. (2020). A new coronavirus associated with human respiratory disease in China. Nature 579: 265-269. https://doi.org/10.1038/s41586-020-2008-3",
+		"Zhou P, Yang XL, Wang XG, et al. (2020). A pneumonia outbreak associated with a new coronavirus of probable bat origin. Nature 579: 270-273. https://doi.org/10.1038/s41586-020-2012-7",
+		"Marra MA, Jones SJM, Astell CR, et al. (2003). The genome sequence of the SARS-associated coronavirus. Science 300: 1399-1404. https://doi.org/10.1126/science.1085953"
+	],
+	"License":"NCBI places no restrictions on the use or distribution of GenBank, RefSeq or GEO data; submitters may claim rights in submitted data. See https://www.ncbi.nlm.nih.gov/home/about/policies/",
+	"Files":[
+		{
+			"SourceURL":"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=NC_045512.2&rettype=fasta&retmode=text",
+			"File":"NC_045512.2.fasta",
+			"SHA256":"0891c00cc2d503f58e0c600ce5ee64e9c64b939525c70d5486bc46cbc7cb073e",
+			"ByteCount":30429,
+			"RetrievedAt":"2026-11-04T18:55:12Z",
+			"LocalFile":"NC_045512.2.fasta.gz"
+		},
+		{
+			"SourceURL":"https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=NC_045512.2&retmode=text",
+			"File":"NC_045512.2.gff3",
+			"SHA256":"854bd3e750ccb9a9896a7a4ca1fff66e19e5b6ee07e8bd690d8f994365ec3a63",
+			"ByteCount":14704,
+			"RetrievedAt":"2026-11-04T18:55:14Z",
+			"LocalFile":"NC_045512.2.gff3.gz"
+		},
+		{
+			"SourceURL":"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=MN996532.2&rettype=fasta&retmode=text",
+			"File":"MN996532.2.fasta",
+			"SHA256":"7720fcebd0748fccf231427898517db2066c5c8b46df92776746cab7c2905408",
+			"ByteCount":30335,
+			"RetrievedAt":"2026-11-04T18:55:16Z",
+			"LocalFile":"MN996532.2.fasta.gz"
+		},
+		{
+			"SourceURL":"https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=MN996532.2&retmode=text",
+			"File":"MN996532.2.gff3",
+			"SHA256":"69690a431240d14938a23ab5d47d1a002783b8ef3bf163f9e7aae74ad4992390",
+			"ByteCount":3706,
+			"RetrievedAt":"2026-11-04T18:55:17Z",
+			"LocalFile":"MN996532.2.gff3.gz"
+		},
+		{
+			"SourceURL":"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=NC_004718.3&rettype=fasta&retmode=text",
+			"File":"NC_004718.3.fasta",
+			"SHA256":"af5dd09ebdeafae86b6d431cfc8f57091e0a61bafccaba442ab8baf4e3a93981",
+			"ByteCount":30230,
+			"RetrievedAt":"2026-11-04T18:55:19Z",
+			"LocalFile":"NC_004718.3.fasta.gz"
+		},
+		{
+			"SourceURL":"https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&report=gff3&id=NC_004718.3&retmode=text",
+			"File":"NC_004718.3.gff3",
+			"SHA256":"460e968bce0090d22a789fdb934938b45e83d548c3dfa02ebdb4ad66e3d0d694",
+			"ByteCount":11311,
+			"RetrievedAt":"2026-11-04T18:55:20Z",
+			"LocalFile":"NC_004718.3.gff3.gz"
+		}
+	],
+	"Transformations":[
+		"Each upstream file is stored gzip-compressed; decompressed bytes match the recorded SHA-256."
+	]
+}

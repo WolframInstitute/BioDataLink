@@ -8,7 +8,7 @@ URI: WolframInstitute/BioDataLink/guide/Sources
 Description: Find registered data sources and construct links from their identifiers
 Keywords: [sources, identifiers, repositories, accessions, Identifiers.org]
 RelatedGuides: [BioDataLink, Catalog, DataAccess]
-RelatedTutorials: [FindingDataSources]
+RelatedTutorials: [ComparingCoronavirusGenomes, ComparingProteinConformations, FindingDataSources, ReadingBacterialGenomeComposition]
 ---
 
 ## Abstract

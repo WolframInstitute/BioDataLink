@@ -322,8 +322,10 @@ with its own data. Tutorials keep data choices and scientific parameters in
 the narrative, then thread that running example through the body. Put reusable
 helper definitions in a final `## Initialization` section. The documentation
 build evaluates enabled helpers before the body, then places them at the
-bottom of the generated notebook as native initialization cells. Keep their
-inputs visible; do not use `#| input: false` for helpers. Optional backend and
+bottom of the generated notebook as native initialization cells. Group the
+heading, explanation and helper cells in one Initialization group, closed by
+default with a visible group opener. Keep inputs available when the group is opened; do not use
+`#| input: false` for helpers. Optional backend and
 online inputs retain `#| eval: false` and are never initialization cells; explain
 when the reader should run them. Define the running example once, name
 bindings clearly and re-show relevant data when entering a later section.
@@ -334,6 +336,12 @@ that only repeat defaults or impose decorative styling. Retain labels, units,
 shared ranges and scales, seeds, fixed comparison coordinates and any option
 needed to interpret or reproduce a result.
 
+Make each figure one copyable input. Put short, figure-only setup inside `With`
+with the plotting call rather than in a preceding input. Previously loaded
+data, deliberate selections and reused analysis state may remain explicit
+prerequisites. Do not duplicate the full workflow for each figure or add nested
+scoping when an existing input is already clear and complete.
+
 Compute figures from the example. Use labeled heatmaps or distributions when
 they explain expression data, and compact tables for metadata. Preserve scales
 and category colors across comparisons. Inspect axes, labels and missing-data
@@ -342,7 +350,50 @@ Avoid fixed styling in each example unless it conveys information or fixes a
 specific readability issue. A synthetic example demonstrates software behavior,
 not a biological conclusion.
 
+Prefer real public data when an example teaches science. Bundle a small subset
+with its source, license, checksum and selection rule, and regenerate it from
+pinned downloads with `scripts/exampleData.wls`; see the
+[example data record](BioDataLink/Assets/Examples/README.md). State what the
+subset cannot show, such as genes left out or a single donor.
+
+### Figures
+
+Choose the plot from the question and the data type: distributions for spread,
+log scales for counts and abundances, heat maps ordered by an explicit rule for
+matrices, and small multiples with shared scales for comparisons. Draw dense
+scatter plots with small points, and plot the cells that express a gene on top
+of those that do not. Size marks by area, as in dot plots and rose charts.
+Check automatic plot ranges, which can drop outlying points; set
+`PlotRange -> All` when extremes carry the result.
+
+Color encodes data, so choose maps by the kind of value
+([Crameri, Shephard and Heron 2020](https://doi.org/10.1038/s41467-020-19160-7)):
+
+- **Categories:** consider the Okabe-Ito palette for up to seven groups
+  ([Wong 2011](https://doi.org/10.1038/nmeth.1618)) or
+  [Paul Tol's muted palette](https://sronpersonalpages.nl/~pault/) for eight
+  or nine. Check contrast at the actual mark size and background; pale yellow
+  can be difficult to distinguish on white. Check both custom and default
+  palettes under color-vision-deficiency simulation.
+- **Magnitudes:** use a map whose lightness changes monotonically, such as
+  `"BlueGreenYellow"`, or a light-to-dark map such as
+  `ColorData[{"LakeColors", "Reverse"}]` when zeros should recede.
+- **Signed values:** use a diverging map such as `"ThermometerColors"` centered
+  on the neutral value. For a zero-centered comparison, use a shared symmetric
+  range and verify the color scaling as well as the plot range; automatic
+  rescaling must not move the neutral color away from zero.
+- **Rainbows:** avoid `"Rainbow"`-like maps, whose uneven lightness creates
+  false boundaries.
+
+Label groups directly or with a legend, and keep one color per biological
+category in every figure. Two-dimensional embeddings such as UMAP emphasize
+local neighborhoods and can distort distances, densities and apparent cluster
+sizes. Check conclusions in the original analysis space.
+
 ### Documentation verification
+
+Check copied figure inputs after their documented data and initialization
+prerequisites, without relying on disposable bindings from an earlier plot.
 
 Run examples in a fresh kernel resolving to this checkout. Build notebooks
 with `make notebooks`, inspect actual outputs and layout, and check the
@@ -352,7 +403,7 @@ when formatting changes. Check that counts, legends and prose agree with the
 saved result. Report unavailable front-end or build tools
 and avoid calling the page visually verified when inspection was not possible.
 For a tutorial with helpers, also verify initialization-only evaluation in a
-fresh notebook, the final section position, and exclusion of `eval: false`
+fresh notebook, the final closed group, and exclusion of `eval: false`
 cells from initialization. A source check evaluates enabled helpers first,
 then enabled body inputs; it must not run optional or online cells.
 

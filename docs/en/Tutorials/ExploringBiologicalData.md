@@ -43,8 +43,7 @@ general H5AD reader support does not independently validate those files.
 Load the synthetic file and inspect the returned matrix, metadata and provenance:
 
 ```wl
-file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
-data = BioDatasetLoad[File[file]]
+data = BioDatasetLoad[File[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}]]]
 ```
 
 The bundled synthetic file has three example cells on rows and two example

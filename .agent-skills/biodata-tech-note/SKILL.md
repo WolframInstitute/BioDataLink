@@ -22,19 +22,28 @@ and backend requirements in clearly identified examples without triggering
 large downloads during rendering. Keep data selection and scientific parameters
 visible where the reader changes them. Put reusable helpers in the final
 `## Initialization` section; the build evaluates enabled helpers first and
-marks their bottom notebook inputs as native initialization cells. Never
-enable optional or online `#| eval: false` cells as initialization. Follow
+marks their bottom notebook inputs as native initialization cells in one
+closed Initialization group with a visible opener. Readers can expand it to
+inspect the helpers. Never enable optional or online `#| eval: false` cells as initialization. Follow
 the concise native-code rules in
 [Reproducible examples](../../GUIDE.md#reproducible-examples).
 
+Make each figure a single copyable input, using `With` for short figure-only
+setup. Keep shared data and scientific selections as explicit prerequisites;
+do not repeat the full workflow in every plot.
+
 Use computed plots for patterns and compact tables for exact metadata. Include
-axes and scales that preserve the data's meaning. Follow
+axes and scales that preserve the data's meaning, and choose plot types and
+color maps by the [Figures](../../GUIDE.md#figures) rules. Follow
 [Reproducible examples](../../GUIDE.md#reproducible-examples) and run independent
 inputs as well as the whole page. A plot from synthetic data demonstrates the
 interface; scientific interpretation needs the actual source and analysis.
+Prefer a small subset of real public data, bundled with its source, license,
+checksum and selection rule, when the tutorial teaches science. Check every
+number and claim in the prose against the evaluated output.
 
 Build and inspect the notebook, check initialization-only evaluation and the
-bottom section position, confirm guide backlinks and report missing
+final closed group, confirm guide backlinks and report missing
 runtime or rendering checks. Use the
 [computational essay playbook](../biodata-computational-essay/SKILL.md) when the
 piece makes a sustained analytical argument rather than teaching access.

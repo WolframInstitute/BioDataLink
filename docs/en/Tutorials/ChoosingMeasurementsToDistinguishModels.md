@@ -43,8 +43,7 @@ prediction[{a, b, c}]
 Enumerate the eight parameter choices and evaluate their predictions:
 
 ```wl
-candidateParameters = Tuples[{0, 1}, 3];
-predictions = prediction /@ candidateParameters;
+predictions = prediction /@ Tuples[{0, 1}, 3];
 ```
 
 Name the rows and columns before plotting:
@@ -56,8 +55,7 @@ measurementIDs = Range[Length[observableNames]];
 ```
 
 ```wl
-MatrixPlot[predictions, PlotLegends -> Automatic,
-    FrameLabel -> {"candidate model", "observable"}]
+MatrixPlot[predictions, PlotLegends -> Automatic, FrameLabel -> {"candidate model", "observable"}]
 ```
 
 Row numbers identify the models; column numbers follow `observableNames`.
@@ -142,8 +140,8 @@ graphs = modelGraph[#, epsilon] & /@ panels;
 ```
 
 ```wl
-panelLabels = Prepend[StringRiffle[observableNames[[#]], " + "] & /@ Rest[panels], "No measurements"];
-GraphicsGrid[Partition[MapThread[Labeled, {graphs, panelLabels}], 2]]
+With[{panelLabels = Prepend[StringRiffle[observableNames[[#]], " + "] & /@ Rest[panels], "No measurements"]},
+    GraphicsGrid[Partition[MapThread[Labeled, {graphs, panelLabels}], 2]]]
 ```
 
 ```wl
@@ -164,32 +162,25 @@ and find the largest coverage at each exact panel size. Also compare simply
 adding columns in their original order:
 
 ```wl
-budgets = Range[0, Length[measurementIDs]];
-allPanelScores = Flatten[Table[{k, coverage[panel, separation]},
-    {k, budgets}, {panel, Subsets[measurementIDs, {k}]}], 1];
-```
-
-```wl
-ListPlot[allPanelScores, AxesLabel -> {"observables", "separated pairs"}]
+With[{budgets = Range[0, Length[measurementIDs]]},
+    ListPlot[Flatten[Table[{k, coverage[panel, separation]}, {k, budgets}, {panel, Subsets[measurementIDs, {k}]}], 1],
+        AxesLabel -> {"observables", "separated pairs"}]]
 ```
 
 Compute the best score for each exact panel size, then compare both orders:
 
 ```wl
-optimalCoverage = Table[Max[coverage[#, separation] & /@ Subsets[measurementIDs, {k}]], {k, budgets}];
-greedyCoverage = coverage[Take[greedyOrder, UpTo[#]], separation] & /@ budgets;
-sourceOrderCoverage = coverage[Take[measurementIDs, #], separation] & /@ budgets;
-```
-
-```wl
-ListLinePlot[{optimalCoverage, greedyCoverage, sourceOrderCoverage}, DataRange -> {0, 6},
-    PlotMarkers -> Automatic, PlotLegends -> {"best exact-size panel", "greedy", "source order"},
-    AxesLabel -> {"observable budget", "separated pairs"}]
+With[{budgets = Range[0, Length[measurementIDs]]},
+    ListLinePlot[{Table[Max[coverage[#, separation] & /@ Subsets[measurementIDs, {k}]], {k, budgets}],
+            coverage[Take[greedyOrder, UpTo[#]], separation] & /@ budgets,
+            coverage[Take[measurementIDs, #], separation] & /@ budgets},
+        DataRange -> {0, 6}, PlotMarkers -> Automatic, PlotLegends -> {"best exact-size panel", "greedy", "source order"},
+        AxesLabel -> {"observable budget", "separated pairs"}]]
 ```
 
 The points represent every panel, with overlaps where scores coincide.
-Markers help distinguish the coincident best-panel and greedy curves. The
-greedy curve reaches the exact optimum in this fixture and needs three
+The best-panel and greedy curves coincide in this fixture. The greedy
+procedure reaches the exact optimum here and needs three
 observables for complete separation. Its curve stops adding measurements once
 all pairs are covered; larger budgets are allowances, not measurements actually
 added. No pair of observables can cover all 28 pairs here. The original column
@@ -205,15 +196,9 @@ reselected at each bound. The plot uses exact rational bounds and steps to the
 right, so equality retains the closed-interval overlap convention:
 
 ```wl
-errorBounds = Range[0, 40]/40;
-noiseCoverage = Table[With[{matrix = separationMatrix[bound]},
-    {coverage[greedyOrder, matrix], coverage[measurementIDs, matrix],
-        Max[coverage[#, matrix] & /@ Subsets[measurementIDs, {3}]]}], {bound, errorBounds}];
-```
-
-```wl
-ListStepPlot[Transpose[noiseCoverage], Right, DataRange -> {0, 1},
-    PlotLegends -> {"fixed low-error panel", "all six observables", "best three at each bound"},
+ListStepPlot[Transpose[Table[{coverage[greedyOrder, m], coverage[measurementIDs, m],
+        Max[coverage[#, m] & /@ Subsets[measurementIDs, {3}]]}, {m, separationMatrix /@ (Range[0, 40]/40)}]],
+    Right, DataRange -> {0, 1}, PlotLegends -> {"fixed low-error panel", "all six observables", "best three at each bound"},
     AxesLabel -> {"assumed absolute error bound", "separated pairs"}]
 ```
 
@@ -284,8 +269,7 @@ Build each graph from unresolved pairs, retaining all vertices and the same
 coordinates. Labels identify models; their positions do not imply biology:
 
 ```wl
-modelGraph[panel_, bound_] := Module[{unresolved},
-    unresolved = Complement[Range[Length[modelPairs]], coveredPairs[panel, separationMatrix[bound]]];
-    Graph[modelIDs, UndirectedEdge @@@ modelPairs[[unresolved]],
-        VertexCoordinates -> fixedCoordinates, VertexLabels -> Automatic]];
+modelGraph[panel_, bound_] := Graph[modelIDs,
+    UndirectedEdge @@@ modelPairs[[Complement[Range[Length[modelPairs]], coveredPairs[panel, separationMatrix[bound]]]]],
+    VertexCoordinates -> fixedCoordinates, VertexLabels -> Automatic];
 ```

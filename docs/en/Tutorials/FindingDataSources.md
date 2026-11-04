@@ -138,7 +138,7 @@ If that value is not `None`, request the next page with the same search:
 
 ```wl
 #| eval: false
-nextPage = BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3, "Cursor" -> page["NextCursor"]]
+BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3, "Cursor" -> page["NextCursor"]]
 ```
 
 A `None` cursor means the search has no next page. A `Failure` from the query

@@ -54,8 +54,7 @@ BioDataURL[{"doi", BioDataSourceInfo["doi"]["SampleID"]}]
 Use a source's supplied sample identifier to construct a link:
 
 ```wl
-source = BioDataSourceInfo["pdb"];
-BioDataURL[{source["Prefix"], source["SampleID"]}]
+BioDataURL[Lookup[BioDataSourceInfo["pdb"], {"Prefix", "SampleID"}]]
 ```
 
 This example uses PDB's unprefixed sample identifier. For an embedded-prefix

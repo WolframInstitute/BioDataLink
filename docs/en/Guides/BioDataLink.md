@@ -8,7 +8,7 @@ URI: WolframInstitute/BioDataLink/guide/BioDataLink
 Description: Find biological data sources, retrieve verified files and read supported local measurements
 Keywords: [biology, datasets, gene expression, provenance]
 RelatedGuides: [Catalog, ComputationalExplorations, DataAccess, Downloads, Providers, Sources]
-RelatedTutorials: [ChoosingMeasurementsToDistinguishModels, ConstructingBiologicalSimilarityNetworks, DiscretizingBiologicalMeasurements, DownloadingBiologicalData, ExploringBiologicalData, ExploringBiologicalDataGeometry, ExploringCellularAutomatonHypotheses, ExploringSimplePredictiveRules, FindingDataSources, ReadingAnnDataSlices, UnderstandingSparseMeasurements]
+RelatedTutorials: [AnalyzingSingleCellExpression, ChoosingMeasurementsToDistinguishModels, ComparingCoronavirusGenomes, ComparingProteinConformations, ConstructingBiologicalSimilarityNetworks, DiscretizingBiologicalMeasurements, DownloadingBiologicalData, ExploringBiologicalData, ExploringBiologicalDataGeometry, ExploringCellularAutomatonHypotheses, ExploringSimplePredictiveRules, FindingCircadianRhythms, FindingDataSources, ReadingAnnDataSlices, ReadingBacterialGenomeComposition, UnderstandingSparseMeasurements]
 ---
 
 ## Abstract
@@ -27,6 +27,11 @@ layer, axis positions and metadata.
 
 Transfer integrity and structural checks do not establish biological validity.
 Scientific interpretation depends on the assay, sampling and processing history.
+
+Worked case studies analyze real public data bundled with the paclet:
+single-cell expression in human blood, two conformations of an enzyme, a
+bacterial chromosome, three coronavirus genomes and an hourly liver time
+series. Each records its source, license and checksum.
 
 Finding a catalog record does not mean its data file can already be loaded.
 
@@ -62,5 +67,7 @@ WL marks a built-in Wolfram Language function.
 ### [Computational Explorations](paclet:WolframInstitute/BioDataLink/guide/ComputationalExplorations)
 
 - `ClusteringComponents` (WL) compare explicit clusterings and their sensitivity
+- `DimensionReduce` (WL) map single cells while keeping their neighbors close
 - `PrincipalComponents` (WL) examine measurement geometry under a chosen scale
 - `Quantile` (WL) turn continuous measurements into recorded finite bins
+- `SequenceAlignment` (WL) compare genes and proteins between organisms

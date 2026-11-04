@@ -120,10 +120,9 @@ Select the floating-point layer named `normalized`, reversing the row order:
 
 ```wl
 #| eval: false
-layer = BioDatasetLoad[File[file], "Format" -> "AnnData",
-    "PythonExecutable" -> python, "Cells" -> {2, 1}, "Genes" -> {3, 2},
-    "Layer" -> {"Layers", "normalized"}];
-KeyTake[layer, {"SourceLayer", "SelectedCells", "SelectedGenes", "Normalization"}]
+KeyTake[BioDatasetLoad[File[file], "Format" -> "AnnData", "PythonExecutable" -> python,
+        "Cells" -> {2, 1}, "Genes" -> {3, 2}, "Layer" -> {"Layers", "normalized"}],
+    {"SourceLayer", "SelectedCells", "SelectedGenes", "Normalization"}]
 ```
 
 The selected values are `{{1.1, 0}, {0, 0.2}}`. The name `normalized` does not
@@ -135,10 +134,8 @@ The raw storage location can have a different variable axis:
 
 ```wl
 #| eval: false
-raw = BioDatasetLoad[File[file], "Format" -> "AnnData",
-    "PythonExecutable" -> python, "Cells" -> {1, 2}, "Genes" -> {5, 2},
-    "Layer" -> {"Raw", "X"}];
-raw["GeneMetadata"][All, {"SourceIndex", "ID"}]
+BioDatasetLoad[File[file], "Format" -> "AnnData", "PythonExecutable" -> python,
+    "Cells" -> {1, 2}, "Genes" -> {5, 2}, "Layer" -> {"Raw", "X"}]["GeneMetadata"][All, {"SourceIndex", "ID"}]
 ```
 
 This file's raw matrix has five variables, compared with four in `X`.

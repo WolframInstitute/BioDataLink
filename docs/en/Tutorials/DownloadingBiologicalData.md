@@ -87,9 +87,8 @@ as `"SourceRow"`:
 
 ```wl
 rows = DeleteCases[Import[irisFile, "CSV"], {} | {""}];
-columns = {"SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm", "Species"};
-records = AssociationThread[columns, #] & /@ rows;
-iris = Dataset[MapIndexed[Append[#1, "SourceRow" -> First[#2]] &, records]];
+iris = With[{columns = {"SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm", "Species"}},
+    Dataset[MapIndexed[Append[AssociationThread[columns, #1], "SourceRow" -> First[#2]] &, rows]]];
 ```
 
 Show the first five records:
@@ -117,8 +116,7 @@ frequencies or evidence of a sampling design beyond the source documentation.
 Plot petal length against petal width, keeping species labels distinct:
 
 ```wl
-grouped = GroupBy[rows, Last -> (#[[{3, 4}]] &)];
-ListPlot[grouped, AxesLabel -> {"petal length (cm)", "petal width (cm)"}, PlotLegends -> Automatic]
+ListPlot[GroupBy[rows, Last -> (#[[{3, 4}]] &)], AxesLabel -> {"petal length (cm)", "petal width (cm)"}, PlotLegends -> Automatic]
 ```
 
 The plot describes measurements in this specific file. It does not establish
