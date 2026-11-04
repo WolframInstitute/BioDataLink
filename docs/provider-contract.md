@@ -29,10 +29,11 @@ that every dataset shares a single license.
 
 ## Capabilities
 
-Each adapter advertises only implemented operations. Version 0.2 provides the
+Each adapter advertises only implemented operations. Version 0.3 provides the
 offline Identifiers.org source directory, resolver links, live BioStudies/GEO
-metadata queries, the offline Pertpy catalog, and native import of local
-BioDataLink JSON. Data-file download and remote matrix subsets are planned:
+metadata queries, the offline Pertpy catalog, explicit HTTPS file downloads,
+local BioDataLink JSON reading and optional selected H5AD reading. Remote
+matrix subsets are planned:
 
 | Capability | Meaning |
 | --- | --- |
@@ -45,7 +46,9 @@ BioDataLink JSON. Data-file download and remote matrix subsets are planned:
 
 A cell limit applied after downloading a file is not remote subset support.
 Display transfer requirements separately from the amount of data returned to
-the caller. H5AD downloads alone do not establish AnnData conversion support.
+the caller. H5AD downloads alone do not establish AnnData conversion support,
+and a generic H5AD reader does not certify each catalog file. Keep per-entry
+import flags false until the particular source and import route are checked.
 
 ## Metadata search and credentials
 
@@ -64,7 +67,7 @@ pages can shift as a live index changes.
 
 Accept credential references, not literal secrets. Resolve references only
 when a request runs, and exclude credentials from records, cursors, provenance
-and failures. Version 0.2 supports optional GEO API-key references for public
+and failures. The current implementation supports optional GEO API-key references for public
 request quotas; it does not implement private-study access. A future private
 provider needs a reviewed authentication flow, explicit access scope, and
 separate tests demonstrating authorized retrieval without disclosure.
@@ -77,9 +80,17 @@ measured after download. An adapter must reject unsupported formats explicitly
 before attempting a conversion.
 
 Retrieve data only after an explicit data operation. Keep search and metadata
-inspection cheap. The artifact downloader owns cache verification, byte limits,
-timeouts, temporary files and final placement. An adapter must not introduce a
-second downloader with different semantics.
+inspection cheap. The shared downloader owns byte limits, expected size/hash
+checks, timeouts, temporary files and final placement. An adapter must not
+introduce a second downloader with different semantics. The current downloader
+does not cache, retry, resume or decompress data; a future cache must preserve
+the same integrity checks.
+
+Expected hashes need their own provenance. A successful comparison proves
+agreement with the supplied digest, not that the source published it. Retain
+computed and expected hashes separately. Source URL query parameters are
+removed from the retrieval record; the exact requested URL is represented by
+a hash instead of exposing potentially sensitive query values.
 
 ## Native expression imports
 
@@ -106,6 +117,14 @@ unsupported conversion or make an explicit, documented selection that avoids
 unknown entries; it must not fill unmeasured genes with zeros silently. Unique
 row and column labels establish alignment, not cell type, biological replication
 or a valid gene-reference mapping.
+
+The current H5AD reader is explicitly selected by format and interpreter.
+It retains a selected matrix, ordered axis metadata and source positions;
+duplicate labels remain separate. It does not construct a complete AnnData
+object, import all unstructured provenance or infer processing from layer
+names. Every result lists omitted structures. Its file-size and modification
+fingerprint is not a full-file checksum, and its result-size limits are not
+promises about all decompressed HDF5 data or process memory.
 
 ## Failure handling
 

@@ -1,0 +1,25 @@
+{
+  "Title": "Iris",
+  "SourceURL": "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data",
+  "ResolvedURL": "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data",
+  "LandingPage": "https://archive.ics.uci.edu/dataset/53/iris",
+  "DOI": "10.24432/C56C76",
+  "Citation": "Fisher, R. (1936). Iris [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C56C76.",
+  "License": "CC BY 4.0",
+  "LicenseURL": "https://creativecommons.org/licenses/by/4.0/",
+  "RetrievedAt": "2026-11-04T14:01:31.367521+00:00",
+  "SHA256": "6f608b71a7317216319b4d27b4d9bc84e6abd734eda7872b71a458569e2656c0",
+  "ByteCount": 4551,
+  "Transformations": [
+    "File renamed from iris.data to iris.csv; bytes unchanged."
+  ],
+  "Columns": [
+    "SepalLengthCm",
+    "SepalWidthCm",
+    "PetalLengthCm",
+    "PetalWidthCm",
+    "Species"
+  ],
+  "Interpretation": "Column names and centimetre units assigned from the UCI metadata; each row is one plant record.",
+  "SourceCaveat": "UCI documents differences from the measurements in Fisher's historical article. This copy retains the distributed values without correction."
+}

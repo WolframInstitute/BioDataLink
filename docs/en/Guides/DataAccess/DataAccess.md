@@ -5,31 +5,39 @@ Title: Data Access
 Context: WolframInstitute`BioDataLink`
 Paclet: WolframInstitute/BioDataLink
 URI: WolframInstitute/BioDataLink/guide/DataAccess
-Description: Import local expression matrices with aligned metadata and provenance
-Keywords: [expression, sparse arrays, JSON, provenance]
-RelatedGuides: [BioDataLink, Catalog]
-RelatedTutorials: [ExploringBiologicalData]
+Description: Read local JSON expression data or selected AnnData matrices with aligned metadata
+Keywords: [expression, sparse arrays, JSON, H5AD, AnnData, provenance]
+RelatedGuides: [BioDataLink, Catalog, ComputationalExplorations, Downloads]
+RelatedTutorials: [ConstructingBiologicalSimilarityNetworks, DiscretizingBiologicalMeasurements, ExploringBiologicalData, ExploringBiologicalDataGeometry, ExploringCellularAutomatonHypotheses, ExploringSimplePredictiveRules, ReadingAnnDataSlices, UnderstandingSparseMeasurements]
 ---
 
 ## Abstract
 
-A supported local expression file contains sparse values, cell and gene
-identifiers, a declared measurement scale and source information. The reader
-checks their structure before returning a cells-by-genes matrix and aligned
-metadata. It does not normalize values or verify their biological meaning.
-The initial reader supports BioDataLink JSON version 1. H5AD/AnnData conversion
-and remote downloads are planned extensions.
+BioDataLink reads local BioDataLink JSON expression files and, with an explicit
+Python configuration, selected measurements from supported AnnData H5AD files.
+Results contain a sparse matrix and aligned axis metadata. The reader checks
+their structure; it does not normalize values or verify their biological meaning.
 
-Unlisted matrix entries become numerical zeros. This format cannot distinguish
-an unmeasured value from zero, so missing measurements must not be omitted as
-though they were zeros. An observed zero count also does not establish absence
+Choose an H5AD layer and source positions explicitly when a complete matrix
+would be too large. The result preserves repeated source labels and records
+which structures were omitted. General AnnData observations and variables are
+not necessarily cells and genes; interpret them using the source assay.
+
+In the JSON format, unlisted matrix entries become numerical zeros and missing
+measurements cannot be represented separately. The H5AD reader rejects selected
+NaN or infinite matrix values instead of replacing them with zero. Missing
+annotations remain missing. An observed zero count does not establish absence
 of a transcript in a cell.
 
 ## Functions
 
 ### Local Import
 
-- `BioDatasetLoad` validate and import a local expression file
+- `BioDatasetLoad` read JSON expression data or a selected H5AD matrix with aligned metadata
 - `Dataset` (WL) query cell and gene metadata
 - `MatrixPlot` (WL) inspect a small expression matrix
 - `SparseArray` (WL) retain zero entries implicitly
+
+## References
+
+- [AnnData on-disk format](https://anndata.readthedocs.io/en/stable/fileformat-prose.html)

@@ -49,6 +49,29 @@ retrieval. Live search and representative resolver checks are recorded in
 alongside qualified local performance measurements. Version 0.2 is a local
 milestone, not a published release.
 
+## 0.3 — Verified file downloads and selected H5AD reading
+
+The local development milestone adds:
+
+- `BioDatasetDownload` for explicit HTTPS files, bounded streamed transfers,
+  optional expected byte counts and SHA-256, and destination replacement only
+  after validation. Retrieval records distinguish computed and expected hashes.
+- An explicit `"Format" -> "AnnData"` branch of `BioDatasetLoad`, backed by an
+  optional configured Python interpreter with pinned h5py/NumPy requirements.
+- Selected dense, CSR or CSC matrices with aligned metadata, original axis
+  positions, duplicate labels, missing annotations and omitted-structure lists.
+- Scientist-facing examples for metadata review, named JSON selections,
+  pagination termination, verified downloads and measurement interpretation.
+- Ten worked tutorials with computed figures, including measurement geometry,
+  discretization, similarity networks, sparse-data semantics and finite rule
+  comparisons, using built-in Wolfram Language.
+- An attributed UCI Iris copy for offline tabular examples and a synthetic
+  H5AD fixture checked against independently specified values.
+
+There is no implicit cache, automatic retry, resume or complete AnnData-object
+conversion. H5AD file fingerprints are not content hashes, and a generic reader
+does not certify every catalog entry. Optional dependencies remain explicit.
+
 ## Next — More source APIs and authorized access
 
 Extend tested metadata APIs across biological domains while preserving each
@@ -61,26 +84,17 @@ Gate: checked small results, explicit access requirements and no credentials in
 records, provenance, cursors or failure reports. A directory entry alone is
 not an implemented connection.
 
-## Next — Verified remote artifacts
+## Next — Dataset-specific import verification
 
-Add explicit artifact download with source byte lengths, expected checksums,
-local content hashes, bounded transfers, atomic cache placement and retryable
-failures. Validate representative small public files and mock the failure paths
-in default tests. Preserve provenance beside each cached artifact.
+Verify representative provider files using explicit source releases, selected
+layers and independently checked small results before advertising per-entry
+import support. Extend supported encodings and missing-measurement semantics
+only when they can be preserved without guessing. Keep transfer integrity,
+format compatibility and scientific interpretation as separate checks.
 
-Gate: download and cache results match independent checks; failed transfers
-cannot appear as completed data. Search remains usable without network access.
-
-## Next — Pertpy and AnnData imports
-
-Add an optional, versioned Python environment for H5AD/AnnData conversion.
-Verify three representative datasets before advertising native import support.
-Keep matrices sparse, preserve cell/gene alignment, expose the chosen expression
-layer and record transformations and omitted structures.
-
-Gate: an independently checked small slice agrees in matrix values, labels,
-normalization state and provenance. Installing or searching the core paclet
-must not implicitly install Python dependencies or download biological matrices.
+Gate: selected values, labels, processing information and provenance agree with
+independent evidence. Any future cache or resume facility must preserve the
+integrity checks of a new transfer.
 
 ## Later — CELLxGENE subsets and GEO data files
 
@@ -95,10 +109,11 @@ uniform data semantics.
 Gate: provider capabilities and unsupported cases are visible, with independent
 fixtures for each advertised import format and opt-in live checks.
 
-## Later — Analysis consumers
+## Later — Dataset-specific analysis consumers
 
-Provide documented examples that use imported data in Wolfram analysis and
-Ruliobiology models. Begin with perturbation summaries and held-out comparisons.
+Extend the current small computational tutorials to source-specific
+perturbation summaries and tested Ruliobiology integrations. Retain the existing
+separation between data access, an observation model and a fitted hypothesis.
 Keep discovery/import contracts separate from particular statistical models.
 
 Gate: analysis notebooks retain source versions, selections and preprocessing,

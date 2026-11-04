@@ -1,0 +1,5 @@
+# Optional fixture oracle and format-reader integration checks; no model runtime.
+-r ../../Assets/Python/requirements-h5ad.txt
+anndata==0.13.4
+pandas==3.1.0
+scipy==1.18.1

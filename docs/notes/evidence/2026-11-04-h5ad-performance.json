@@ -1,0 +1,27 @@
+{
+	"TimestampUTC":"2026-11-04T14:25:23Z",
+	"WolframVersion":"15.0.0 for Mac OS X ARM (64-bit) (May 19, 2026)",
+	"BackendVersion":{
+		"Python":"3.13.9",
+		"h5py":"3.16.0",
+		"NumPy":"2.5.4"
+	},
+	"SourceFileBytes":64480,
+	"SourceShape":[
+		3,
+		4
+	],
+	"SelectedShape":[
+		2,
+		3
+	],
+	"FirstSeconds":0.344346,
+	"RepeatedMedianSeconds":0.122955,
+	"RepeatedRangeSeconds":[
+		0.117248,
+		0.128453
+	],
+	"Repetitions":5,
+	"PythonImportMedianSeconds":9.5549e-2,
+	"Scope":"Local 64KB synthetic H5AD. Each call starts a fresh Python subprocess. Timings include native WL conversion and cleanup; exclude WL kernel startup and remote downloads. Tiny-fixture timings do not measure large-file throughput."
+}

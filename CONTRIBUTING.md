@@ -57,6 +57,35 @@ Report commands and outcomes, including missing runtimes, front-end access,
 optional dependencies and skipped checks. Rerun affected checks after the final
 edit. A failed parse or a test file with no executed tests is not a pass.
 
+## Optional runtime and transport checks
+
+The ordinary test suite does not require the H5AD Python environment. To test
+the selected H5AD reader explicitly, create or choose an isolated interpreter
+and install the pinned test requirements. Supply its absolute path for this
+command:
+
+```sh
+/path/to/environment/bin/python -m pip install -r BioDataLink/Tests/Python/requirements.txt
+BIODATALINK_PYTHON=/path/to/environment/bin/python make h5ad-tests
+```
+
+This runs Python encoding/selection checks and Wolfram-to-Python integration
+checks on local fixtures. The pinned requirements include AnnData for fixture
+validation; runtime reading uses h5py and NumPy. Nothing is installed by the
+paclet or the test target.
+
+Run the download transport checks separately:
+
+```sh
+make download-tests
+```
+
+These require curl 8.4 or later, OpenSSL, Python 3 and Wolfram Language. The
+checks create a temporary local HTTPS server and certificate to exercise
+streaming limits, redirects, failure cleanup and destination preservation. They
+do not establish the availability of an external data provider. Live provider
+checks remain explicit and separate.
+
 ## Style and documentation
 
 Use four-space indentation, descriptive `TestID` values and clear

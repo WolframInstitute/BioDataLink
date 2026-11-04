@@ -29,6 +29,11 @@ identifiers from a named system, such as PDB structure identifiers. It is not
 necessarily a distinct repository, and the directory is not an exhaustive list
 of biological data sources. Descriptions are taken from the registry.
 
+Text search can match a description even when the namespace prefix is
+different. Use `BioDataSourceInfo["pdb"]` when the intended prefix is already
+known. A directory entry does not automatically make that source a supported
+provider for online `BioDatasetQuery` calls.
+
 ## Inspect identifier conventions
 
 Examine the source description and example identifier for the PDB namespace:
@@ -43,6 +48,16 @@ endpoint records and complete namespace record remain available through
 `"Resources"` and `"RegistryRecord"`. These describe registered services;
 they do not verify current availability, open-access status or a supported
 BioDataLink data reader.
+
+Inspect PDB's registered endpoints in a compact table:
+
+```wl
+Dataset[KeyTake[#, {"name", "providerCode", "official", "deprecated"}] & /@
+    BioDataSourceInfo["pdb"]["Resources"]]
+```
+
+These flags are the registry's metadata. Two endpoints may serve the same
+underlying records, so they are not independent sources of biological evidence.
 
 Inspect the registry version evidence used by this lookup:
 
@@ -85,7 +100,7 @@ is implied:
 
 ```wl
 #| eval: false
-BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3]
+page = BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3]
 ```
 
 The result contains a `"Records"` dataset, the source's reported `"Total"`,
@@ -94,6 +109,46 @@ Study descriptions remain source declarations. Search results can overlap
 across providers and do not count independent experiments or biological
 replicates. A textual match alone does not establish that an assay, organism
 or experimental design suits the research question.
+
+Inspect the returned accessions, titles and organism annotations. This online
+example uses the `page` obtained above and preserves a failure if the query did
+not succeed:
+
+```wl
+#| eval: false
+If[FailureQ[page], page,
+    page["Records"][All, {"ID", "Title", "Organism"}]]
+```
+
+The BioStudies search response used here does not supply structured organism
+annotations, so that field remains `Missing["NotAvailable"]`. It is not filled
+from a title that happens to mention a species. Study metadata with different
+levels of detail should not be treated as equivalent evidence.
+
+Keep the original query, source endpoint and retrieval time with the selection:
+
+```wl
+#| eval: false
+If[FailureQ[page], page,
+    KeyTake[page, {"Provider", "Query", "SourceURL", "RetrievedAt",
+        "Total", "TotalIsExact"}]]
+```
+
+Request another page only when a continuation is available:
+
+```wl
+#| eval: false
+nextPage = Which[
+    FailureQ[page], page,
+    page["NextCursor"] === None, None,
+    True, BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3,
+        "Cursor" -> page["NextCursor"]]]
+```
+
+Here `None` means the search has no next page; a `Failure` remains distinct
+from that successful end condition. Live records and estimated totals can
+change between requests. Retain the returned accessions when documenting a
+selection used for analysis.
 
 An online GEO query returns Series records. Its provider-specific syntax can
 restrict the search before results are returned:
@@ -114,6 +169,8 @@ files or grant access to restricted data.
 Inspect the original study record for its sampling design, assay, organism,
 processing history, citation and access terms before selecting a file. Missing
 metadata remains unknown. The Pertpy catalog provides a separate offline list
-of loader records through `BioDatasetSearch`; `BioDatasetLoad` currently reads
-local BioDataLink JSON expression matrices. A connection from source discovery
-to every data format is a future capability.
+of loader records through `BioDatasetSearch`. Download an explicitly selected
+HTTPS data file with `BioDatasetDownload`, retaining its retrieval record.
+`BioDatasetLoad` reads local BioDataLink JSON expression matrices or selected
+supported H5AD measurements with an explicit optional interpreter. These
+capabilities do not imply support for every file listed by a discovered source.

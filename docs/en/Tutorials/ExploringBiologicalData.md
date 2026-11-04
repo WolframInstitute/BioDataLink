@@ -44,15 +44,16 @@ The record identifies the revision of Pertpy used to build this catalog. Its
 description is taken from that source, not independently reviewed scientific
 annotation. A loader name such as `"norman_2019"` is not a repository accession;
 one study may have several files or processed versions in the catalog.
-`"NativeImportSupported"` reports whether the paclet can load a linked source
-file. It is currently `False` for all Pertpy records.
+`"NativeImportSupported"` reports whether the catalog advertises a verified
+import route for that entry. It is currently `False` for all Pertpy records;
+general H5AD reader support does not independently validate those files.
 
 ## Inspect local expression data
 
 Load the synthetic file and inspect the returned matrix, metadata and provenance:
 
 ```wl
-BioDatasetLoad[File[exampleFile[]]]
+data = BioDatasetLoad[File[exampleFile[]]]
 ```
 
 The bundled synthetic file has three example cells on rows and two example
@@ -60,9 +61,8 @@ genes on columns. Its integer values are labeled `"Counts"`. Show the matrix
 with a color key for these synthetic values:
 
 ```wl
-With[{data = BioDatasetLoad[File[exampleFile[]]]},
-    MatrixPlot[data["ExpressionMatrix"], PlotLegends -> Automatic,
-        FrameLabel -> {"cell", "gene"}]]
+MatrixPlot[data["ExpressionMatrix"], PlotLegends -> Automatic,
+    FrameLabel -> {"cell", "gene"}]
 ```
 
 The displayed zeros are numerical zeros. In this file format, every omitted
@@ -73,13 +73,13 @@ which does not establish that the transcript was biologically absent.
 Cell metadata remain in matrix row order:
 
 ```wl
-BioDatasetLoad[File[exampleFile[]]]["CellMetadata"]
+data["CellMetadata"]
 ```
 
 Gene metadata remain in matrix column order:
 
 ```wl
-BioDatasetLoad[File[exampleFile[]]]["GeneMetadata"]
+data["GeneMetadata"]
 ```
 
 Here `"cell-1"` and `"gene-A"` are invented labels. The `"control"` and
@@ -88,16 +88,63 @@ For real data, identifiers need a source and gene namespace, and condition
 labels need the accompanying experimental design. Unique labels alone do not
 establish cell type, gene identity or biological replication.
 
-## Compute a small summary
+## Select cells and genes by their labels
+
+Select the rows labeled `"treated"` and find the column named `"gene-A"`:
+
+```wl
+cells = Normal[data["CellMetadata"]];
+genes = Normal[data["GeneMetadata"]];
+rows = Pick[Range[Length[cells]], Lookup[cells, "Condition"], "treated"];
+column = First[FirstPosition[Lookup[genes, "ID"], "gene-A"]];
+Dataset[MapThread[<|"CellID" -> #1, "gene-A" -> #2|> &,
+    {Lookup[cells[[rows]], "ID"],
+        Normal[data["ExpressionMatrix"][[rows, column]]]}]]
+```
+
+The result retains the row identifiers beside values 0 and 2. The positions
+come from the metadata rather than an assumed row or column order. A real
+workflow should also check that its requested identifiers and annotations
+exist. This example selects from a small, known synthetic file.
+
+Keep the source-file hash and the selected identifiers together:
+
+```wl
+<|"SourceContentHash" -> data["ContentHash"],
+    "CellIDs" -> Lookup[cells[[rows]], "ID"],
+    "GeneIDs" -> {genes[[column]]["ID"]},
+    "Normalization" -> data["Normalization"]|>
+```
+
+The source hash identifies the original file; it is not a separately computed
+hash of the selected matrix. Recording the selected identifiers makes this
+particular selection explicit.
+
+## Summarize recorded values
+
+Associate each example cell with its total recorded counts and the number of
+genes having nonzero values:
+
+```wl
+Dataset[MapThread[Join[#1,
+        <|"RecordedCountTotal" -> #2, "GenesWithNonzeroValue" -> #3|>] &,
+    {cells, Normal[Total[data["ExpressionMatrix"], {2}]],
+        Normal[Total[Unitize[data["ExpressionMatrix"]], {2}]]}]]
+```
+
+The totals are 3, 5 and 3, and the nonzero-gene counts are 1, 1 and 2.
+Such summaries can help inspect a file before analysis, but these invented
+values do not establish quality thresholds or cell states. In experimental
+data, recorded counts depend on the assay, sampling and processing; they are
+not a direct measure of total cellular RNA abundance.
 
 Sum each gene's synthetic counts across the example cells, using the gene
 identifiers as chart labels:
 
 ```wl
-With[{data = BioDatasetLoad[File[exampleFile[]]]},
-    BarChart[Normal[Total[data["ExpressionMatrix"]]],
-        ChartLabels -> Normal[data["GeneMetadata"][All, "ID"]],
-        AxesLabel -> {None, "synthetic counts"}]]
+BarChart[Normal[Total[data["ExpressionMatrix"]]],
+    ChartLabels -> Normal[data["GeneMetadata"][All, "ID"]],
+    AxesLabel -> {None, "synthetic counts"}]
 ```
 
 The column totals are 5 and 6. They demonstrate arithmetic on the imported
@@ -111,7 +158,7 @@ counts alone does not measure differential expression or a treatment effect.
 Inspect the declared source and the hash of the file that was read:
 
 ```wl
-KeyTake[BioDatasetLoad[File[exampleFile[]]], {"ContentHash", "Normalization", "Provenance"}]
+KeyTake[data, {"ContentHash", "Normalization", "Provenance"}]
 ```
 
 The provenance records the source information declared by the file's author.

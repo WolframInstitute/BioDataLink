@@ -1,11 +1,11 @@
 PacletObject[
     <|
         "Name" -> "WolframInstitute/BioDataLink",
-        "Description" -> "Discover biological data sources, query public repositories and import documented expression data",
+        "Description" -> "Discover biological data, verify artifact downloads and import selected expression data",
         "Creator" -> "Wolfram Institute",
         "License" -> "MIT",
         "PublisherID" -> "WolframInstitute",
-        "Version" -> "0.2.0",
+        "Version" -> "0.3.0",
         "WolframVersion" -> "15.0+",
         "PrimaryContext" -> "WolframInstitute`BioDataLink`",
         "Keywords" -> {"biology", "datasets", "gene expression", "single cell", "perturbations"},
@@ -16,6 +16,7 @@ PacletObject[
                     "WolframInstitute`BioDataLink`BioDataSourceInfo",
                     "WolframInstitute`BioDataLink`BioDataSourceSearch",
                     "WolframInstitute`BioDataLink`BioDataURL",
+                    "WolframInstitute`BioDataLink`BioDatasetDownload",
                     "WolframInstitute`BioDataLink`BioDatasetInfo",
                     "WolframInstitute`BioDataLink`BioDatasetLoad",
                     "WolframInstitute`BioDataLink`BioDatasetQuery",
@@ -24,7 +25,8 @@ PacletObject[
             {"Documentation", "Root" -> "Documentation", "Language" -> "English"},
             {"Tests", "Root" -> "Tests", "Method" -> "Experimental-v1"},
             {"Asset", "Root" -> "Assets", "Assets" -> {
-                {"Catalog", "Catalog"}, {"Examples", "Examples"}, {"License", "LICENSE"}, {"Sources", "Sources"}
+                {"Catalog", "Catalog"}, {"Examples", "Examples"}, {"License", "LICENSE"},
+                {"Python", "Python"}, {"Sources", "Sources"}
             }}
         }
     |>

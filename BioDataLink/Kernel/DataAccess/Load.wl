@@ -6,16 +6,26 @@ PackageExported[BioDatasetLoad];
 
 (* ::Section:: *)
 (*Usage Messages*)
-BioDatasetLoad::usage = "BioDatasetLoad[File[path]] imports a local BioDataLink JSON expression dataset as a sparse matrix, metadata and provenance.";
+BioDatasetLoad::usage = "BioDatasetLoad[File[path]] imports a local BioDataLink JSON expression dataset as a sparse matrix, metadata and provenance.\nBioDatasetLoad[File[path], \"Format\" -> \"AnnData\"] imports a selected matrix and axis metadata from a local H5AD file using an explicitly configured Python backend.";
 
 (* ::Section:: *)
 (*Function Definitions*)
-Options[BioDatasetLoad] = {"MaxFileBytes" -> 10000000};
+Options[BioDatasetLoad] = {"MaxFileBytes" -> 10000000, "Format" -> "BioDataLinkJSON",
+    "PythonExecutable" -> Automatic, "Cells" -> All, "Genes" -> All, "Layer" -> "X",
+    "MaxSelectedElements" -> 10000000, "MaxTransferBytes" -> 67108864, "TimeConstraint" -> 60};
 
 BioDatasetLoad[File[path_String], OptionsPattern[]] := Module[
-    {limit = OptionValue["MaxFileBytes"], fullPath, data, result, bytes, stream, content, text},
+    {limit = OptionValue["MaxFileBytes"], format = OptionValue["Format"], fullPath, data, result, bytes, stream, content, text},
     If[!(limit === Infinity || IntegerQ[limit] && limit > 0),
         Return[bioFailure["InvalidOption", "MaxFileBytes must be a positive integer or Infinity."]]];
+    If[format === "AnnData", Return[bioLoadAnnData[path, <|
+        "MaxFileBytes" -> limit, "PythonExecutable" -> OptionValue["PythonExecutable"],
+        "Cells" -> OptionValue["Cells"], "Genes" -> OptionValue["Genes"], "Layer" -> OptionValue["Layer"],
+        "MaxSelectedElements" -> OptionValue["MaxSelectedElements"],
+        "MaxTransferBytes" -> OptionValue["MaxTransferBytes"], "TimeConstraint" -> OptionValue["TimeConstraint"]|>]]];
+    If[format =!= "BioDataLinkJSON", Return[bioFailure["UnsupportedFormat", "Format must be BioDataLinkJSON or AnnData."]]];
+    If[OptionValue["Cells"] =!= All || OptionValue["Genes"] =!= All || OptionValue["Layer"] =!= "X",
+        Return[bioFailure["UnsupportedOption", "Cells, Genes and Layer selections require Format AnnData."]]];
     fullPath = ExpandFileName[path];
     If[!FileExistsQ[fullPath] || DirectoryQ[fullPath],
         Return[bioFailure["FileNotFound", "The local dataset file does not exist.", <|"SourceFile" -> fullPath|>]]];

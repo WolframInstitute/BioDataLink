@@ -3,6 +3,7 @@
    PureMath develop e2dacfa90c526c3bc9902ef7fa24d29932fb3b22. No provider downloads. *)
 root = DirectoryName[$InputFileName, 2];
 pacletDirectory = FileNameJoin[{root, "BioDataLink"}];
+archiveExclusions = {"__pycache__", "*/__pycache__", "*.pyc"};
 command = If[Length[$ScriptCommandLine] > 1, $ScriptCommandLine[[2]], "build"];
 fail[text_] := (Print["ERROR: ", text]; Exit[1]);
 require[result_, label_] := If[AssociationQ[result], result, fail[{label, result}]];
@@ -37,7 +38,8 @@ CheckAbort[
     Print["Documentation pages: ", Length[converted["Notebooks"]]];
     If[command === "notebooks", Exit[0]];
     built = require[WolframInstitute`PacletPage`DeployPacletResource[pacletDirectory,
-        "DryRun" -> True, "TimeConstraint" -> 300, "MaxFailures" -> 0, "Monitor" -> True], "archive build"];
+        "DryRun" -> True, "TimeConstraint" -> 300, "MaxFailures" -> 0,
+        "Exclude" -> archiveExclusions, "Monitor" -> True], "archive build"];
     If[!StringQ[built["Archive"]] || !FileExistsQ[built["Archive"]], fail["archive missing"]];
     Print["Archive: ", built["Archive"]];
     If[command === "site",
@@ -53,7 +55,8 @@ CheckAbort[
         If[!TrueQ[$CloudConnected] || !MemberQ[{$WolframID, First[StringSplit[$WolframID, "@"]]}, user],
             fail["the kernel must already be authenticated as the intended publishing account"]];
         published = require[WolframInstitute`PacletPage`PublishPacletPage[pacletDirectory, "BioDataLink",
-            "Account" -> $WolframID, "Build" -> False, "ResourceOptions" -> {"Build" -> False}], "publication"];
+            "Account" -> $WolframID, "Build" -> False,
+            "ResourceOptions" -> {"Build" -> False, "Exclude" -> archiveExclusions}], "publication"];
         If[!TrueQ[published["Check"]["OK"]], fail["published site checks failed"]]
     ],
     fail["documentation command aborted"]

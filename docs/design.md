@@ -6,8 +6,8 @@ and biodiversity. Discovery should eventually cover public and controlled
 sources, with access requirements stated explicitly. This broad scope is a
 design goal, not a claim of current coverage.
 
-Version 0.2 adds a source directory, resolver links and public BioStudies/GEO
-metadata queries to the initial Pertpy catalog and local expression reader.
+Version 0.3 combines a source directory, resolver links, public BioStudies/GEO
+metadata queries, explicit HTTPS downloads and local JSON or selected H5AD reading.
 Ruliobiology can consume supported data later for model fitting and comparison.
 
 This document separates the initial implementation from the extension contract.
@@ -18,7 +18,7 @@ status. The [roadmap](../ROADMAP.md) records the release gates.
 
 1. Find a source in the bundled directory, search a supported public API, or search the offline Pertpy catalog.
 2. Inspect available source descriptions, identifiers, study, organism and assay metadata.
-3. Select a dataset artifact and an explicit download location or cache.
+3. Select a data file and an explicit download location.
 4. Retrieve the artifact and keep its source identity and integrity evidence.
 5. Import a supported representation, retaining cell and gene identifiers.
 
@@ -28,17 +28,17 @@ produce several datasets, processed versions and data files (called artifacts
 in the retrieval interface). A source identifier may name a study, dataset,
 loader or file; adapters must state which it identifies. A repository accession
 is an identifier assigned by the repository, not an interchangeable name for
-every catalog ID. The current implementation supports steps 1 and 2 through
-source metadata and study queries, and step 5 for the local JSON format.
+every catalog ID. The current implementation supports source metadata and
+study queries, explicit file downloads, and documented local reader formats.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
     User[Wolfram notebook] --> Catalog[Catalog search and metadata]
-    Catalog --> Adapter[Provider adapter]
-    Adapter --> Cache[Artifact cache and provenance]
-    Cache --> Import[Format-specific import]
+    Catalog -. selected URL .-> Download[Explicit HTTPS download]
+    Download --> Local[Local file and retrieval record]
+    Local --> Import[Selected local format reader]
     Import --> Native[Wolfram arrays and metadata]
 ```
 
@@ -47,10 +47,11 @@ Provider adapters describe source identifiers, artifacts and capabilities.
 Format readers own the conversion into Wolfram objects. Public functions return
 ordinary Wolfram expressions where those express the result clearly.
 
-Keep metadata discovery and ordinary HTTP requests in Wolfram Language. The
-planned Python adapter handles AnnData/H5AD and CELLxGENE's data access library.
-Its environment must be explicit and its dependencies versioned. Installing
-the core paclet must not silently install Python packages.
+Keep metadata discovery and provider queries in Wolfram Language. A small curl
+interface streams explicit HTTPS file downloads; the selected H5AD reader uses
+an explicit Python interpreter with pinned h5py/NumPy requirements. A future
+CELLxGENE connection may use its data access library. Installing the core paclet
+must not silently install optional dependencies.
 
 Use bundled registry and catalog snapshots for reproducible offline discovery.
 Updates are reviewed changes with their own source evidence. Live search is a
@@ -97,15 +98,31 @@ fields remain unknown even when a linked study reports its organism.
 
 Many Pertpy datasets originate in scPerturb. Keep upstream identifiers and
 source revisions. Catalog entries explicitly report that native
-import of the listed provider artifacts is not yet supported. The snapshot
+import of the listed provider artifacts has not yet been verified. The snapshot
 records the code revision used for extraction; the listed remote artifacts have
 not been downloaded or independently verified by this implementation.
 
-Remote data-file download, AnnData conversion and additional source APIs are
-later milestones. GEO currently supports metadata search, not file retrieval
-or import. The [interchange format](interchange-format.md) is the current local
-import contract. Offline coverage is defined by the bundled copies, not by
-what a newer upstream version may expose.
+`BioDatasetDownload` retrieves one explicitly supplied HTTPS URL into a chosen
+local path. It streams to a sibling temporary file, enforces a finite file-size
+limit, compares optional expected size and SHA-256, and places the file only
+after validation. The result retains measured and expected hashes separately,
+retrieval time, redacted source/final URLs and a hash of the exact request URL.
+It does not infer a source file from a study accession, decompress archives,
+cache, retry or resume. The implementation requires curl 8.4 or later so an
+unknown Content-Length does not remove the transfer limit.
+
+`BioDatasetLoad` defaults to the [JSON interchange format](interchange-format.md).
+The explicit AnnData format reads supported dense/CSR/CSC H5AD measurements
+with selected axis positions and layers, preserving source metadata and listing
+omitted structures. It is a matrix-and-metadata selection, not a complete
+AnnData-object conversion. A configured interpreter is required; no environment
+is installed or discovered implicitly beyond the documented environment variable.
+
+Generic format support does not validate every listed provider file; catalog
+`NativeImportSupported` flags remain false until per-entry import verification.
+GEO still provides metadata search rather than an accession-to-file retrieval
+adapter. Offline coverage is defined by the bundled copies, not by newer
+upstream versions.
 
 ## Performance and query boundaries
 
@@ -133,21 +150,37 @@ request URLs, credentials and response bodies are omitted from failures.
 Future authenticated providers must define their own authorization, data
 scope and secret handling before advertising private-data access.
 
+The H5AD reader limits selected rows times columns and the serialized result
+transferred back to Wolfram Language. It preserves sparsity and reads selected
+source segments, but those limits do not bound all disk I/O or resident memory:
+HDF5 chunks and variable-length strings can require larger intermediate
+allocations. Keep whole-file size limits explicit. Performance measurements
+must include interpreter startup, selection, metadata conversion, serialization
+and Wolfram reconstruction, not only a Python slicing operation.
+
 ## Common data semantics
 
-The implemented local JSON reader returns a two-dimensional `SparseArray` with
-cells on rows and genes on columns. Future provider readers must preserve this
-orientation. Cell and gene metadata have the same order
-as the corresponding matrix axis. The interface must expose stable identifiers
-alongside display names and preserve duplicate gene symbols explicitly.
+The local readers return two-dimensional sparse arrays with aligned row and
+column metadata. JSON defines cells on rows and genes on columns. AnnData uses
+observations and variables, which need not represent cells and genes despite
+the shared property names. AnnData selections preserve duplicate original IDs
+and add unique one-based source positions; JSON requires unique IDs. Never join
+or collapse columns solely by a repeated display label.
 
 The local format records a declared normalization string and source provenance.
-These fields are required but their scientific truth is not validated. The
+These JSON fields are required but their scientific truth is not validated. The
 `Counts` label requires nonnegative integer matrix values, which alone do not
 establish read versus molecule counts or the processing history. Future provider
 readers additionally record the selected source layer, transformations, units,
 organism and reference assembly where supplied. Unknown metadata stays unknown.
 Do not infer counts solely from integer values or cell types from row labels.
+
+AnnData normalization remains unspecified even for a layer named `counts`,
+`normalized` or the `raw` storage location. Missing annotations are preserved;
+selected NaN or infinite measurements are rejected. The reader does not infer
+measurement-presence masks from omitted structures. Metadata encoding records
+retain categorical ordering, category count and the selected levels at their
+source positions, without importing unused category labels.
 
 Version 1 fills every unlisted matrix coordinate with zero and has no separate
 missing-measurement representation. Importers must not map unmeasured genes or
@@ -169,10 +202,17 @@ upstream checksum separately from the locally calculated hash. A calculated
 hash records what was received; it does not by itself establish agreement with
 the provider's intended artifact.
 
-Cache entries use source identity and release or artifact digest. A cache hit
+There is currently no data-file cache. Future cache entries must use source
+identity and release or artifact digest. A cache hit
 must satisfy the same integrity checks as a fresh transfer. Interrupted
 transfers must not become completed cache entries. Download limits, overwrite
 behavior and failure modes belong in the public contract.
+
+The JSON reader hashes the same bounded bytes it parses. The H5AD reader avoids
+a full-file scan and returns `Missing["NotComputed"]` for the content hash;
+file size and modification time are recorded as change-detection information,
+not a checksum. Keep an independently retained download record or compute a
+hash explicitly when a workflow requires stronger source-file identification.
 
 Source versions are important for cloud catalogs: CELLxGENE Census exposes
 versioned releases as well as shorter-lived builds. Future adapters should pin

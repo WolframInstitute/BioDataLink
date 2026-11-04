@@ -62,6 +62,17 @@ KeyTake[BioDataSourceInfo["PDB"], {"Prefix", "Name"}]
 
 ## Applications
 
+Inspect the registered PDB endpoints without contacting them:
+
+```wl
+Dataset[KeyTake[#, {"name", "providerCode", "official", "deprecated"}] & /@
+    BioDataSourceInfo["pdb"]["Resources"]]
+```
+
+The lowercase field names come from the registry. `"official"` and
+`"deprecated"` record the registry's assessments; they do not establish current
+availability, a data license or independent biological content.
+
 Retain evidence identifying the bundled registry used for a lookup:
 
 ```wl

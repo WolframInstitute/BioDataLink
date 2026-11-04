@@ -1,10 +1,10 @@
 WOLFRAMSCRIPT ?= wolframscript
 PYTHON ?= python3
 .DEFAULT_GOAL := help
-.PHONY: help all check test python-tests lint-docs bootstrap notebooks site build check-publish publish hooks catalog-update sources-update clean
+.PHONY: help all check test python-tests h5ad-tests download-tests lint-docs bootstrap notebooks site build check-publish publish hooks catalog-update sources-update clean
 
 help:
-	@printf 'make check | test [FILES="..."] | python-tests | lint-docs\nmake bootstrap | notebooks | site | build | check-publish | all\nmake catalog-update REVISION=<commit> | sources-update | hooks | publish | clean\n'
+	@printf 'make check | test [FILES="..."] | python-tests | lint-docs\nmake h5ad-tests [BIODATALINK_PYTHON set] | download-tests\nmake bootstrap | notebooks | site | build | check-publish | all\nmake catalog-update REVISION=<commit> | sources-update | hooks | publish | clean\n'
 
 all: check test python-tests build
 
@@ -16,6 +16,15 @@ test:
 
 python-tests:
 	$(PYTHON) -m unittest discover -s scripts/tests -v
+
+# Explicit optional-backend checks. These never install dependencies or contact providers.
+h5ad-tests:
+	@test -n "$$BIODATALINK_PYTHON" || (echo 'Set BIODATALINK_PYTHON to the configured interpreter' >&2; exit 1)
+	"$$BIODATALINK_PYTHON" -m unittest discover -s BioDataLink/Tests/Python -v
+	$(WOLFRAMSCRIPT) -file BioDataLink/Tests/Integration/AnnData.wls
+
+download-tests:
+	WOLFRAMSCRIPT="$(WOLFRAMSCRIPT)" $(PYTHON) BioDataLink/Tests/Integration/download_transport.py
 
 lint-docs:
 	$(WOLFRAMSCRIPT) -file scripts/check.wls docs

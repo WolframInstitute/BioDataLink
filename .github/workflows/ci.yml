@@ -50,12 +50,25 @@ jobs:
           git config --system --add safe.directory "$GITHUB_WORKSPACE"
       - uses: actions/checkout@v7
       - uses: ./.github/actions/wolfram-license
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: |
+            BioDataLink/Assets/Python/requirements-h5ad.txt
+            BioDataLink/Tests/Python/requirements.txt
+      - name: Configure the explicit H5AD test backend
+        run: |
+          python -m pip install -r BioDataLink/Tests/Python/requirements.txt
+          echo "BIODATALINK_PYTHON=$(command -v python)" >> "$GITHUB_ENV"
       - name: Acquire documentation tooling
         run: make bootstrap
       - name: Check metadata, code and documentation sources
         run: make check
       - name: Run offline tests
         run: make test
+      - name: Verify H5AD against independent AnnData fixtures
+        run: make h5ad-tests
       - name: Build and verify archive without cloud writes
         run: make check-publish
       - name: Upload verified paclet

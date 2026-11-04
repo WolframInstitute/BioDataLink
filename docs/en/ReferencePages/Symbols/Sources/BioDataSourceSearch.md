@@ -77,6 +77,19 @@ Return two source records in compact columns:
 BioDataSourceSearch["", "Limit" -> 2][All, {"Prefix", "Name"}]
 ```
 
+## Applications
+
+Find protein-related namespaces that list more than one access endpoint:
+
+```wl
+BioDataSourceSearch["protein"][Select[#ResourceCount > 1 &],
+    {"Prefix", "Name", "ResourceCount"}]
+```
+
+Multiple endpoints can provide alternative routes to a source record. Their
+number does not measure data quality or independent studies. Inspect a selected
+namespace with `BioDataSourceInfo` before choosing an endpoint.
+
 ## Possible Issues
 
 A query with no matching registry text gives an empty result:

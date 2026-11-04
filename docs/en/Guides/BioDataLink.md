@@ -5,10 +5,10 @@ Title: BioDataLink
 Context: WolframInstitute`BioDataLink`
 Paclet: WolframInstitute/BioDataLink
 URI: WolframInstitute/BioDataLink/guide/BioDataLink
-Description: Find biological data sources, search study metadata and load supported local expression data
+Description: Find biological data sources, retrieve verified files and read supported local measurements
 Keywords: [biology, datasets, gene expression, provenance]
-RelatedGuides: [Catalog, DataAccess, Providers, Sources]
-RelatedTutorials: [ExploringBiologicalData, FindingDataSources]
+RelatedGuides: [Catalog, ComputationalExplorations, DataAccess, Downloads, Providers, Sources]
+RelatedTutorials: [ConstructingBiologicalSimilarityNetworks, DiscretizingBiologicalMeasurements, DownloadingBiologicalData, ExploringBiologicalData, ExploringBiologicalDataGeometry, ExploringCellularAutomatonHypotheses, ExploringSimplePredictiveRules, FindingDataSources, ReadingAnnDataSlices, UnderstandingSparseMeasurements]
 ---
 
 ## Abstract
@@ -19,10 +19,14 @@ source directory spans biological and other domains and is not exhaustive.
 BioStudies and GEO queries run online; the source directory and Pertpy catalog
 can be searched offline.
 
-The local reader loads expression matrices in BioDataLink JSON format, with
-aligned cell and gene metadata and declared source information. It checks file
-structure and alignment; scientific interpretation depends on the assay and
-processing history.
+An explicit HTTPS file download can check an expected byte count and SHA-256
+before creating or replacing a local file. Local readers support BioDataLink
+JSON and selected matrices from supported H5AD files. The optional H5AD reader
+requires an explicitly configured Python interpreter and preserves the selected
+layer, axis positions and metadata.
+
+Transfer integrity and structural checks do not establish biological validity.
+Scientific interpretation depends on the assay, sampling and processing history.
 
 Finding a catalog record does not mean its data file can already be loaded.
 
@@ -50,3 +54,13 @@ WL marks a built-in Wolfram Language function.
 - `BioDatasetLoad` import a supported local expression file
 - `Dataset` (WL) explore cell and gene metadata
 - `SparseArray` (WL) represent sparse expression values
+
+### [Data File Downloads](paclet:WolframInstitute/BioDataLink/guide/Downloads)
+
+- `BioDatasetDownload` retrieve an explicit HTTPS file with byte limits and optional expected checksum
+
+### [Computational Explorations](paclet:WolframInstitute/BioDataLink/guide/ComputationalExplorations)
+
+- `ClusteringComponents` (WL) compare explicit clusterings and their sensitivity
+- `PrincipalComponents` (WL) examine measurement geometry under a chosen scale
+- `Quantile` (WL) turn continuous measurements into recorded finite bins

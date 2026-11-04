@@ -102,11 +102,15 @@ These inputs make up to two online queries:
 ```wl
 #| eval: false
 With[{first = BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3]},
-    If[FailureQ[first] || first["NextCursor"] === None,
-        first,
-        BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3,
+    Which[
+        FailureQ[first], first,
+        first["NextCursor"] === None, None,
+        True, BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3,
             "Cursor" -> first["NextCursor"]]]]
 ```
+
+The `None` branch means pagination has ended. Do not pass that terminal value
+as a new cursor or use a changing total to infer how many pages remain.
 
 ### PageSize
 
@@ -126,12 +130,48 @@ Allow up to 10 seconds for the online operation, including request pacing:
 BioDatasetQuery["BioStudies", "CRISPR", "TimeConstraint" -> 10]
 ```
 
+## Applications
+
+Review accession, title and organism together after one bounded online query:
+
+```wl
+#| eval: false
+With[{page = BioDatasetQuery["GEO", "CRISPR AND Homo sapiens[Organism]",
+        "PageSize" -> 5]},
+    If[FailureQ[page], page,
+        page["Records"][All, {"ID", "Title", "Organism"}]]]
+```
+
+The organism annotation is supplied by GEO. It can be a string or a list of
+strings. Inspect the original record and sampling design before deciding that
+the returned studies are comparable.
+
+Retain the query and retrieval evidence for an online search:
+
+```wl
+#| eval: false
+With[{page = BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3]},
+    If[FailureQ[page], page,
+        KeyTake[page, {"Provider", "Query", "SourceURL", "RetrievedAt",
+            "Total", "TotalIsExact", "NextCursor"}]]]
+```
+
+This records a particular search, not a frozen release of the provider's
+database. Preserve returned accessions separately if the selection is used in
+an analysis.
+
 ## Possible Issues
 
 An invalid page size is rejected before a network request:
 
 ```wl
 BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 0]
+```
+
+A string that is not a returned cursor is rejected before a network request:
+
+```wl
+BioDatasetQuery["GEO", "CRISPR", "Cursor" -> "not-a-returned-cursor"]
 ```
 
 Provider-specific accessions from live results are not entries in the bundled

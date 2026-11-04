@@ -49,6 +49,20 @@ Construct a link using the registry's example DOI:
 BioDataURL[{"doi", BioDataSourceInfo["doi"]["SampleID"]}]
 ```
 
+## Applications
+
+Keep a source name, its supplied sample identifier and the constructed link together:
+
+```wl
+With[{source = BioDataSourceInfo["pdb"]},
+    <|"Source" -> source["Name"], "ID" -> source["SampleID"],
+        "URL" -> BioDataURL[{source["Prefix"], source["SampleID"]}]|>]
+```
+
+This example uses PDB's unprefixed sample identifier. For an embedded-prefix
+namespace, supply the complete original identifier instead of assuming that
+the registry's `"SampleID"` contains the required prefix.
+
 ## Possible Issues
 
 An empty identifier is rejected:

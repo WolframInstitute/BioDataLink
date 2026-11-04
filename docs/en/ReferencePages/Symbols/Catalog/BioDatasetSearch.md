@@ -25,7 +25,7 @@ RelatedTutorials: [ExploringBiologicalData]
 - The provider and organism filters use exact values. `All` disables a filter.
 - An empty query matches all records before filters and limits are applied.
 - No matches gives an empty `Dataset`.
-- A catalog match does not imply that its data file can be loaded. `"NativeImportSupported"` is currently `False` for all Pertpy records.
+- A catalog match does not imply a verified import route for its particular file. `"NativeImportSupported"` is currently `False` for all Pertpy records, independently of generic H5AD format support.
 - Options are listed with defaults in the middle column:
 
 | | | |
@@ -84,6 +84,21 @@ Restrict discovery to the Pertpy snapshot and show compact catalog columns:
 ```wl
 BioDatasetSearch["", "Provider" -> "Pertpy", "Limit" -> 3][All, {"Provider", "ID"}]
 ```
+
+## Applications
+
+Compare catalog entries for processed and raw variants before selecting a file:
+
+```wl
+BioDatasetSearch["norman_2019"][All,
+    {"ID", "Organism", "NativeImportSupported"}]
+```
+
+The two entries refer to variants associated with the same study. The suffix
+alone does not document their measurement scale or preprocessing. Inspect each
+source record and its linked description before comparing or loading values.
+The missing organism annotation is a gap in this catalog, not an assertion
+about the study's biology.
 
 ## Possible Issues
 

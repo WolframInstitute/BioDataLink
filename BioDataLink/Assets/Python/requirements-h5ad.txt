@@ -1,0 +1,3 @@
+# Tested optional local H5AD reader backend. Installation is explicit.
+h5py==3.16.0
+numpy==2.5.4

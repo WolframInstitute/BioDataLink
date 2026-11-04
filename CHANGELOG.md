@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.3.0 — Artifact downloads and selected AnnData import
+
+- Add explicit HTTPS artifact downloads with transfer limits, optional expected
+  lengths and SHA-256 hashes, and verified placement in a caller-selected file.
+- Add optional, bounded H5AD import through `BioDatasetLoad`, retaining selected
+  matrix values, original axis identifiers and annotation missingness. The
+  source layer and omitted structures are explicit; normalization is not inferred.
+- Expand researcher examples for discovery, provenance, pagination, verified
+  downloads, matrix selection and interpretation of missing annotations.
+- Provide ten worked tutorials, including measured-data geometry, finite-state
+  encodings, predictive rule search, similarity networks, sparse measurements
+  and cellular automaton hypotheses, with computed figures and explicit limits
+  on scientific interpretation.
+
 ## 0.2.0 — Broad source discovery
 
 - Add offline source discovery, namespace metadata and identifier resolver URLs
@@ -25,4 +39,4 @@
   WolframInstitute/PureMath develop, and build/release automation from
   WolframInstitute/Ruliology.
 
-Remote biological data download and AnnData/H5AD conversion are planned.
+At version 0.1.0, remote file download and AnnData/H5AD import were planned.
