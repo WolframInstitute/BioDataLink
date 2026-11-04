@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.3.0 — Artifact downloads and selected AnnData import
+## 0.3.0 — 2026-11-04 — Initial public release
+
+This release includes the discovery and local-import capabilities developed
+during the 0.1 and 0.2 milestones, together with the additions below.
 
 - Add explicit HTTPS artifact downloads with transfer limits, optional expected
   lengths and SHA-256 hashes, and verified placement in a caller-selected file.
@@ -18,7 +21,9 @@
   changes, shared predictions and perturbation stability to compare hypotheses
   and analysis choices with fixed visual layouts.
 
-## 0.2.0 — Broad source discovery
+## 0.2.0 — Development milestone: broad source discovery
+
+Internal development milestone; not separately released.
 
 - Add offline source discovery, namespace metadata and identifier resolver URLs
   from a provenance-bearing Identifiers.org registry snapshot (CC BY 4.0).
@@ -31,7 +36,9 @@
 - Keep source listing, public accessibility, file retrieval and native import
   capabilities distinct. Add scientist-facing discovery examples and limits.
 
-## Unreleased — 0.1.0
+## 0.1.0 — Development milestone: foundation
+
+Internal development milestone; not separately released.
 
 - Add the initial BioDataLink paclet structure with Catalog and DataAccess areas.
 - Add offline search and metadata inspection for a pinned Pertpy catalog snapshot.

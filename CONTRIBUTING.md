@@ -141,10 +141,19 @@ Before an authorized release:
 4. Ensure CI passed for the exact main-branch commit to be tagged.
 5. Create the version tag through the documented release workflow.
 
-The tag-driven release workflow creates the GitHub release from the validated
-CI artifact. Wolfram Cloud publication is an explicit gated workflow dispatch,
-with the requested tag and confirmation. Consult the actual workflows before
-running either; do not assume pushing a tag also publishes to Wolfram Cloud.
+The tag-driven release workflow requires a successful main-branch push CI run
+for the exact tagged commit and creates the GitHub release from that run's
+validated artifact. Its dependent publication job then calls the reusable
+Wolfram Cloud workflow. Publication independently verifies the released tag
+and the same CI requirement before authenticating to Cloud. A failed CI check
+prevents both release and publication; a failed release job prevents publication.
+
+Use the confirmed manual Publish dispatch only to retry publication of an
+already released tag. It applies the same CI and version gates. The
+`wolfram-cloud` environment can apply additional repository deployment rules.
+Consult the actual workflows before running either path. The publication job
+retains the verified version, source commit and public URLs as its `publication`
+artifact; credentials are never written there.
 
 Verify the resulting release version, source commit, installability and relevant
 rendered documentation after publication. If a publish run is interrupted,

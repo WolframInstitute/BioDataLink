@@ -27,6 +27,14 @@ CheckAbort[
     If[ExpandFileName[resolved["Location"]] =!= ExpandFileName[FileNameJoin[{root, ".deps", "PacletPage"}]],
         fail["an installed PacletPage shadows the pinned checkout"]];
     Print["PacletPage ", resolved["Version"], " from ", resolved["Location"]];
+    If[command === "publish",
+        user = Environment["WOLFRAM_CLOUD_USER"];
+        If[!StringQ[user] || user === "", fail["set WOLFRAM_CLOUD_USER to the publishing account"]];
+        If[Environment["GITHUB_ACTIONS"] === "true" && !TrueQ[$CloudConnected],
+            Quiet[TimeConstrained[CloudConnect[user, Environment["WOLFRAM_CLOUD_PASSWORD"]], 60, $Failed]]];
+        If[!TrueQ[$CloudConnected] || !MemberQ[{$WolframID, First[StringSplit[$WolframID, "@"]]}, user],
+            fail["the kernel must be authenticated as the configured publishing account"]]
+    ];
     converted = require[WolframInstitute`PacletPage`BuildPacletDocumentation[pacletDirectory,
         "Source" -> FileNameJoin[{root, "docs", "en"}],
         "Definition" -> FileNameJoin[{root, "docs", "ResourceDefinition.md"}],
@@ -48,15 +56,16 @@ CheckAbort[
         If[Lookup[site, "Failed", {"missing result"}] =!= {}, fail[site]]
     ];
     If[command === "publish",
-        user = Environment["WOLFRAM_CLOUD_USER"];
-        If[!StringQ[user] || user === "", fail["set WOLFRAM_CLOUD_USER to the publishing account"]];
-        If[Environment["GITHUB_ACTIONS"] === "true" && !TrueQ[$CloudConnected],
-            TimeConstrained[CloudConnect[user, Environment["WOLFRAM_CLOUD_PASSWORD"]], 60]];
-        If[!TrueQ[$CloudConnected] || !MemberQ[{$WolframID, First[StringSplit[$WolframID, "@"]]}, user],
-            fail["the kernel must already be authenticated as the intended publishing account"]];
         published = require[WolframInstitute`PacletPage`PublishPacletPage[pacletDirectory, "BioDataLink",
-            "Account" -> $WolframID, "Build" -> False,
+            "Account" -> $WolframID, "Build" -> False, "Monitor" -> True,
             "ResourceOptions" -> {"Build" -> False, "Exclude" -> archiveExclusions}], "publication"];
+        If[!AllTrue[Lookup[published, {"Resource", "Site", "Check"}, None], AssociationQ],
+            fail["publication returned incomplete resource, site or verification records"]];
+        publicationRecord = Join[KeyTake[published["Resource"], {"Resource", "Version", "Commit", "ArchiveSize"}],
+            <|"Site" -> published["Site"]["Site"], "DocumentationPages" -> published["Site"]["Pages"],
+                "Verified" -> TrueQ[published["Check"]["OK"]]|>];
+        Export[FileNameJoin[{pacletDirectory, "build", "publication.json"}], publicationRecord, "RawJSON"];
+        Print["Publication: ", publicationRecord];
         If[!TrueQ[published["Check"]["OK"]], fail["published site checks failed"]]
     ],
     fail["documentation command aborted"]

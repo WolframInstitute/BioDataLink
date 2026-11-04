@@ -46,8 +46,20 @@ jobs:
       - name: Install build tools
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends git curl make python3
+          apt-get install -y --no-install-recommends git curl make python3 openssl ca-certificates
           git config --system --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Verify bounded-download backend
+        run: |
+          python3 - <<'PY'
+          import re
+          import subprocess
+          result = subprocess.run(["curl", "--disable", "--version"],
+                                  check=True, capture_output=True, text=True, timeout=5)
+          print(result.stdout, end="")
+          version = re.match(r"curl (\d+)\.(\d+)\.(\d+)", result.stdout)
+          if version is None or tuple(map(int, version.groups())) < (8, 4, 0):
+              raise SystemExit("Download checks require curl 8.4 or newer.")
+          PY
       - uses: actions/checkout@v7
       - uses: ./.github/actions/wolfram-license
       - uses: actions/setup-python@v7
@@ -67,6 +79,8 @@ jobs:
         run: make check
       - name: Run offline tests
         run: make test
+      - name: Verify bounded HTTPS downloads with a temporary loopback CA
+        run: make download-tests
       - name: Verify H5AD against independent AnnData fixtures
         run: make h5ad-tests
       - name: Build and verify archive without cloud writes

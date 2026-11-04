@@ -11,7 +11,7 @@ MainGuide: Documentation/English/Guides/BioDataLink.nb
 License: MIT
 WolframVersion: 15.0+
 Categories: [Scientific and Medical Data & Computation]
-Links: ["[Identifiers.org registry](https://registry.identifiers.org/)", "[BioStudies](https://www.ebi.ac.uk/biostudies/)", "[GEO](https://www.ncbi.nlm.nih.gov/geo/)", "[Pertpy dataset catalog](https://pertpy.scverse.org/en/stable/api/datasets_index.html)"]
+Links: ["[Source repository](https://github.com/WolframInstitute/BioDataLink)", "[Releases](https://github.com/WolframInstitute/BioDataLink/releases)", "[Identifiers.org registry](https://registry.identifiers.org/)", "[BioStudies](https://www.ebi.ac.uk/biostudies/)", "[GEO](https://www.ncbi.nlm.nih.gov/geo/)", "[Pertpy dataset catalog](https://pertpy.scverse.org/en/stable/api/datasets_index.html)"]
 ---
 
 ## Basic Description
@@ -23,7 +23,7 @@ provenance; matrix results preserve aligned metadata and explicit selections.
 
 ## Details & Options
 
-Version 0.3 includes 867 Identifiers.org namespaces and 1,039 endpoints, with
+Version 0.3.0 includes 867 Identifiers.org namespaces and 1,039 endpoints, with
 774 active namespaces shown by default. This broad directory spans biological
 and other domains and is not exhaustive. A listing or generated resolver link
 does not establish current availability, open access or data-file import support.
@@ -58,8 +58,7 @@ configured Python interpreter with h5py and NumPy. It preserves original axis
 positions, duplicate labels and missing annotations, and lists omitted
 structures. The result is not a complete AnnData object. Normalization is
 unspecified and no whole-file checksum is computed. Optional dependencies are
-not installed automatically. This is a local development milestone; no
-published release is implied.
+not installed automatically.
 
 Eleven worked tutorials connect discovery and import to measurement geometry,
 finite-state encodings, sparse-data interpretation, similarity networks,

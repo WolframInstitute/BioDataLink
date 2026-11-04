@@ -3,13 +3,17 @@ message: If you use this software, please cite BioDataLink and the original data
 type: software
 title: BioDataLink
 abstract: >-
-  A Wolfram Language paclet for discovering biological datasets, inspecting
-  provider metadata, and importing data with explicit identifiers and provenance.
+  A Wolfram Language paclet for discovering biological data sources, searching
+  public study metadata, verifying file downloads and reading supported local
+  measurements with explicit identifiers and provenance.
 authors:
   - name: Wolfram Institute
     website: https://wolframinstitute.org
 license: MIT
 version: 0.3.0
+date-released: 2026-11-04
+repository-code: https://github.com/WolframInstitute/BioDataLink
+url: https://github.com/WolframInstitute/BioDataLink
 keywords:
   - biological data
   - single-cell data

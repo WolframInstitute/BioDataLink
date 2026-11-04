@@ -45,3 +45,15 @@ jobs:
           fi
           gh release create "$TAG" dist/*.paclet --repo "$GITHUB_REPOSITORY" \
             --title "$TAG" --generate-notes --verify-tag
+
+  publish:
+    name: Publish the released version to Wolfram Cloud
+    needs: release
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/publish.yml
+    with:
+      tag: ${{ github.ref_name }}
+      confirm: true
+    secrets: inherit

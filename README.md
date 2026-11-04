@@ -1,229 +1,178 @@
 # BioDataLink
 
-A Wolfram Language paclet for discovering biological datasets and loading
-supported data with their identifiers and provenance.
+[![CI](https://github.com/WolframInstitute/BioDataLink/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/WolframInstitute/BioDataLink/actions/workflows/ci.yml)
+[![Release](https://github.com/WolframInstitute/BioDataLink/actions/workflows/release.yml/badge.svg)](https://github.com/WolframInstitute/BioDataLink/actions/workflows/release.yml)
 
-The goal is access across biological domains, from sequences and structures to
-expression, pathways, imaging and biodiversity. Version 0.3 adds bounded HTTPS
-file downloads and optional selected H5AD reading to source discovery, public
-study queries and local JSON expression data.
+BioDataLink connects biological data to Wolfram Language. Find data sources,
+search public studies, download selected files and read supported measurements
+with their identifiers and provenance.
 
-The local development version is `WolframInstitute/BioDataLink` 0.3.0 and
-requires Wolfram Language 15.0 or later. The bundled Identifiers.org directory
-contains 867 identifier namespaces, including 93 deprecated namespaces, and
-1,039 access endpoints. This is a nonexhaustive directory across biological and
-other domains; inclusion does not establish open access or a working data reader.
-Source discovery and identifier-link construction run offline. Live public
-metadata queries are available for BioStudies studies and GEO Series.
+Requires Wolfram Language 15.0 or later.
 
-The separate Pertpy catalog contains 55 records extracted from a fixed revision
-of its data loaders. These are loader
-entries, including processed variants and examples, rather than 55 independent
-studies. Their descriptions are taken from the source and have not been
-scientifically curated by BioDataLink. Search and metadata inspection run offline.
-The first reader accepts local BioDataLink JSON version 1 files and returns
-a sparse expression matrix with aligned cell and gene metadata.
+[Documentation](docs/en/Guides/BioDataLink.md) ·
+[Releases](https://github.com/WolframInstitute/BioDataLink/releases) ·
+[Changelog](CHANGELOG.md)
 
-An explicit download can verify expected size and SHA-256 before placing a
-file at a chosen path. H5AD reading selects one supported matrix and aligned
-metadata, using an explicitly configured Python interpreter. It is not a
-complete AnnData-object import. Additional source APIs and authenticated
-private-data access remain future work. No published release is required for
-the checkout workflow below.
+## Get started
 
-## Use a checkout
+Install version 0.3.0 from its GitHub release, then load the paclet:
 
-From a Wolfram kernel, register the inner paclet directory:
-
-```wolfram
-PacletDirectoryLoad["/path/to/BioDataLink/BioDataLink"]
+```wl
+PacletInstall["https://github.com/WolframInstitute/BioDataLink/releases/download/v0.3.0/WolframInstitute__BioDataLink-0.3.0.paclet"]
 Needs["WolframInstitute`BioDataLink`"]
 ```
 
-Find sources and construct a link without a network request:
+Find registered sources and construct an identifier link. These calls use the
+bundled directory and work offline:
 
-```wolfram
+```wl
 BioDataSourceSearch["protein", "Limit" -> 5][All, {"Prefix", "Name"}]
 BioDataSourceInfo["pdb"]
 BioDataURL[{"pdb", "1CRN"}]
 ```
 
-Search public study metadata online, requesting a small page:
+Browse the separate Pertpy catalog and inspect a loader's source information:
 
-```wolfram
-BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3]
-BioDatasetQuery["GEO", "CRISPR AND Homo sapiens[Organism]", "PageSize" -> 3]
-```
-
-Queries return records, source-reported totals, a continuation cursor and
-retrieval information. They do not download the study's scientific data files.
-GEO accepts an optional API-key reference to an environment variable or system
-credential. That key affects public request limits; private-data access remains
-a future source-specific capability.
-
-Browse the bundled Pertpy catalog and inspect a loader record:
-
-```wolfram
-BioDatasetSearch["CRISPR", "Limit" -> 5]
+```wl
+BioDatasetSearch["CRISPR", "Limit" -> 5][All, {"Provider", "ID", "Title"}]
 BioDatasetInfo[{"Pertpy", "norman_2019"}]
 ```
 
-Download an explicitly chosen HTTPS file online, pinning the checked example's
-size and content hash. This requires curl 8.4 or later:
+Search public study metadata online, requesting a small page:
 
-```wolfram
-download = BioDatasetDownload[
-    "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data",
-    File[FileNameJoin[{CreateDirectory[], "iris.csv"}]],
-    "MaxFileBytes" -> 10000, "ExpectedByteCount" -> 4551,
-    "ExpectedSHA256" ->
-        "6f608b71a7317216319b4d27b4d9bc84e6abd734eda7872b71a458569e2656c0"]
+```wl
+page = BioDatasetQuery["GEO", "CRISPR AND Homo sapiens[Organism]",
+    "PageSize" -> 3];
+page["Records"][All, {"ID", "Title", "Organism"}]
 ```
 
-The hash pins the UCI file checked for this example; UCI did not publish that
-SHA-256 value. The [worked download tutorial](docs/en/Tutorials/DownloadingBiologicalData.md)
-retains attribution, assigns measurement units and plots a bundled copy offline.
+Results include a continuation cursor and retrieval information. A study
+search returns metadata; downloading its scientific data is a separate step.
+The [source-discovery tutorial](docs/en/Tutorials/FindingDataSources.md)
+shows pagination, source records and identifier conventions.
 
-Load a local interchange file:
+## Coverage
 
-```wolfram
-data = BioDatasetLoad[File["/path/to/expression.json"]];
-data["CellMetadata"]
-data["GeneMetadata"]
-data["ExpressionMatrix"]
+| Area | Functions | Available in 0.3.0 |
+| --- | --- | --- |
+| Sources | `BioDataSourceSearch`, `BioDataSourceInfo`, `BioDataURL` | Offline Identifiers.org directory and resolver links |
+| Providers | `BioDatasetQuery` | Live, paginated public BioStudies studies and GEO Series |
+| Catalog | `BioDatasetSearch`, `BioDatasetInfo` | Offline Pertpy loader metadata |
+| Downloads | `BioDatasetDownload` | Explicit HTTPS downloads with byte limits and optional expected size and SHA-256 |
+| DataAccess | `BioDatasetLoad` | Local BioDataLink JSON and optional selected H5AD matrices |
+
+The directory contains 867 identifier namespaces, including 93 deprecated
+namespaces, and 1,039 access endpoints. Search shows 774 active namespaces by
+default. It spans biological and other domains and is not exhaustive. A source
+listing or resolver link does not establish open access, current availability
+or a supported data reader.
+
+The 55 Pertpy records are loader entries, including processed variants and
+examples, rather than 55 independent studies. Their metadata come from a pinned
+source revision and have not been scientifically curated by BioDataLink.
+
+Live queries support public metadata. An optional GEO API key can be supplied
+by a named environment variable or system credential; it affects public request
+quotas. Authenticated private-data access remains future work.
+
+## Read measurements
+
+Try the bundled synthetic expression example without external dependencies:
+
+```wl
+file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["Location"],
+    "Assets", "Examples", "toy-expression.json"}];
+data = BioDatasetLoad[File[file]];
+Normal[data["ExpressionMatrix"]]
 data["Provenance"]
 ```
 
-Rows of the expression matrix correspond to cells; columns correspond to genes.
-Metadata retain the same order. The reader validates dimensions, identifiers
-and sparse entries before returning data. The [interchange format](docs/interchange-format.md)
-defines the file schema and gives a small synthetic example.
+The matrix is `{{3, 0}, {0, 5}, {2, 1}}`, with cells in rows and genes in
+columns. Cell and gene metadata preserve that order. This JSON format treats
+omitted entries as numerical zero; it cannot represent missing measurements.
+Structural checks do not establish the biological meaning of the values.
+See the [interchange format](docs/interchange-format.md).
 
-The local format treats every omitted matrix entry as numerical zero; it cannot
-represent an unmeasured or unknown value. The declared measurement scale and
-source information must therefore be checked before scientific analysis.
-Loading a file checks its structure, not its biological interpretation or the
-appropriateness of comparing its values.
+Two capabilities have optional dependencies:
 
-After [configuring the optional H5AD reader](docs/en/Tutorials/ReadingAnnDataSlices.md),
-read a selected local matrix with an explicit interpreter path:
+- **HTTPS downloads** require curl 8.4 or later. Choose a destination file and,
+  when available, an expected size or SHA-256. The
+  [download tutorial](docs/en/Tutorials/DownloadingBiologicalData.md) follows an
+  attributed UCI Iris file through verification, units and computed figures.
+- **H5AD reading** requires an explicitly configured Python interpreter with
+  h5py and NumPy. The [AnnData tutorial](docs/en/Tutorials/ReadingAnnDataSlices.md)
+  covers setup, selected rows and columns, layers, duplicate labels and missing
+  annotations. It reads a supported matrix and aligned metadata, not a complete
+  AnnData object. Normalization is not inferred and no full-file hash is computed.
 
-```wolfram
-slice = BioDatasetLoad[File["/path/to/data.h5ad"], "Format" -> "AnnData",
-    "PythonExecutable" -> "/path/to/environment/bin/python",
-    "Cells" -> {1, 2}, "Genes" -> {1, 2, 3}, "MaxFileBytes" -> Infinity]
-```
-
-H5AD results preserve source positions, repeated labels, missing annotations
-and the chosen layer. They list omitted structures and leave normalization
-unspecified. The reader does not compute a full-file checksum, install Python
-packages, or silently materialize every AnnData component. Matrix-selection
-and serialized-result limits remain in effect when the file-size limit is lifted.
-
-## Organization
-
-The kernel, tests, guides and reference pages share these areas:
-
-| Area | Purpose |
-| --- | --- |
-| Sources | Registered identifier systems, source descriptions and resolver links |
-| Providers | Live public study metadata queries |
-| Catalog | Dataset discovery, metadata and source identity |
-| Downloads | Explicit HTTPS transfers with size and checksum checks |
-| DataAccess | Validated import of supported biological data formats |
-
-The paclet has one context: `` WolframInstitute`BioDataLink` ``. Provider and
-format helpers remain private.
+BioDataLink does not install these dependencies automatically. Download limits,
+matrix-selection limits and serialized-result limits serve different purposes;
+none should be read as a bound on all process memory or decompressed storage.
 
 ## Documentation
 
-- [BioDataLink guide source](docs/en/Guides/BioDataLink.md)
-- [Catalog guide source](docs/en/Guides/Catalog/Catalog.md)
-- [Computational Explorations guide source](docs/en/Guides/ComputationalExplorations/ComputationalExplorations.md)
-- [Data Access guide source](docs/en/Guides/DataAccess/DataAccess.md)
-- [Data File Downloads guide source](docs/en/Guides/Downloads/Downloads.md)
-- [Data Sources guide source](docs/en/Guides/Sources/Sources.md)
-- [Online Study Search guide source](docs/en/Guides/Providers/Providers.md)
-- [Choosing Measurements to Distinguish Models tutorial source](docs/en/Tutorials/ChoosingMeasurementsToDistinguishModels.md)
-- [Constructing Biological Similarity Networks tutorial source](docs/en/Tutorials/ConstructingBiologicalSimilarityNetworks.md)
-- [Discretizing Biological Measurements tutorial source](docs/en/Tutorials/DiscretizingBiologicalMeasurements.md)
-- [Downloading and Inspecting Biological Data tutorial source](docs/en/Tutorials/DownloadingBiologicalData.md)
-- [Exploring Biological Data tutorial source](docs/en/Tutorials/ExploringBiologicalData.md)
-- [Exploring the Geometry of Biological Measurements tutorial source](docs/en/Tutorials/ExploringBiologicalDataGeometry.md)
-- [Exploring Cellular Automaton Hypotheses tutorial source](docs/en/Tutorials/ExploringCellularAutomatonHypotheses.md)
-- [Exploring Simple Predictive Rules tutorial source](docs/en/Tutorials/ExploringSimplePredictiveRules.md)
-- [Finding Biological Data Sources tutorial source](docs/en/Tutorials/FindingDataSources.md)
-- [Reading Selected AnnData Measurements tutorial source](docs/en/Tutorials/ReadingAnnDataSlices.md)
-- [Understanding Sparse Measurements tutorial source](docs/en/Tutorials/UnderstandingSparseMeasurements.md)
-- [Design](docs/design.md), [provider contract](docs/provider-contract.md) and
-  [build index](docs/build-index.md)
+The installed paclet includes reference pages, seven guides and eleven worked
+tutorials. The [function guide](docs/en/Guides/BioDataLink.md) indexes the API;
+the [Computational Explorations guide](docs/en/Guides/ComputationalExplorations/ComputationalExplorations.md)
+connects computational choices to scientific questions.
 
-The computational tutorials use actual attributed Iris measurements or clearly
-labeled synthetic matrices. They connect access to scaling, clustering, finite
-representations, rule search, network sensitivity and explicit observation
-models. Figures are computed from the displayed inputs. The examples use
-built-in Wolfram Language; sibling Ruliology and Ruliobiology paclets are not
-required.
+A gradual reading path is:
 
-For a gradual reading path:
+1. Establish source identity and provenance with
+   [exploring biological data](docs/en/Tutorials/ExploringBiologicalData.md),
+   [finding sources](docs/en/Tutorials/FindingDataSources.md),
+   [downloading files](docs/en/Tutorials/DownloadingBiologicalData.md) and
+   [reading AnnData selections](docs/en/Tutorials/ReadingAnnDataSlices.md).
+2. Examine [measurement geometry](docs/en/Tutorials/ExploringBiologicalDataGeometry.md),
+   [sparse measurements](docs/en/Tutorials/UnderstandingSparseMeasurements.md)
+   and [finite-state encodings](docs/en/Tutorials/DiscretizingBiologicalMeasurements.md).
+3. Compare [predictive rules](docs/en/Tutorials/ExploringSimplePredictiveRules.md)
+   from constants to individual thresholds and AND/OR combinations.
+4. Build [similarity networks](docs/en/Tutorials/ConstructingBiologicalSimilarityNetworks.md)
+   and test which connections survive analysis choices.
+5. Compare [cellular-automaton hypotheses](docs/en/Tutorials/ExploringCellularAutomatonHypotheses.md)
+   while increasing the specified neighborhood.
+6. [Choose measurements to distinguish models](docs/en/Tutorials/ChoosingMeasurementsToDistinguishModels.md),
+   progressing from one observable to panels and sensitivity to error bounds.
 
-1. Start with discovery, provenance, downloads and a supported local import.
-2. Examine geometry, sparse measurements and explicit threshold encodings.
-3. Compare predictive rules from constants to one threshold and AND/OR combinations.
-4. Build similarity neighborhoods and test their sensitivity.
-5. Compare cellular-automaton observations while increasing the specified neighborhood.
-6. Choose additional observables, progressing from one measurement to panels and error-bound sensitivity.
-
-This progression adds explicit comparisons, neighborhood sites, states and
-observation assumptions. Rule numbers and attractive graphs do not measure
-biological complexity. The [Computational Explorations guide](docs/en/Guides/ComputationalExplorations/ComputationalExplorations.md)
-connects each stage to its scientific question; the index above remains
-alphabetical for reference.
-
-These links lead to Markdown sources. `make notebooks` builds paclet
-documentation notebooks; build and visual inspection are separate checks.
+Figures are computed from attributed Iris measurements or clearly labeled
+synthetic inputs. The progression adds explicit comparisons, neighborhood sites,
+states and observation assumptions; it does not infer biological complexity
+from rule numbers or graphs. These examples use built-in Wolfram Language and
+do not require sibling modeling paclets.
 
 ## Development
 
-Run `make help` for available commands. The main checks are:
+From the repository root, load the source paclet:
 
-```sh
-make check
-make test
-make lint-docs
-make notebooks
-make check-publish
+```wl
+PacletDirectoryLoad[FileNameJoin[{Directory[], "BioDataLink"}]]
+Needs["WolframInstitute`BioDataLink`"]
 ```
 
-`make all` runs the local CI checks. Core tests and documentation examples use
-bundled metadata and small local fixtures. Live provider tests must be explicit.
-See [CONTRIBUTING.md](CONTRIBUTING.md) for scope-based checks and environment setup.
+| Command | Purpose |
+| --- | --- |
+| `make check` | Check metadata, sources and documentation |
+| `make test` | Run offline Wolfram Language tests |
+| `make python-tests` | Test repository automation |
+| `make h5ad-tests` | Check the explicitly configured optional H5AD backend |
+| `make download-tests` | Check downloads against a local HTTPS fixture |
+| `make notebooks` | Build documentation with PacletPage |
+| `make check-publish` | Build and check the paclet archive without publishing |
 
-Successful registry and catalog loads are cached within each Wolfram kernel
-session. Prefix lookup and search text are prepared once. After explicitly
-updating a bundled source file, restart the kernel to read the new copy. Live
-queries use pagination, and GEO retrieves summaries in batches per page.
+`make all` runs the core local checks and build. Optional-backend checks are
+separate; ordinary tests and documentation examples do not contact providers.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for prerequisites and release procedures,
+[GUIDE.md](GUIDE.md) for conventions and the [roadmap](ROADMAP.md) for planned
+capabilities. Restart the Wolfram kernel after updating loaded paclet code or
+bundled metadata, which are cached within a session.
 
-The contributor rules, review playbooks and documentation conventions use
-[WolframInstitute/PureMath](https://github.com/WolframInstitute/PureMath/tree/e2dacfa90c526c3bc9902ef7fa24d29932fb3b22)
-from its `develop` branch as the preferred source. Initial CI/repository patterns come
-from [WolframInstitute/Ruliology](https://github.com/WolframInstitute/Ruliology).
-Thin entry points delegate builds, documentation and publishing to PacletPage.
-See [AGENTS.md](AGENTS.md) and [GUIDE.md](GUIDE.md) for the biological-data
-specialization and [the adaptation record](docs/conventions.md).
+## License and citation
 
-## Release status
+The paclet code is [MIT licensed](LICENSE). The bundled
+[Identifiers.org registry](BioDataLink/Assets/Sources/README.md) and
+[UCI Iris measurements](BioDataLink/Assets/Examples/README.md) are CC BY 4.0,
+with their attribution and provenance retained. Other datasets keep their own
+licenses, citations and access terms.
 
-This repository contains a local development implementation. Release
-and publishing workflows are provided for maintainers; no release or cloud
-deployment is implied by their presence. Follow the release playbook and the
-[roadmap](ROADMAP.md) before publishing.
-
-## License
-
-[MIT](LICENSE) for the paclet code. The bundled Identifiers.org registry is
-[CC BY 4.0](https://docs.identifiers.org/pages/terms_of_use.html), with
-[attribution and transformation details](BioDataLink/Assets/Sources/README.md).
-The bundled [UCI Iris example](BioDataLink/Assets/Examples/README.md) is also
-CC BY 4.0 and retains its citation and exact retrieved bytes.
-Other source datasets retain their own licenses, citations and terms.
+Cite [BioDataLink](CITATION.cff) and the original data sources used in your work.

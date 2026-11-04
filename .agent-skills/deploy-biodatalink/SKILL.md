@@ -27,9 +27,12 @@ secret values, account session or entitlement as part of porting its scripts.
 ## Release and publish
 
 When authorized, use an annotated version tag following the workflow contract.
-The tag-driven release attaches the verified CI artifact. Cloud publication is
-a separate explicitly gated workflow dispatch; inspect its required tag and
-confirmation inputs before invoking it. The GitHub release uses the verified CI archive. Cloud publication may rebuild
+The tag-driven release attaches the verified CI artifact, then invokes the
+reusable Cloud workflow as a dependent job. Both stages require successful
+main-branch push CI for the exact tagged commit. A confirmed manual Publish
+dispatch is available to retry an already released tag with the same gates.
+Inspect the actual workflows before invoking either path.
+The GitHub release uses the verified CI archive. Cloud publication may rebuild
 from the same tag; check that its version and source commit agree and report
 the rebuild rather than claiming byte-identical artifacts.
 

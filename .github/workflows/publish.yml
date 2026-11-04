@@ -1,7 +1,24 @@
 name: Publish
 
-# Configure allowed tags/reviewers on the wolfram-cloud environment before use.
+# Called after the verified GitHub release; manual dispatch can retry publication.
 on:
+  workflow_call:
+    inputs:
+      tag:
+        description: Existing released version tag (vMAJOR.MINOR.PATCH)
+        required: true
+        type: string
+      confirm:
+        description: Authorize publication after the release and CI gates
+        required: true
+        type: boolean
+    secrets:
+      WOLFRAMSCRIPT_ENTITLEMENTID:
+        required: true
+      WOLFRAM_CLOUD_USER:
+        required: true
+      WOLFRAM_CLOUD_PASSWORD:
+        required: true
   workflow_dispatch:
     inputs:
       tag:
@@ -55,6 +72,10 @@ jobs:
         run: |
           python3 scripts/validate_release.py "$TAG" --require-ci
           gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null
+      - name: Check publication credentials are configured
+        run: |
+          test -n "$WOLFRAM_CLOUD_USER" || { echo 'Missing WOLFRAM_CLOUD_USER' >&2; exit 1; }
+          test -n "$WOLFRAM_CLOUD_PASSWORD" || { echo 'Missing WOLFRAM_CLOUD_PASSWORD' >&2; exit 1; }
       - uses: ./.github/actions/wolfram-license
       - name: Acquire documentation tooling
         run: make bootstrap
@@ -62,3 +83,11 @@ jobs:
         run: make check test python-tests
       - name: Publish
         run: make publish
+      - name: Retain the publication URLs and version
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: publication
+          path: BioDataLink/build/publication.json
+          if-no-files-found: ignore
+          retention-days: 30
