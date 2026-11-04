@@ -111,35 +111,37 @@ none should be read as a bound on all process memory or decompressed storage.
 
 ## Documentation
 
-The installed paclet includes reference pages, seven guides and eleven worked
-tutorials. The [function guide](docs/en/Guides/BioDataLink.md) indexes the API;
-the [Computational Explorations guide](docs/en/Guides/ComputationalExplorations/ComputationalExplorations.md)
-connects computational choices to scientific questions.
+Explore **eleven worked tutorials**, seven guides and the function reference.
+Each tutorial includes executable Wolfram Language examples; the computational
+explorations use figures to explain the results.
 
-A gradual reading path is:
+[Function guide](docs/en/Guides/BioDataLink.md) ·
+[Computational Explorations](docs/en/Guides/ComputationalExplorations/ComputationalExplorations.md)
 
-1. Establish source identity and provenance with
-   [exploring biological data](docs/en/Tutorials/ExploringBiologicalData.md),
-   [finding sources](docs/en/Tutorials/FindingDataSources.md),
-   [downloading files](docs/en/Tutorials/DownloadingBiologicalData.md) and
-   [reading AnnData selections](docs/en/Tutorials/ReadingAnnDataSlices.md).
-2. Examine [measurement geometry](docs/en/Tutorials/ExploringBiologicalDataGeometry.md),
-   [sparse measurements](docs/en/Tutorials/UnderstandingSparseMeasurements.md)
-   and [finite-state encodings](docs/en/Tutorials/DiscretizingBiologicalMeasurements.md).
-3. Compare [predictive rules](docs/en/Tutorials/ExploringSimplePredictiveRules.md)
-   from constants to individual thresholds and AND/OR combinations.
-4. Build [similarity networks](docs/en/Tutorials/ConstructingBiologicalSimilarityNetworks.md)
-   and test which connections survive analysis choices.
-5. Compare [cellular-automaton hypotheses](docs/en/Tutorials/ExploringCellularAutomatonHypotheses.md)
-   while increasing the specified neighborhood.
-6. [Choose measurements to distinguish models](docs/en/Tutorials/ChoosingMeasurementsToDistinguishModels.md),
-   progressing from one observable to panels and sensitivity to error bounds.
+### 1. Find and load data
 
-Figures are computed from attributed Iris measurements or clearly labeled
-synthetic inputs. The progression adds explicit comparisons, neighborhood sites,
-states and observation assumptions; it does not infer biological complexity
-from rule numbers or graphs. These examples use built-in Wolfram Language and
-do not require sibling modeling paclets.
+- [Explore biological data](docs/en/Tutorials/ExploringBiologicalData.md) — Start with catalog records, measurements and provenance.
+- [Find data sources](docs/en/Tutorials/FindingDataSources.md) — Discover repositories, resolve identifiers and search public studies.
+- [Download biological data](docs/en/Tutorials/DownloadingBiologicalData.md) — Verify a file, inspect its variables and plot measurements.
+- [Read AnnData selections](docs/en/Tutorials/ReadingAnnDataSlices.md) — Select cells, genes and layers while preserving aligned metadata.
+
+### 2. Understand the measurements
+
+- [Explore measurement geometry](docs/en/Tutorials/ExploringBiologicalDataGeometry.md) — Compare distances, projections and clusters as measurement scales change.
+- [Understand sparse measurements](docs/en/Tutorials/UnderstandingSparseMeasurements.md) — Distinguish numerical zeros, missing observations and processing scales.
+- [Build finite-state encodings](docs/en/Tutorials/DiscretizingBiologicalMeasurements.md) — Compare thresholds and rank bins, and examine the information lost.
+
+### 3. Explore rules and choose experiments
+
+- [Compare predictive rules](docs/en/Tutorials/ExploringSimplePredictiveRules.md) — Progress from constants to thresholds and AND/OR combinations; test held-out predictions.
+- [Construct similarity networks](docs/en/Tutorials/ConstructingBiologicalSimilarityNetworks.md) — Build graphs and identify connections that survive changes in analysis choices.
+- [Explore cellular-automaton hypotheses](docs/en/Tutorials/ExploringCellularAutomatonHypotheses.md) — Enumerate rules, enlarge neighborhoods and compare observable predictions.
+- [Choose measurements to distinguish models](docs/en/Tutorials/ChoosingMeasurementsToDistinguishModels.md) — Move from one observable to measurement panels, then vary assumed error bounds.
+
+Examples use attributed Iris measurements or clearly labeled synthetic data.
+The rule explorations increase complexity step by step using built-in Wolfram
+Language. Agreement with measurements alone does not establish a biological
+mechanism.
 
 ## Development
 
