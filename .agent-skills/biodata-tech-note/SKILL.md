@@ -19,10 +19,13 @@ applicable. Label synthetic examples as such.
 
 Use local data in ordinary evaluated builds. Put online retrieval instructions
 and backend requirements in clearly identified examples without triggering
-large downloads during rendering. Tutorial cells run in document order under the direct PacletPage build.
-Place initialization before its first use, define the running example once,
-and keep data selection visible where the reader changes it. Reference pages
-retain independent example groups across headings and thematic breaks.
+large downloads during rendering. Keep data selection and scientific parameters
+visible where the reader changes them. Put reusable helpers in the final
+`## Initialization` section; the build evaluates enabled helpers first and
+marks their bottom notebook inputs as native initialization cells. Never
+enable optional or online `#| eval: false` cells as initialization. Follow
+the concise native-code rules in
+[Reproducible examples](../../GUIDE.md#reproducible-examples).
 
 Use computed plots for patterns and compact tables for exact metadata. Include
 axes and scales that preserve the data's meaning. Follow
@@ -30,7 +33,8 @@ axes and scales that preserve the data's meaning. Follow
 inputs as well as the whole page. A plot from synthetic data demonstrates the
 interface; scientific interpretation needs the actual source and analysis.
 
-Build and inspect the notebook, confirm guide backlinks and report missing
+Build and inspect the notebook, check initialization-only evaluation and the
+bottom section position, confirm guide backlinks and report missing
 runtime or rendering checks. Use the
 [computational essay playbook](../biodata-computational-essay/SKILL.md) when the
 piece makes a sustained analytical argument rather than teaching access.

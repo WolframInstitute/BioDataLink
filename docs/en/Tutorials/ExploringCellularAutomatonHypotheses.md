@@ -36,9 +36,8 @@ Choose a petal-width threshold of 1.5 cm before comparing rules. This is an
 illustrative analyst choice, not a known biological switching point:
 
 ```wl
-exampleDirectory = FileNameJoin[{
-    PacletObject["WolframInstitute/BioDataLink"]["Location"], "Assets", "Examples"}];
-rows = DeleteCases[Import[FileNameJoin[{exampleDirectory, "iris.csv"}], "CSV"], {} | {""}];
+irisFile = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "iris.csv"}];
+rows = DeleteCases[Import[irisFile, "CSV"], {} | {""}];
 widths = rows[[All, 4]];
 threshold = 1.5;
 measuredStates = Boole[# >= threshold] & /@ widths;
@@ -51,11 +50,8 @@ targetFraction = Mean[measuredStates];
 Inspect the actual measurements and the chosen cutoff:
 
 ```wl
-Histogram[widths, {0, 2.6, 0.1}, "Count", Frame -> True,
-    FrameLabel -> {"Petal width (cm)", "Plant records"},
-    GridLines -> {{threshold}, None},
-    GridLinesStyle -> Directive[Red, Dashed, Thick],
-    PlotLabel -> "A declared threshold: 1.5 cm", ImageSize -> 540]
+Histogram[widths, {0, 2.6, 0.1}, "Count", GridLines -> {{threshold}, None},
+    AxesLabel -> {"Petal width (cm)", "Plant records"}]
 ```
 
 Binning in the histogram serves display only. The fraction was computed from
@@ -80,15 +76,12 @@ initial = BlockRandom[SeedRandom[20261104]; RandomSample[
     "RoundingDifference" -> N[Mean[initial] - targetFraction]|>
 ```
 
-Plot the constructed initial state. Blue denotes state 1 and light gray state
-0; neither color represents a directly observed molecular state:
+Plot the constructed initial state. Black denotes state 1 and white state 0;
+neither represents a directly observed molecular state:
 
 ```wl
-stateColors = {0 -> GrayLevel[0.93], 1 -> RGBColor[0.12, 0.4, 0.65]};
-ArrayPlot[{initial}, ColorRules -> stateColors, Frame -> True,
-    FrameTicks -> {{None, None}, {Automatic, None}},
-    FrameLabel -> {None, "Hypothetical site index"}, AspectRatio -> 0.09,
-    PlotLabel -> "Constructed ring state; the two ends are adjacent", ImageSize -> 620]
+ArrayPlot[{initial}, Frame -> True, FrameTicks -> {{None, None}, {Automatic, None}},
+    FrameLabel -> {None, "Hypothetical site index"}]
 ```
 
 For each elementary cellular automaton, a site's next binary state depends on
@@ -109,7 +102,6 @@ steps = 32;
 traces = CellularAutomaton[#, initial, steps] & /@ rules;
 fractions = Map[Mean, traces, {2}];
 finalFractions = fractions[[All, -1]];
-disagreement[state_] := Mean[Abs[state - RotateLeft[state]]];
 finalDisagreements = disagreement /@ traces[[All, -1]];
 Dimensions[traces]
 ```
@@ -123,13 +115,10 @@ Compare nine rules using the same initial state, scale and color mapping.
 Array rows increase downward, so the top row is step zero:
 
 ```wl
-Clear[tracePlot];
-tracePlot[rule_, size_] := ArrayPlot[traces[[rule + 1]], ColorRules -> stateColors,
-    Frame -> True, FrameTicks -> {{{1, "0"}, {17, "16"}, {33, "32"}}, None},
-    FrameLabel -> {"Step (downward)", "Site"},
-    PlotLabel -> "Rule " <> ToString[rule], ImageSize -> size];
-GraphicsGrid[Partition[tracePlot[#, 220] & /@ {0, 30, 54, 90, 110, 150, 170, 204, 232}, 3],
-    ImageSize -> 720]
+GraphicsGrid[Partition[Table[ArrayPlot[traces[[rule + 1]], Frame -> True,
+    FrameTicks -> {{{1, "0"}, {17, "16"}, {33, "32"}}, None},
+    FrameLabel -> {"Step (downward)", "Site"}, PlotLabel -> Row[{"Rule ", rule}]],
+    {rule, {0, 30, 54, 90, 110, 150, 170, 204, 232}}], 3]]
 ```
 
 The image gallery displays distinct computations, all driven by a compact
@@ -145,13 +134,9 @@ Plot that fraction against the neighbor-disagreement statistic; each point is
 one rule. Distinct rules can overlap at the same plotted coordinates:
 
 ```wl
-ListPlot[Transpose[N[{finalFractions, finalDisagreements}]],
-    Frame -> True, FrameLabel -> {"Final occupied fraction", "Final neighbor disagreement"},
-    PlotRange -> {{0, 1}, {0, 1}},
-    GridLines -> {{N[targetFraction]}, None},
-    GridLinesStyle -> Directive[Red, Dashed],
-    PlotStyle -> Directive[RGBColor[0.12, 0.4, 0.65], PointSize[0.012], Opacity[0.65]],
-    PlotLabel -> "256 rules; dashed line is the empirical fraction", ImageSize -> 540]
+ListPlot[Transpose[N[{finalFractions, finalDisagreements}]], PlotRange -> {{0, 1}, {0, 1}},
+    AxesLabel -> {"Final occupied fraction", "Final neighbor disagreement"},
+    GridLines -> {{N[targetFraction]}, None}]
 ```
 
 Declare a tolerance of one model site, 1/96, around the empirical fraction.
@@ -175,11 +160,9 @@ biological plausibility:
 orderedCompatible = SortBy[compatibleRules, finalDisagreements[[# + 1]] &];
 selectedRules = DeleteDuplicates[Join[{170, 204}, orderedCompatible[[
     DeleteDuplicates[{1, Ceiling[Length[orderedCompatible]/2], Length[orderedCompatible]}]]]]];
-ListLinePlot[fractions[[selectedRules + 1]], DataRange -> {0, steps},
-    Frame -> True, FrameLabel -> {"Model step", "Occupied fraction"},
-    PlotLegends -> Placed[("Rule " <> ToString[#] & /@ selectedRules), Below],
-    GridLines -> {None, {N[targetFraction]}}, GridLinesStyle -> Directive[Red, Dashed],
-    PlotRange -> {0, 1}, ImageSize -> 620]
+ListLinePlot[fractions[[selectedRules + 1]], DataRange -> {0, steps}, PlotRange -> {0, 1},
+    AxesLabel -> {"Model step", "Occupied fraction"},
+    PlotLegends -> ("Rule " <> ToString[#] & /@ selectedRules), GridLines -> {None, {N[targetFraction]}}]
 ```
 
 Different intermediate trajectories can satisfy the same final comparison.
@@ -194,16 +177,11 @@ the final fraction for each selected rule using these new arrangements. This
 tests dependence on the unobserved model initial condition:
 
 ```wl
-alternativeInitials = BlockRandom[SeedRandom[20261105];
-    Table[RandomSample[initial], {20}]];
+alternativeInitials = BlockRandom[SeedRandom[20261105]; Table[RandomSample[initial], {20}]];
 seedFractions = Table[N[Mean[Last[CellularAutomaton[rule, seed, steps]]]],
     {rule, selectedRules}, {seed, alternativeInitials}];
-BoxWhiskerChart[seedFractions,
-    ChartLabels -> ("Rule " <> ToString[#] & /@ selectedRules),
-    FrameLabel -> {"Rule", "Final occupied fraction"}, PlotRange -> {0, 1},
-    GridLines -> {None, {N[targetFraction]}},
-    GridLinesStyle -> Directive[Red, Dashed],
-    PlotLabel -> "20 constructed initial arrangements per rule", ImageSize -> 620]
+BoxWhiskerChart[seedFractions, ChartLabels -> selectedRules, PlotRange -> {0, 1},
+    FrameLabel -> {"Rule", "Final occupied fraction"}, GridLines -> {None, {N[targetFraction]}}]
 ```
 
 Identity and shift preserve the fraction for every permutation on the ring.
@@ -227,22 +205,13 @@ each of these eight possible changes explicit. A membership association avoids
 searching the accepted list repeatedly:
 
 ```wl
-compatibleSet = AssociationThread[compatibleRules,
-    ConstantArray[True, Length[compatibleRules]]];
-mutationEdges = Flatten[Table[
-    With[{neighbor = BitXor[rule, 2^bit]},
-        If[rule < neighbor && KeyExistsQ[compatibleSet, neighbor],
-            UndirectedEdge[rule, neighbor], Nothing]],
+compatibleSet = AssociationThread[compatibleRules, ConstantArray[True, Length[compatibleRules]]];
+mutationEdges = Flatten[Table[With[{neighbor = BitXor[rule, 2^bit]},
+    If[rule < neighbor && KeyExistsQ[compatibleSet, neighbor], UndirectedEdge[rule, neighbor], Nothing]],
     {rule, compatibleRules}, {bit, 0, 7}], 1];
 ruleCoordinates = CirclePoints[Length[compatibleRules]];
-changedNeighborhood[UndirectedEdge[a_, b_]] :=
-    IntegerDigits[IntegerLength[BitXor[a, b], 2] - 1, 2, 3];
-mutationGraph = Graph[compatibleRules, mutationEdges,
-    VertexCoordinates -> ruleCoordinates, VertexLabels -> "Name",
-    EdgeLabels -> (# -> Placed[
-        Row[{"changed neighborhood: ", Row[changedNeighborhood[#]]}], Tooltip] & /@ mutationEdges),
-    PlotLabel -> Row[{Length[compatibleRules], " compatible rules; ",
-        Length[mutationEdges], " single-output changes"}], ImageSize -> 520]
+Graph[compatibleRules, mutationEdges, VertexCoordinates -> ruleCoordinates, VertexLabels -> "Name",
+    EdgeLabels -> (# -> Placed[changedNeighborhood[#], Tooltip] & /@ mutationEdges)]
 ```
 
 Only three pairs are connected: 26–154, 82–210 and 85–117. The other 15 vertices
@@ -303,20 +272,13 @@ interpretation of connected components.
 
 Keep every vertex in the same position across all three graphs. Add
 observations cumulatively, so an unresolved pair can lose its edge but cannot
-gain one. Orange marks rules 51 and 204 for the comparison below:
+gain one. Highlight rules 51 and 204 for the comparison below:
 
 ```wl
 panelTitles = {"Final occupied count", "+ neighbor differences", "+ step-1 occupied count"};
-observationGraphFigure = GraphicsRow[Table[
-    Graph[compatibleRules, ambiguityEdges[[panel]],
-        VertexCoordinates -> ruleCoordinates, VertexLabels -> "Name",
-        VertexLabelStyle -> 9,
-        VertexStyle -> {51 -> ColorData[97][2], 204 -> ColorData[97][2]},
-        EdgeStyle -> Directive[GrayLevel[0.55], Opacity[0.8]],
-        PlotLabel -> Column[{panelTitles[[panel]],
-            Row[{Length[observationClasses[[panel]]], " classes; ",
-                Length[ambiguityEdges[[panel]]], " unresolved pairs"}]}, Alignment -> Center],
-        ImagePadding -> 22, ImageSize -> 245], {panel, 3}], ImageSize -> 760]
+GraphicsRow[Table[Graph[compatibleRules, ambiguityEdges[[panel]],
+    VertexCoordinates -> ruleCoordinates, VertexLabels -> "Name",
+    GraphHighlight -> {51, 204}, PlotLabel -> panelTitles[[panel]]], {panel, 3}]]
 ```
 
 The panels leave 172, 47 and 9 unresolved pairs, respectively. Their 2, 10
@@ -359,19 +321,14 @@ within the full space. The following constructs just 32 outputs to specify
 this one rule; it does not enumerate billions of candidate rules.
 
 ```wl
-majorityRuleNumber[radius_] := FromDigits[
-    Boole[Total[#] >= radius + 1] & /@ Tuples[{1, 0}, 2 radius + 1], 2];
 comparisonSpecs = {{0, 2, 0}, {2, 2, 0},
     {majorityRuleNumber[1], 2, 1}, {majorityRuleNumber[2], 2, 2}};
 comparisonNames = {"constant 0 (radius 0)", "copy (radius 0)",
     "majority (radius 1)", "majority (radius 2)"};
 comparisonTraces = CellularAutomaton[#, initial, steps] & /@ comparisonSpecs;
-complexityTraceFigure = GraphicsGrid[Partition[Table[
-    ArrayPlot[comparisonTraces[[i]], ColorRules -> stateColors,
-        Frame -> True, FrameTicks -> {{{1, "0"}, {17, "16"}, {33, "32"}}, None},
-        FrameLabel -> {"Step (downward)", "Site"},
-        PlotLabel -> comparisonNames[[i]], ImageSize -> 320], {i, 4}], 2],
-    ImageSize -> 700]
+GraphicsGrid[Partition[Table[ArrayPlot[comparisonTraces[[i]], Frame -> True,
+    FrameTicks -> {{{1, "0"}, {17, "16"}, {33, "32"}}, None},
+    FrameLabel -> {"Step (downward)", "Site"}, PlotLabel -> comparisonNames[[i]]], {i, 4}], 2]]
 ```
 
 The three-site majority is elementary rule 232; the five-site lookup number
@@ -381,25 +338,18 @@ different local information. Increased radius does not, by itself, explain
 the biological measurements or guarantee a closer summary match.
 
 Compare the same two final-state observables across these four deliberately
-chosen programs. The dashed line applies only to the occupied fraction; no
+chosen programs. The horizontal grid line applies only to the occupied fraction; no
 empirical neighbor-disagreement value was supplied:
 
 ```wl
 comparisonFractions = Mean /@ comparisonTraces[[All, -1]];
 comparisonDisagreements = disagreement /@ comparisonTraces[[All, -1]];
-comparisonTicks = Transpose[{Range[4],
-    {"constant\nr = 0", "copy\nr = 0", "majority\nr = 1", "majority\nr = 2"}}];
-complexityObservationFigure = GraphicsRow[{
-    ListPlot[Transpose[{Range[4], comparisonFractions}],
-        Frame -> True, FrameTicks -> {{Automatic, None}, {comparisonTicks, None}},
-        FrameLabel -> {None, "Final occupied fraction"},
-        GridLines -> {None, {N[targetFraction]}},
-        GridLinesStyle -> Directive[Red, Dashed], PlotMarkers -> Automatic,
-        PlotRange -> {{0.5, 4.5}, {-0.05, 1.05}}, ImageSize -> 330],
-    ListPlot[Transpose[{Range[4], comparisonDisagreements}],
-        Frame -> True, FrameTicks -> {{Automatic, None}, {comparisonTicks, None}},
-        FrameLabel -> {None, "Final neighbor disagreement"}, PlotMarkers -> Automatic,
-        PlotRange -> {{0.5, 4.5}, {-0.05, 1.05}}, ImageSize -> 330]}, ImageSize -> 700]
+comparisonTicks = Transpose[{Range[4], {"constant r=0", "copy r=0", "majority r=1", "majority r=2"}}];
+GraphicsRow[{
+    ListPlot[comparisonFractions, Ticks -> {comparisonTicks, Automatic}, PlotRange -> {{0.5, 4.5}, {-0.05, 1.05}},
+        AxesLabel -> {None, "Final occupied fraction"}, GridLines -> {None, {N[targetFraction]}}],
+    ListPlot[comparisonDisagreements, Ticks -> {comparisonTicks, Automatic}, PlotRange -> {{0.5, 4.5}, {-0.05, 1.05}},
+        AxesLabel -> {None, "Final neighbor disagreement"}]}]
 ```
 
 In this run, copying comes closest to the empirical fraction because the
@@ -448,3 +398,15 @@ measured traits with held-out evaluation.
 - [BitXor (WL)](https://reference.wolfram.com/language/ref/BitXor.html) changes specified binary outputs in a numbered rule table.
 - [Graph (WL)](https://reference.wolfram.com/language/ref/Graph.html) retains explicit vertices, including isolated rules, with their source rule numbers.
 - [VertexCoordinates (WL)](https://reference.wolfram.com/language/ref/VertexCoordinates.html) fixes vertex positions across observation comparisons.
+
+## Initialization
+
+Evaluate these helper definitions before the examples above. The data choices
+and analysis parameters remain in the main examples.
+
+```wl
+disagreement[state_] := Mean[Abs[state - RotateLeft[state]]];
+changedNeighborhood[UndirectedEdge[a_, b_]] := IntegerDigits[IntegerLength[BitXor[a, b], 2] - 1, 2, 3];
+majorityRuleNumber[radius_] := FromDigits[
+    Boole[Total[#] >= radius + 1] & /@ Tuples[{1, 0}, 2 radius + 1], 2];
+```

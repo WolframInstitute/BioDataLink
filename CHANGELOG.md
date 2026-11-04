@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.1 — 2026-11-04
+
+- Simplify the eleven tutorials and eight symbol references with shorter Wolfram
+  Language inputs and focused examples. Retain the computed scientific figures,
+  measurement semantics and progressive rule explorations.
+- Move tutorial helpers to a final Initialization section. Generated notebooks
+  evaluate these helpers before examples and retain native initialization cells.
+- Shorten the README to installation, a quick start and published documentation
+  links; README-only changes no longer start CI.
+- Record concise example, reference-page and README conventions in the project
+  documentation skills.
+
 ## 0.3.0 — 2026-11-04 — Initial public release
 
 This release includes the discovery and local-import capabilities developed

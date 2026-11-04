@@ -12,29 +12,17 @@ RelatedTutorials: [ExploringBiologicalData, ReadingAnnDataSlices, UnderstandingS
 
 ## Usage
 
-<code>[BioDatasetLoad]()[File[*path*]]</code> validates a local BioDataLink JSON version 1 file and returns its expression data and provenance.
+<code>[BioDatasetLoad]()[File[*path*]]</code> imports sparse expression data, metadata and provenance from a local BioDataLink JSON version 1 file.
 
-<code>[BioDatasetLoad]()[File[*path*], "Format" -> "AnnData"]</code> reads a selected matrix and its axis metadata from a supported local H5AD file using an explicitly configured Python interpreter.
+<code>[BioDatasetLoad]()[File[*path*], "Format" -> "AnnData"]</code> imports a matrix selection and aligned axis metadata from a supported local H5AD file.
 
 ## Details & Options
 
 - The format defaults to `"BioDataLinkJSON"`. H5AD files require explicit `"Format" -> "AnnData"`; the format is not guessed from a filename.
-- Both formats return ordinary Wolfram expressions. Neither performs normalization, assigns a cell type or establishes scientific validity.
-- `"MaxFileBytes"` applies to the entire local file for both formats, even when only a small H5AD selection is requested.
+- AnnData reading requires an explicitly configured Python interpreter.
+- Both formats return ordinary Wolfram expressions. They do not normalize values, assign cell types or establish scientific validity.
+- `"MaxFileBytes"` limits the entire input file, including when only a small H5AD selection is requested.
 
-The following file requirements apply to `"BioDataLinkJSON"`:
-
-- The file contains `"SchemaVersion"`, `"Shape"`, `"Entries"`, `"Cells"`, `"Genes"`, `"Normalization"` and `"Provenance"` fields.
-- `"Shape"` is `{cells, genes}` with positive integer dimensions. Metadata lengths must match those dimensions.
-- `"Entries"` contains `{row, column, value}` triples with one-based coordinates, unique positions and finite nonzero numeric values. Unlisted entries are zero.
-- The format has no separate representation for missing or unmeasured matrix values. Do not encode them by omitting entries.
-- Each cell and gene metadata record has a nonempty `"ID"`; identifiers are unique within each axis.
-- Identifier checks establish label uniqueness and alignment, not cell type or gene annotation accuracy.
-- `"Normalization"` is a nonblank string declaring the measurement scale. `"Counts"` requires nonnegative integer matrix values; zero entries must be omitted.
-- Integer validation does not establish whether counts represent reads or molecules, or whether they are unprocessed. Other normalization labels are retained without verifying the declared transformation.
-- `"Provenance"` includes nonblank `"Source"` and `"Citation"` strings. These are source declarations; their scientific accuracy is not checked.
-- The file is read as JSON data. It is not evaluated as Wolfram Language code.
-- Input must be UTF-8 JSON. Numeric exponents must lie between -10000 and 10000; larger magnitudes give `Failure["UnsupportedNumericRange", ...]` before JSON parsing. Text inside strings is unaffected.
 - The result is an `Association` with these properties:
 
 | | |
@@ -49,6 +37,20 @@ The following file requirements apply to `"BioDataLinkJSON"`:
 
 - For JSON, `"ContentHash"` identifies the exact bytes parsed. It is not an independently supplied upstream checksum.
 - Unsupported schema versions, malformed files and invalid matrix/metadata structures give a `Failure`. Catalog identifiers and URLs are not local file inputs.
+
+The following file requirements apply to `"BioDataLinkJSON"`:
+
+- The file contains `"SchemaVersion"`, `"Shape"`, `"Entries"`, `"Cells"`, `"Genes"`, `"Normalization"` and `"Provenance"` fields.
+- `"Shape"` is `{cells, genes}` with positive integer dimensions. Metadata lengths must match those dimensions.
+- `"Entries"` contains `{row, column, value}` triples with one-based coordinates, unique positions and finite nonzero numeric values. Unlisted entries are zero.
+- The format has no separate representation for missing or unmeasured matrix values. Do not encode them by omitting entries.
+- Each cell and gene metadata record has a nonempty `"ID"`; identifiers are unique within each axis.
+- Identifier checks establish label uniqueness and alignment, not cell type or gene annotation accuracy.
+- `"Normalization"` is a nonblank string declaring the measurement scale. `"Counts"` requires nonnegative integer matrix values; zero entries must be omitted.
+- Integer validation does not establish whether counts represent reads or molecules, or whether they are unprocessed. Other normalization labels are retained without verifying the declared transformation.
+- `"Provenance"` includes nonblank `"Source"` and `"Citation"` strings. These are source declarations; their scientific accuracy is not checked.
+- The file is read as JSON data. It is not evaluated as Wolfram Language code.
+- Input must be UTF-8 JSON. Numeric exponents must lie between -10000 and 10000; larger magnitudes give `Failure["UnsupportedNumericRange", ...]` before JSON parsing. Text inside strings is unaffected.
 
 The AnnData format reads one matrix selection and aligned axis metadata:
 
@@ -77,7 +79,7 @@ The AnnData format reads one matrix selection and aligned axis metadata:
 | `"BackendVersion"` | Python, h5py and NumPy versions used |
 | `"SourceFileBytes"`, `"SourceFileModifiedUnixNanoseconds"` | Source file size and modification-time information |
 
-- Options are listed with defaults in the middle column:
+- The following options can be given:
 
 | | | |
 | --- | --- | --- |
@@ -96,119 +98,128 @@ The AnnData format reads one matrix selection and aligned axis metadata:
 
 ## Basic Examples
 
-Load the bundled synthetic expression example:
+Load the bundled synthetic expression file:
 
 ```wl
-BioDatasetLoad[File[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["Location"],
-    "Assets", "Examples", "toy-expression.json"}]]]
+file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
+BioDatasetLoad[File[file]]
 ```
 
 ---
 
-Inspect its synthetic sparse matrix; these values are not experimental measurements:
+Plot its sparse matrix. These values are synthetic, not experimental measurements:
 
 ```wl
-With[{file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["Location"],
-    "Assets", "Examples", "toy-expression.json"}]},
-    MatrixPlot[BioDatasetLoad[File[file]]["ExpressionMatrix"], PlotLegends -> Automatic,
-        FrameLabel -> {"cell", "gene"}]]
+file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
+data = BioDatasetLoad[File[file]];
+MatrixPlot[data["ExpressionMatrix"], PlotLegends -> Automatic, FrameLabel -> {"cell", "gene"}]
 ```
 
 ## Scope
 
-Inspect the cell metadata in matrix row order:
+Inspect cell metadata in matrix row order:
 
 ```wl
-With[{file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["Location"],
-    "Assets", "Examples", "toy-expression.json"}]},
-    BioDatasetLoad[File[file]]["CellMetadata"]]
+file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
+BioDatasetLoad[File[file]]["CellMetadata"]
 ```
 
-Read a small AnnData selection after configuring the optional Python interpreter.
-This local, optional-dependency input is not evaluated during ordinary documentation builds:
+---
+
+Read two observations and three variables from a synthetic H5AD file.
+Configure `BIODATALINK_PYTHON` before starting the kernel, as described in
+[Reading Selected AnnData Measurements](paclet:WolframInstitute/BioDataLink/tutorial/ReadingAnnDataSlices).
+This optional-backend example is not evaluated during documentation builds:
 
 ```wl
 #| eval: false
-BioDatasetLoad[File[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["Location"],
-    "Assets", "Examples", "toy-anndata.h5ad"}]],
-    "Format" -> "AnnData", "Cells" -> {1, 2}, "Genes" -> {1, 2, 3}]
+file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-anndata.h5ad"}];
+BioDatasetLoad[File[file], "Format" -> "AnnData", "Cells" -> {1, 2}, "Genes" -> {1, 2, 3}]
 ```
 
-The bundled H5AD file is synthetic. Its repeated `"g1"` variable labels and
-missing cell annotations demonstrate preservation of source metadata, not
-biological identity or an experimental result.
+The repeated `"g1"` variable labels and missing annotations test preservation
+of source metadata. They do not establish biological identity.
 
 ## Options
 
 ### Layer
 
-Select an explicitly named layer from the synthetic H5AD file. This requires
-the optional interpreter and is not evaluated during documentation generation:
+Read an alternative matrix from the synthetic H5AD file. This example requires
+the configured Python interpreter and is not evaluated during documentation builds:
 
 ```wl
 #| eval: false
-BioDatasetLoad[File[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["Location"],
-    "Assets", "Examples", "toy-anndata.h5ad"}]],
-    "Format" -> "AnnData", "Cells" -> {2, 1}, "Genes" -> {3, 2},
-    "Layer" -> {"Layers", "normalized"}]
+file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-anndata.h5ad"}];
+BioDatasetLoad[File[file], "Format" -> "AnnData", "Layer" -> {"Layers", "normalized"}]
 ```
 
-The requested matrix is `{{1.1, 0}, {0, 0.2}}`. The layer name is copied from
-the file; `"Normalization"` still remains unspecified.
+The layer name comes from the file. It does not verify a transformation, so
+`"Normalization"` remains `Missing["NotSpecified"]`.
 
 ### MaxFileBytes
 
-Reject an input exceeding a deliberately small byte limit:
+Reject a file exceeding a deliberately small byte limit:
 
 ```wl
-With[{file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["Location"],
-    "Assets", "Examples", "toy-expression.json"}]},
-    BioDatasetLoad[File[file], "MaxFileBytes" -> 1]]
+file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
+BioDatasetLoad[File[file], "MaxFileBytes" -> 1]
 ```
 
 ## Applications
 
-Select example rows by a metadata label and locate a column by its gene ID:
+Load the synthetic matrix and its aligned metadata:
 
 ```wl
-With[{file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["Location"],
-    "Assets", "Examples", "toy-expression.json"}]},
-    Module[{data = BioDatasetLoad[File[file]], cells, genes, rows, column},
-        cells = Normal[data["CellMetadata"]];
-        genes = Normal[data["GeneMetadata"]];
-        rows = Pick[Range[Length[cells]], Lookup[cells, "Condition"], "treated"];
-        column = First[FirstPosition[Lookup[genes, "ID"], "gene-A"]];
-        Dataset[MapThread[<|"CellID" -> #1, "gene-A" -> #2|> &,
-            {Lookup[cells[[rows]], "ID"],
-                Normal[data["ExpressionMatrix"][[rows, column]]]}]]]]
+file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
+data = BioDatasetLoad[File[file]];
+cells = Normal[data["CellMetadata"]];
+genes = Normal[data["GeneMetadata"]];
 ```
 
-The two selected values are 0 and 2 for `"cell-2"` and `"cell-3"`.
-Only the selected column is converted to an ordinary list; the full matrix
-remains sparse. The condition and gene labels are invented for this example,
-so this selection is not evidence of a treatment response.
-
-Record the local file hash with its declared provenance:
+Select rows labeled `"treated"` and the column labeled `"gene-A"`:
 
 ```wl
-With[{file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["Location"],
-    "Assets", "Examples", "toy-expression.json"}]},
-    KeyTake[BioDatasetLoad[File[file]], {"ContentHash", "Normalization", "Provenance"}]]
+rows = Flatten[Position[Lookup[cells, "Condition"], "treated"]];
+column = First[FirstPosition[Lookup[genes, "ID"], "gene-A"]];
+AssociationThread[Lookup[cells[[rows]], "ID"], Normal[data["ExpressionMatrix"][[rows, column]]]]
 ```
+
+The selected values are 0 and 2 for `"cell-2"` and `"cell-3"`.
+Only the selected column is converted to an ordinary list. The labels are
+invented for this example; the selection is not evidence of a treatment response.
+
+---
+
+Record the local file hash with its declared scale and provenance:
+
+```wl
+file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
+data = BioDatasetLoad[File[file]];
+KeyTake[data, {"ContentHash", "Normalization", "Provenance"}]
+```
+
+The hash identifies the imported bytes. The scale and source information are
+declarations from the file, not independently verified scientific evidence.
 
 ## Possible Issues
 
-Catalog discovery and local import have different inputs. A generic supported
+Position-selection options require the AnnData format:
+
+```wl
+file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
+BioDatasetLoad[File[file], "Genes" -> {1}]
+```
+
+Catalog identifiers and URLs are not local file inputs. Support for a file
 format does not establish a verified import route for every catalog entry.
-Use a supported local file and choose its format explicitly.
 
 An unavailable Python interpreter gives `Failure["PythonUnavailable", ...]`.
 Unsupported H5AD encodings, selected external links and virtual datasets are
-rejected. The returned `"OmittedStructures"` should be reviewed before treating
-a selection as sufficient for a scientific analysis.
+rejected. Review `"OmittedStructures"` before treating a selection as sufficient
+for an analysis.
 
-A zero count is a recorded numerical value, not evidence that a transcript is
-biologically absent. BioDataLink JSON cannot represent missing measurements;
-the AnnData reader rejects selected nonfinite measurements instead of zero-filling them.
-The reader does not normalize data or establish that values from different
-cells, genes or studies are directly comparable.
+A zero count does not establish that a transcript is biologically absent.
+BioDataLink JSON cannot represent missing measurements. The AnnData reader
+rejects selected nonfinite measurements instead of replacing them with zeros.
+Neither reader establishes that values from different cells, genes or studies
+are directly comparable.

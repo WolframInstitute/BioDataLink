@@ -18,8 +18,8 @@ duplicate labels, and records what was omitted.
 The bundled file is synthetic. Its labels and values test data handling rather
 than describe biological observations. The examples require an explicitly
 configured Python interpreter and are not evaluated during ordinary
-documentation builds. After configuring the interpreter, evaluate them in order
-and stop if a call returns a `Failure`.
+documentation builds. After configuring the interpreter, work through the
+examples in order. Stop if a call returns a `Failure`.
 
 ## Configure the optional local reader
 
@@ -39,15 +39,11 @@ encodings; it does not create a complete Python AnnData object. Alternatively,
 set `BIODATALINK_PYTHON` to the interpreter's absolute path before starting
 the Wolfram kernel.
 
-## Initialization
-
-Replace the interpreter path and locate the bundled file:
+For the calls below, set the interpreter explicitly:
 
 ```wl
 #| eval: false
 python = "/path/to/biodatalink-h5ad/bin/python";
-file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["Location"],
-    "Assets", "Examples", "toy-anndata.h5ad"}];
 ```
 
 ## Read a small, explicit selection
@@ -56,6 +52,7 @@ Read the first two observations and first three variables from `X`:
 
 ```wl
 #| eval: false
+file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-anndata.h5ad"}];
 slice = BioDatasetLoad[File[file], "Format" -> "AnnData",
     "PythonExecutable" -> python, "Cells" -> {1, 2}, "Genes" -> {1, 2, 3}]
 ```
@@ -65,8 +62,7 @@ Inspect its sparse matrix with a labeled color scale:
 
 ```wl
 #| eval: false
-MatrixPlot[slice["ExpressionMatrix"], PlotLegends -> Automatic,
-    FrameLabel -> {"observation", "variable"}]
+MatrixPlot[slice["ExpressionMatrix"], PlotLegends -> Automatic, FrameLabel -> {"observation", "variable"}]
 ```
 
 The result records `"MatrixValueType"` (here `"int64"`). Integer measurements
@@ -96,10 +92,7 @@ Show selected observation annotations without overwriting the axis ID:
 
 ```wl
 #| eval: false
-Dataset[Map[<|"CellID" -> #["ID"], "SourceRow" -> #["SourceIndex"],
-        "Kind" -> #["Annotations"]["kind"],
-        "SourceIDAnnotation" -> #["Annotations"]["ID"]|> &,
-    Normal[slice["CellMetadata"]]]]
+slice["CellMetadata"][All, {"SourceIndex", "ID", "Annotations"}]
 ```
 
 The second observation's `"kind"` is missing; the reader preserves that absence.

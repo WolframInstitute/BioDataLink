@@ -33,10 +33,8 @@ CC BY 4.0 license, retrieval date and a locally computed content hash.
 Load that provenance and check the bytes before interpreting the columns:
 
 ```wl
-exampleDirectory = FileNameJoin[{
-    PacletObject["WolframInstitute/BioDataLink"]["Location"], "Assets", "Examples"}];
-irisFile = FileNameJoin[{exampleDirectory, "iris.csv"}];
-provenance = Import[FileNameJoin[{exampleDirectory, "iris.provenance.json"}], "RawJSON"];
+irisFile = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "iris.csv"}];
+provenance = Import[FileNameJoin[{DirectoryName[irisFile], "iris.provenance.json"}], "RawJSON"];
 If[FileHash[irisFile, "SHA256", "HexString"] =!= provenance["SHA256"], Abort[]];
 KeyTake[provenance, {"Title", "DOI", "License", "SHA256"}]
 ```
@@ -96,13 +94,8 @@ into “rest” jointly receive twice the weight of virginica in this split.
 
 ```wl
 classNames = {"rest", "virginica"};
-classColors = ColorData[97] /@ {1, 2};
-trainingFigure = ListPlot[
-    Table[Pick[trainX, trainY, class], {class, {0, 1}}],
-    Frame -> True, FrameLabel -> {"petal length (cm)", "petal width (cm)"},
-    PlotStyle -> classColors, PlotMarkers -> Automatic,
-    PlotLegends -> classNames, PlotLabel -> "Training records only",
-    ImageSize -> 480]
+ListPlot[Table[Pick[trainX, trainY, class], {class, {0, 1}}],
+    AxesLabel -> {"petal length (cm)", "petal width (cm)"}, PlotLegends -> classNames]
 ```
 
 The overlapping region is important: a cutoff can make errors even when
@@ -124,7 +117,6 @@ physical transition points, and other locations within a gap can differ on
 new measurements. Constant programs supply the two extreme predictions.
 
 ```wl
-midpoints[values_] := Mean /@ Partition[Sort[DeleteDuplicates[values]], 2, 1];
 lengthCuts = midpoints[trainX[[All, 1]]];
 widthCuts = midpoints[trainX[[All, 2]]];
 lengthPass = Outer[Boole[#2 > #1] &, lengthCuts, trainX[[All, 1]]];
@@ -150,26 +142,20 @@ each record. The matrices are small enough to inspect directly.
 
 Each heatmap cell is one pair of training-derived cutoffs. The vertical axis
 is the length cutoff; the horizontal axis is the width cutoff. Both panels
-use the same error scale, and brighter colors mean more training mistakes.
+use the same error scale; their legends count training mistakes.
 These are discrete candidates; the display does not interpolate a continuous
 loss surface.
 Cells are equally spaced by cutoff index; the tick labels give the cutoff
 values in centimetres, rather than implying equally spaced measurements.
 
 ```wl
-cutTicks[cuts_] := With[{positions = DeleteDuplicates[
-    Round[Subdivide[1, Length[cuts], 4]]]},
-    {#, NumberForm[cuts[[#]], {3, 2}]} & /@ positions];
 errorRange = MinMax[Flatten[{andErrors, orErrors}]];
-ruleSpaceFigure = Legended[GraphicsRow[
-    MapThread[MatrixPlot[#1, DataReversed -> True,
-        FrameTicks -> {{cutTicks[lengthCuts], None}, {cutTicks[widthCuts], None}},
-        FrameLabel -> {{"width cutoff (cm labels)", None}, {"length cutoff (cm labels)", None}},
-        ColorFunction -> (ColorData["SolarColors"][Rescale[#, errorRange]] &),
-        ColorFunctionScaling -> False, PlotRange -> errorRange,
-        PlotLabel -> #2, AspectRatio -> 1, ImageSize -> 340] &,
-      {{andErrors, orErrors}, {"AND rule", "OR rule"}}], ImageSize -> 700],
-    Placed[BarLegend[{"SolarColors", errorRange}, LegendLabel -> "training errors"], Right]]
+Legended[Grid[{MapThread[MatrixPlot[#1, DataReversed -> True,
+    FrameTicks -> {{cutTicks[lengthCuts], None}, {cutTicks[widthCuts], None}},
+    FrameLabel -> {"length cutoff (cm)", "width cutoff (cm)"},
+    ColorFunction -> (ColorData["GrayTones"][Rescale[#, errorRange]] &),
+    ColorFunctionScaling -> False, PlotLabel -> #2] &,
+    {{andErrors, orErrors}, {"AND rule", "OR rule"}}]}], BarLegend[{"GrayTones", errorRange}]]
 ```
 
 Broad low-error regions mean several programs fit these training observations
@@ -182,27 +168,12 @@ comparisons: 0, 1 or 2. This is a simple, declared description of this grammar,
 not a universal program-length measure; AND and OR have equal complexity here.
 
 ```wl
-programs = Join[
-    Table[<|"Kind" -> "Constant", "Value" -> value, "Comparisons" -> 0,
-        "TrainErrors" -> Total[Abs[trainY - value]]|>, {value, {0, 1}}],
-    MapThread[<|"Kind" -> "Length", "LengthCm" -> #1,
-        "Comparisons" -> 1, "TrainErrors" -> #2|> &, {lengthCuts, lengthErrors}],
-    MapThread[<|"Kind" -> "Width", "WidthCm" -> #1,
-        "Comparisons" -> 1, "TrainErrors" -> #2|> &, {widthCuts, widthErrors}],
-    Flatten[Table[<|"Kind" -> "AND", "LengthCm" -> lengthCuts[[i]],
-        "WidthCm" -> widthCuts[[j]], "Comparisons" -> 2,
-        "TrainErrors" -> andErrors[[i, j]]|>,
-        {i, Length[lengthCuts]}, {j, Length[widthCuts]}]],
-    Flatten[Table[<|"Kind" -> "OR", "LengthCm" -> lengthCuts[[i]],
-        "WidthCm" -> widthCuts[[j]], "Comparisons" -> 2,
-        "TrainErrors" -> orErrors[[i, j]]|>,
-        {i, Length[lengthCuts]}, {j, Length[widthCuts]}]]
-];
+programs = candidatePrograms[trainY, lengthCuts, widthCuts,
+    lengthErrors, widthErrors, andErrors, orErrors];
 penalty = 2;
 scoredPrograms = MapIndexed[Join[#1, <|"ID" -> First[#2],
     "Objective" -> #1["TrainErrors"] + penalty #1["Comparisons"]|>] &, programs];
-bestBySize = Table[First[SortBy[
-    Select[scoredPrograms, #["Comparisons"] === size &],
+bestBySize = Table[First[SortBy[Select[scoredPrograms, #["Comparisons"] === size &],
     {#["TrainErrors"] &, #["ID"] &}]], {size, 0, 2}];
 Dataset[bestBySize]
 ```
@@ -215,15 +186,11 @@ enumeration ID. Changing the grammar or penalty after inspecting evaluation
 results would make that evaluation part of model selection.
 
 ```wl
-chosen = First[SortBy[scoredPrograms,
-    {#["Objective"] &, #["Comparisons"] &, #["ID"] &}]];
-complexityFigure = ListLinePlot[{
-    ({#["Comparisons"], #["TrainErrors"]} & /@ bestBySize),
+chosen = First[SortBy[scoredPrograms, {#["Objective"] &, #["Comparisons"] &, #["ID"] &}]];
+ListLinePlot[{({#["Comparisons"], #["TrainErrors"]} & /@ bestBySize),
     ({#["Comparisons"], #["Objective"]} & /@ bestBySize)},
-    Frame -> True, FrameLabel -> {"threshold comparisons", "error-count units"},
-    PlotMarkers -> Automatic, PlotLegends -> {"training errors", "penalized objective"},
-    FrameTicks -> {{Automatic, None}, {{0, 1, 2}, None}}, PlotRange -> All,
-    PlotLabel -> "Best training rule at each size", ImageSize -> 500]
+    AxesLabel -> {"threshold comparisons", "error-count units"},
+    Ticks -> {{0, 1, 2}, Automatic}, PlotRange -> All, PlotLegends -> {"training errors", "penalized objective"}]
 ```
 
 The plot shows training fit and the fixed complexity cost. It does not show
@@ -252,38 +219,22 @@ comparisons can combine a length and width condition using AND or OR. In this
 grammar that creates a rectangular intersection or an L-shaped union; it does
 not permit an arbitrary curved boundary.
 
-Define the meaning of each form and compare the best training program at each
-size. All three panels use the same training records, domain, axes and colors.
-No held-out labels enter this comparison. Backgrounds show predictions; point
-colors and shapes show source labels.
+Compare the best training program at each size using the helper definitions
+in Initialization. All three panels use the same training records, domain,
+axes and colors.
+No held-out labels enter this comparison. Shading marks predictions of virginica;
+point colors distinguish the source labels in their earlier order.
 
 ```wl
-ruleCondition[rule_, length_, width_] := Switch[rule["Kind"],
-    "Constant", rule["Value"] === 1,
-    "Length", length > rule["LengthCm"],
-    "Width", width > rule["WidthCm"],
-    "AND", length > rule["LengthCm"] && width > rule["WidthCm"],
-    "OR", length > rule["LengthCm"] || width > rule["WidthCm"]];
 lengthRange = MinMax[trainX[[All, 1]]] + {-0.4, 0.4};
 widthRange = MinMax[trainX[[All, 2]]] + {-0.2, 0.2};
-progressionPanels = Table[Show[
-    RegionPlot[Evaluate[{Not[ruleCondition[program, length, width]],
-        ruleCondition[program, length, width]}],
+GraphicsRow[Table[Show[
+    RegionPlot[ruleCondition[program, length, width],
         {length, First[lengthRange], Last[lengthRange]},
-        {width, First[widthRange], Last[widthRange]},
-        PlotStyle -> (Directive[Opacity[0.2], #] & /@ classColors),
-        BoundaryStyle -> Gray, PlotPoints -> 40, MaxRecursion -> 1],
-    ListPlot[Table[Pick[trainX, trainY, class], {class, {0, 1}}],
-        PlotStyle -> classColors,
-        PlotMarkers -> {{"\[FilledCircle]", 5}, {"\[FilledUpTriangle]", 6}}],
+        {width, First[widthRange], Last[widthRange]}],
+    ListPlot[Table[Pick[trainX, trainY, class], {class, {0, 1}}]],
     FrameLabel -> {"petal length (cm)", "petal width (cm)"},
-    PlotLabel -> Column[{
-        Row[{"Comparisons: ", program["Comparisons"]}],
-        Row[{program["TrainErrors"], " training errors"}]}, Alignment -> Center],
-    ImageSize -> 240], {program, bestBySize}];
-Legended[GraphicsRow[progressionPanels, ImageSize -> 760],
-    Placed[PointLegend[classColors, classNames,
-        LegendMarkers -> {"\[FilledCircle]", "\[FilledUpTriangle]"}], Below]]
+    PlotLabel -> Row[{program["Comparisons"], " comparisons"}]], {program, bestBySize}]]
 ```
 
 The constant baseline makes 35 training errors, the best single comparison
@@ -322,28 +273,19 @@ performance across other locations, acquisition methods or plant populations.
 The source does not provide collection groups that would support a separate
 group-based split here.
 
-Plot the rule's predicted regions and the held-out observations. Background
-colors indicate predictions; point colors and shapes indicate source labels.
-Open red circles identify mistakes. The display domain is set from training
+Plot the region predicted as virginica beside the held-out observations.
+Point colors indicate source labels. This split has no mistakes
+to highlight. The display domain is set from training
 ranges plus a fixed margin, before any held-out plotting choices.
 
 ```wl
-predictionRegion = RegionPlot[
-    Evaluate[{Not[ruleCondition[chosen, length, width]],
-        ruleCondition[chosen, length, width]}],
-    {length, First[lengthRange], Last[lengthRange]},
-    {width, First[widthRange], Last[widthRange]},
-    PlotStyle -> (Directive[Opacity[0.2], #] & /@ classColors),
-    BoundaryStyle -> Gray, PlotPoints -> 50, MaxRecursion -> 2,
-    FrameLabel -> {"petal length (cm)", "petal width (cm)"}];
 wrongPositions = Flatten[Position[MapThread[Unequal, {testPredictions, testY}], True]];
-heldOutFigure = Legended[Show[predictionRegion,
+Show[RegionPlot[ruleCondition[chosen, length, width],
+    {length, First[lengthRange], Last[lengthRange]},
+    {width, First[widthRange], Last[widthRange]}],
     ListPlot[Table[Pick[testX, testY, class], {class, {0, 1}}],
-        PlotStyle -> classColors, PlotMarkers -> {{"\[FilledCircle]", 9}, {"\[FilledUpTriangle]", 10}}],
-    ListPlot[testX[[wrongPositions]], PlotStyle -> Red, PlotMarkers -> {"\[EmptyCircle]", 18}],
-    PlotLabel -> "Frozen rule and held-out records", ImageSize -> 500],
-    Placed[PointLegend[classColors, classNames,
-        LegendMarkers -> {"\[FilledCircle]", "\[FilledUpTriangle]"}], Below]]
+        PlotLegends -> classNames],
+    FrameLabel -> {"petal length (cm)", "petal width (cm)"}]
 ```
 
 Nearby measurements can fall on opposite sides of a threshold. That is a
@@ -355,21 +297,14 @@ species when a measured petal width crosses the fitted cutoff.
 Rows in the confusion matrix are observed labels; columns are predictions.
 The upper-right cell counts non-virginica records predicted as virginica.
 The lower-left cell counts virginica records predicted as the other class.
-The displayed numbers are record counts, not percentages.
+The color scale reports record counts, not percentages.
 
 ```wl
 confusion = Table[Count[Transpose[{testY, testPredictions}], {observed, predicted}],
     {observed, {0, 1}}, {predicted, {0, 1}}];
-confusionFigure = MatrixPlot[confusion,
-    FrameTicks -> {{{{1, "rest"}, {2, "virginica"}}, None},
-        {{{1, "rest"}, {2, "virginica"}}, None}},
-    FrameLabel -> {{"predicted label", None}, {"observed label", None}},
-    ColorFunction -> (ColorData["SolarColors"][#/Max[confusion]] &),
-    ColorFunctionScaling -> False, PlotRange -> {0, Max[confusion]},
-    Epilog -> Table[Text[Style[confusion[[row, column]], 14,
-        If[confusion[[row, column]] < Max[confusion]/2, White, Black]],
-        {column - 0.5, 2.5 - row}], {row, 2}, {column, 2}],
-    PlotLabel -> "Held-out confusion matrix (records)", ImageSize -> 380]
+MatrixPlot[confusion, FrameTicks -> {{Transpose[{Range[2], classNames}], None},
+    {Transpose[{Range[2], classNames}], None}},
+    FrameLabel -> {"observed label", "predicted label"}, PlotLegends -> Automatic]
 ```
 
 Keep the split, the entire declared search family and the selected rule with
@@ -413,3 +348,36 @@ cellular-automaton model of a plant.
 Causal questions require an explicit causal model and supporting assumptions,
 as described in [Pearl (2009)](https://ftp.cs.ucla.edu/pub/stat_ser/r350.pdf).
 The threshold programs here describe a predictive association only.
+
+## Initialization
+
+Evaluate these helper definitions before the examples above. The data choices
+and analysis parameters remain in the main examples.
+
+```wl
+midpoints[values_] := Mean /@ Partition[Sort[DeleteDuplicates[values]], 2, 1];
+cutTicks[cuts_] := With[{positions = DeleteDuplicates[Round[Subdivide[1, Length[cuts], 4]]]},
+    {#, NumberForm[cuts[[#]], {3, 2}]} & /@ positions];
+ruleCondition[rule_, length_, width_] := Switch[rule["Kind"],
+    "Constant", rule["Value"] === 1,
+    "Length", length > rule["LengthCm"],
+    "Width", width > rule["WidthCm"],
+    "AND", length > rule["LengthCm"] && width > rule["WidthCm"],
+    "OR", length > rule["LengthCm"] || width > rule["WidthCm"]];
+candidatePrograms[y_, lengths_, widths_, lengthLosses_, widthLosses_, andLosses_, orLosses_] := Join[
+    Table[<|"Kind" -> "Constant", "Value" -> value, "Comparisons" -> 0,
+        "TrainErrors" -> Total[Abs[y - value]]|>, {value, {0, 1}}],
+    MapThread[<|"Kind" -> "Length", "LengthCm" -> #1,
+        "Comparisons" -> 1, "TrainErrors" -> #2|> &, {lengths, lengthLosses}],
+    MapThread[<|"Kind" -> "Width", "WidthCm" -> #1,
+        "Comparisons" -> 1, "TrainErrors" -> #2|> &, {widths, widthLosses}],
+    Flatten[Table[<|"Kind" -> "AND", "LengthCm" -> lengths[[i]],
+        "WidthCm" -> widths[[j]], "Comparisons" -> 2,
+        "TrainErrors" -> andLosses[[i, j]]|>,
+        {i, Length[lengths]}, {j, Length[widths]}]],
+    Flatten[Table[<|"Kind" -> "OR", "LengthCm" -> lengths[[i]],
+        "WidthCm" -> widths[[j]], "Comparisons" -> 2,
+        "TrainErrors" -> orLosses[[i, j]]|>,
+        {i, Length[lengths]}, {j, Length[widths]}]]
+];
+```

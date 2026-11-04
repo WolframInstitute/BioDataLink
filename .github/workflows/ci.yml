@@ -92,6 +92,8 @@ jobs:
         run: make download-tests
       - name: Verify H5AD against independent AnnData fixtures
         run: make h5ad-tests
+      - name: Verify tutorial initialization and cached builds
+        run: make documentation-tests
       - name: Build and verify archive without cloud writes
         run: make check-publish
       - name: Upload verified paclet

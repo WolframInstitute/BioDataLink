@@ -30,6 +30,7 @@ required behavior; a new wrapper needs a clear functional difference.
 | Wolfram Language tests | `make test` |
 | One Wolfram test file | `make test FILES="BioDataLink/Tests/<Area>/<Topic>.wlt"` |
 | Python automation tests | `make python-tests` |
+| Tutorial initialization and cache regression | `make documentation-tests` |
 | Markdown checks | `make lint-docs` |
 | Install missing documentation build tooling | `make bootstrap` |
 | Documentation notebooks from Markdown | `make notebooks` |
@@ -96,6 +97,11 @@ Separate paclet exports from built-in (WL) and Function Repository (WFR) links.
 Only call a notebook verified after building and inspecting its output.
 Use computed visuals when they help explain a dataset or comparison; metadata
 lookups can remain text or tables.
+Follow [Documentation](GUIDE.md#documentation): use concise native Wolfram
+Language, keep tutorial helpers in a final native Initialization section,
+and retain the standard symbol-reference structure. Keep README focused on
+installation, quickstart and top documentation links; put detailed coverage
+and tutorial lists in the guides.
 
 Write short, direct sentences for a reader who knows biology but not this
 project. Explain technical terms on first use. State what was checked and any

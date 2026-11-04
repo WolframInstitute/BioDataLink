@@ -43,7 +43,8 @@ checkout itself.
 
 `make test` runs all Wolfram tests; the `FILES` value accepts test paths relative
 to the repository. `make check-publish` validates local publication artifacts
-without deploying them. `make all` is the complete local validation target.
+without deploying them. `make documentation-tests` verifies tutorial initialization
+and cached notebook builds. `make all` is the complete local validation target.
 Run `make help` for the maintained command list. The build index is maintained
 manually; source-file presence does not establish that tests or notebook
 verification passed.

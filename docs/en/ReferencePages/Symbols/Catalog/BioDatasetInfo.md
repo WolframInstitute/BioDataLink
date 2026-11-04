@@ -52,8 +52,7 @@ BioDatasetInfo[{"Pertpy", "norman_2019"}]
 Inspect the source citation alongside an unavailable organism annotation:
 
 ```wl
-KeyTake[BioDatasetInfo[{"Pertpy", "norman_2019"}],
-    {"ID", "Organism", "Citation"}]
+KeyTake[BioDatasetInfo[{"Pertpy", "norman_2019"}], {"ID", "Organism", "Citation"}]
 ```
 
 Keep `Missing["NotAvailable"]` as unknown. A citation or a familiar study title
@@ -65,8 +64,7 @@ by this function.
 Inspect file links for two versions associated with one study:
 
 ```wl
-Dataset[KeyTake[BioDatasetInfo[{"Pertpy", #}],
-    {"ID", "DownloadURLs"}] & /@ {"norman_2019", "norman_2019_raw"}]
+Dataset[KeyTake[BioDatasetInfo[{"Pertpy", #}], {"ID", "DownloadURLs"}] & /@ {"norman_2019", "norman_2019_raw"}]
 ```
 
 These are source-declared links. The metadata lookup neither transfers the
@@ -75,8 +73,7 @@ files nor verifies that their processing makes them suitable for a comparison.
 Retain the source revision alongside a selected identifier:
 
 ```wl
-KeyTake[BioDatasetInfo[{"Pertpy", "norman_2019"}],
-    {"Provider", "ID", "SourceRevision", "DocumentationURL"}]
+KeyTake[BioDatasetInfo[{"Pertpy", "norman_2019"}], {"Provider", "ID", "SourceRevision", "DocumentationURL"}]
 ```
 
 ## Possible Issues

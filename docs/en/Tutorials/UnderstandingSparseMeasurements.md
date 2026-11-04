@@ -23,19 +23,12 @@ seed. Ordinary examples run offline without Python or Ruliobiology.
 
 ## Read a matrix together with its meaning
 
-Load the paclet and locate its bundled fixture:
+Evaluate the Initialization section at the end of this tutorial. Read the
+bundled synthetic file and inspect the returned record:
 
 ```wl
-Needs["WolframInstitute`BioDataLink`"];
-exampleDirectory = FileNameJoin[{
-    PacletObject["WolframInstitute/BioDataLink"]["Location"],
-    "Assets", "Examples"}];
-```
-
-Read the file and inspect the returned record:
-
-```wl
-data = BioDatasetLoad[File[FileNameJoin[{exampleDirectory, "toy-expression.json"}]]]
+file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
+data = BioDatasetLoad[File[file]]
 ```
 
 The matrix has three observation rows and two variable columns. Its metadata
@@ -46,11 +39,12 @@ interface, not real biological objects. The file declares integer counts.
 counts = data["ExpressionMatrix"];
 cellIDs = Lookup[Normal[data["CellMetadata"]], "ID"];
 geneIDs = Lookup[Normal[data["GeneMetadata"]], "ID"];
-ArrayPlot[counts, Frame -> True,
-    FrameTicks -> {{Transpose[{Range[Length[cellIDs]], cellIDs}], None},
-        {Transpose[{Range[Length[geneIDs]], geneIDs}], None}},
-    FrameLabel -> {"example observation", "example variable"},
-    PlotLegends -> Automatic, PlotLabel -> "Synthetic recorded counts"]
+```
+
+Plot the counts with their row and column identifiers:
+
+```wl
+MatrixPlot[counts, FrameTicks -> matrixTicks[cellIDs, geneIDs], PlotLegends -> Automatic]
 ```
 
 The entries are `{{3, 0}, {0, 5}, {2, 1}}`. JSON schema version 1 represents
@@ -78,8 +72,7 @@ panelA = {firstProfile, 10 firstProfile,
     Join[Normal[counts[[3]]], {0, 0}]};
 panelB = {{0, 2, 4, 0}, {1, 0, 0, 3}, {0, 3, 1, 0}, {2, 1, 0, 2}};
 panelVariables = "gene-" <> # & /@ {"A", "B", "C", "D", "E", "F"};
-panelObservations = Join["A" <> ToString[#] & /@ Range[4],
-    "B" <> ToString[#] & /@ Range[4]];
+panelObservations = Flatten[Outer[StringJoin, {"A", "B"}, ToString /@ Range[4]]];
 ```
 
 Place the two panels on their union of variables. `values` uses zeros as storage
@@ -96,15 +89,15 @@ available = SparseArray[Join[ConstantArray[{1, 1, 1, 1, 0, 0}, 4],
 status = MapThread[If[#2 == 0, "unmeasured",
         If[#1 == 0, "recorded zero", "positive count"]] &,
     {Normal[values], Normal[available]}, 2];
-ArrayPlot[status, Frame -> True,
-    ColorRules -> {"recorded zero" -> LightGray,
-        "positive count" -> RGBColor[0.12, 0.45, 0.7],
-        "unmeasured" -> RGBColor[0.9, 0.6, 0.15]},
-    PlotLegends -> Automatic,
-    FrameTicks -> {{Transpose[{Range[8], panelObservations}], None},
-        {Transpose[{Range[6], panelVariables}], None}},
-    FrameLabel -> {"synthetic observation", "union of variables"},
-    PlotLabel -> "A zero and an unmeasured position are different"]
+```
+
+Use separate categories for a recorded zero, a positive count and an
+unmeasured position:
+
+```wl
+ArrayPlot[status, PlotLegends -> Automatic,
+    ColorRules -> {"recorded zero" -> LightGray, "positive count" -> Blue, "unmeasured" -> Orange},
+    FrameTicks -> matrixTicks[panelObservations, panelVariables]]
 ```
 
 This categorical figure separates missingness from numerical intensity. The
@@ -122,11 +115,8 @@ recorded counts in each observation:
 measuredPerObservation = Normal[Total[available, {2}]];
 positivePerObservation = Normal[Total[Unitize[values], {2}]];
 BarChart[Transpose[{measuredPerObservation, positivePerObservation}],
-    ChartLabels -> {panelObservations, None},
-    ChartLegends -> {"measured variables", "positive recorded counts"},
-    Frame -> True, Axes -> False,
-    FrameLabel -> {"observation", "number of variables"},
-    PlotLabel -> "Measurement coverage and positive counts"]
+    ChartLabels -> {panelObservations, None}, ChartLegends -> {"measured variables", "positive counts"},
+    AxesLabel -> {None, "number of variables"}]
 ```
 
 Every synthetic observation covers four variables, while its positive-count
@@ -147,11 +137,8 @@ measuredPerVariable = Normal[Total[available]];
 zeroFilledMeans = N[totalsPerVariable/Length[panelObservations]];
 measuredMeans = N[totalsPerVariable/measuredPerVariable];
 BarChart[Transpose[{zeroFilledMeans, measuredMeans}],
-    ChartLabels -> {panelVariables, None},
-    ChartLegends -> {"all rows, with zero padding", "measured rows only"},
-    Frame -> True, Axes -> False,
-    FrameLabel -> {"variable", "mean synthetic count"},
-    PlotLabel -> "The denominator changes the quantity"]
+    ChartLabels -> {panelVariables, None}, ChartLegends -> {"all rows, with zero padding", "measured rows only"},
+    AxesLabel -> {None, "mean synthetic count"}]
 ```
 
 Variables A, B, E and F are measured in four rows, so the zero-filled mean is
@@ -175,18 +162,15 @@ rowOrder = {4, 2, 1, 3};
 columnOrder = {4, 2, 1, 3};
 permuted = panelA[[rowOrder, columnOrder]];
 restored = permuted[[Ordering[rowOrder], Ordering[columnOrder]]];
-alignmentPanels = {panelA, permuted, restored};
-alignmentRows = {panelObservations[[1 ;; 4]],
-    panelObservations[[rowOrder]], panelObservations[[1 ;; 4]]};
-alignmentColumns = {panelVariables[[1 ;; 4]],
-    panelVariables[[columnOrder]], panelVariables[[1 ;; 4]]};
-GraphicsRow[MapThread[
-    ArrayPlot[#1, Frame -> True, PlotRange -> {0, Max[panelA]},
-        FrameTicks -> {{Transpose[{Range[4], #2}], None},
-            {Transpose[{Range[4], #3}], None}},
-        FrameLabel -> {"observation", "variable"}, PlotLabel -> #4] &,
-    {alignmentPanels, alignmentRows, alignmentColumns,
-        {"source order", "permuted order", "restored order"}}]]
+```
+
+Compare the source, permuted and restored matrices, retaining their identifiers:
+
+```wl
+GraphicsRow[{
+    alignmentPlot[panelA, Range[4], Range[4], "source"],
+    alignmentPlot[permuted, rowOrder, columnOrder, "permuted"],
+    alignmentPlot[restored, Range[4], Range[4], "restored"]}]
 ```
 
 The panels share the same color scale. The inverse permutation restores the
@@ -212,10 +196,10 @@ interpreter path before running it.
 
 ```wl
 #| eval: false
-slice = BioDatasetLoad[
-    File[FileNameJoin[{exampleDirectory, "toy-anndata.h5ad"}]],
+h5ad = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-anndata.h5ad"}];
+slice = BioDatasetLoad[File[h5ad],
     "Format" -> "AnnData", "PythonExecutable" -> "/path/to/biodatalink-h5ad/bin/python",
-    "Cells" -> {1, 2}, "Genes" -> {1, 2, 3}, "Layer" -> "X"];
+    "Cells" -> {1, 2}, "Genes" -> {1, 2, 3}];
 slice["GeneMetadata"][All, {"SourceIndex", "ID"}]
 ```
 
@@ -232,22 +216,15 @@ transformation, not a claim that the result is a recommended normalization
 for an experimental study.
 
 ```wl
-fractions = N[Map[#/Total[#] &, panelA]];
-countDistances = Table[EuclideanDistance[N[panelA[[i]]], N[panelA[[j]]]],
-    {i, 4}, {j, 4}];
-fractionDistances = Table[EuclideanDistance[fractions[[i]], fractions[[j]]],
-    {i, 4}, {j, 4}];
-distanceFigure[distance_, label_] := ArrayPlot[distance,
-        ColorFunction -> "SolarColors", ColorRules -> {},
-        PlotRange -> {0, Max[distance]},
-        PlotLegends -> BarLegend[{"SolarColors", {0, Max[distance]}}],
-        FrameTicks -> {{Transpose[{Range[4], panelObservations[[1 ;; 4]]}], None},
-            {Transpose[{Range[4], panelObservations[[1 ;; 4]]}], None}},
-        FrameLabel -> {"observation", "observation"}, PlotLabel -> label];
-Grid[{MapThread[distanceFigure,
-    {{countDistances, fractionDistances},
-        {"Euclidean distance: counts", "Euclidean distance: fractions"}}]},
-    Spacings -> {2, 0}]
+fractions = N[#/Total[#] & /@ panelA];
+countDistances = Outer[EuclideanDistance, N[panelA], N[panelA], 1];
+fractionDistances = Outer[EuclideanDistance, fractions, fractions, 1];
+```
+
+Each distance matrix has its own color scale and units:
+
+```wl
+GraphicsRow[{distancePlot[countDistances, "counts"], distancePlot[fractionDistances, "fractions"]}]
 ```
 
 Rows A1 and A2 have identical fractions because one count profile is ten times
@@ -263,14 +240,12 @@ Subtracting each variable's mean generally changes those zeros:
 
 ```wl
 logFractions = Log[1 + fractions];
-centeredFractions = Transpose[Map[# - Mean[#] &, Transpose[fractions]]];
+columnMeans = Mean[fractions];
+centeredFractions = (# - columnMeans &) /@ fractions;
 storedNonzeros = Total[Flatten[Unitize[#]]] & /@
     {panelA, fractions, logFractions, centeredFractions};
-BarChart[storedNonzeros,
-    ChartLabels -> {"counts", "fractions", "log(1 +\nfraction)", "centered\nfractions"},
-    Frame -> True, Axes -> False,
-    FrameLabel -> {None, "nonzero entries among 16 positions"},
-    PlotLabel -> "A transformation can remove the storage advantage"]
+BarChart[storedNonzeros, ChartLabels -> {"counts", "fractions", "log", "centered"},
+    AxesLabel -> {None, "nonzero entries among 16 positions"}]
 ```
 
 Only these tiny matrices are materialized. For large data, preserve a sparse
@@ -289,8 +264,7 @@ This optional example makes the chosen layer and axes explicit:
 
 ```wl
 #| eval: false
-layerSlice = BioDatasetLoad[
-    File[FileNameJoin[{exampleDirectory, "toy-anndata.h5ad"}]],
+layerSlice = BioDatasetLoad[File[h5ad],
     "Format" -> "AnnData", "PythonExecutable" -> "/path/to/biodatalink-h5ad/bin/python",
     "Cells" -> {1, 2}, "Genes" -> {1, 2, 3},
     "Layer" -> {"Layers", "normalized"}];
@@ -317,18 +291,14 @@ performed and neither candidate is a fitted biological model.
 ```wl
 candidateA = Normal[values] + 20 (1 - Normal[available]);
 candidateB = ConstantArray[0, Dimensions[values]];
-maskedMSE[prediction_] := Total[Flatten[
-    Normal[available] (Normal[values] - prediction)^2]] /
-    Total[Flatten[Normal[available]]];
-paddedMSE[prediction_] := Mean[Flatten[(Normal[values] - prediction)^2]];
-candidateScores = N[{
-    {paddedMSE[candidateA], maskedMSE[candidateA]},
-    {paddedMSE[candidateB], maskedMSE[candidateB]}}];
+candidateScores = N[{paddedMSE[#], maskedMSE[#]} & /@ {candidateA, candidateB}];
+```
+
+Compare mean squared errors on all padded positions and on measured positions:
+
+```wl
 BarChart[candidateScores, ChartLabels -> {{"candidate A", "candidate B"}, None},
-    ChartLegends -> {"zero-padded mean squared error", "measured-only mean squared error"},
-    Frame -> True, Axes -> False,
-    FrameLabel -> {"candidate", "squared synthetic counts"},
-    PlotLabel -> "Padding can reverse a candidate ranking"]
+    ChartLegends -> {"zero-padded error", "measured-only error"}, AxesLabel -> {None, "squared synthetic counts"}]
 ```
 
 On measured entries, candidate A has zero error and candidate B has positive
@@ -365,3 +335,21 @@ file identity, measurement-availability evidence and processing documentation
 alongside the selected axes. Select bounded matrix slices before converting
 them to dense arrays or constructing pairwise distances: an n-observation
 distance matrix itself contains n squared entries even when its input is sparse.
+
+## Initialization
+
+These helpers supply identifier ticks and repeated plots. The alignment plots
+share the source matrix's range; the distance plots retain independent scales.
+The two loss functions differ only in which positions they count as measured.
+
+```wl
+matrixTicks[rows_, columns_] := {{Thread[{Range[Length[rows]], rows}], None}, {Thread[{Range[Length[columns]], columns}], None}};
+alignmentPlot[matrix_, rows_, columns_, label_] := MatrixPlot[matrix,
+    FrameTicks -> matrixTicks[panelObservations[[rows]], panelVariables[[columns]]],
+    PlotRange -> {0, Max[panelA]}, PlotLabel -> label];
+distancePlot[matrix_, label_] := MatrixPlot[matrix,
+    FrameTicks -> matrixTicks[Take[panelObservations, 4], Take[panelObservations, 4]],
+    PlotLegends -> Automatic, PlotLabel -> label];
+maskedMSE[prediction_] := Mean[Pick[Flatten[(Normal[values] - prediction)^2], Flatten[Normal[available]], 1]];
+paddedMSE[prediction_] := Mean[Flatten[(Normal[values] - prediction)^2]];
+```

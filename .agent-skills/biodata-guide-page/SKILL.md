@@ -36,6 +36,9 @@ Add Abstract and Functions sections. Group by user task; list implemented
 paclet symbols before external links, alphabetically within each group. Use
 short descriptions of results. State which providers or formats the task
 currently supports and link to references for detailed limits.
+Put detailed coverage and complete tutorial navigation in these guides. Keep
+the root README limited to installation, a small quickstart and the main
+documentation links, following [page roles](../../GUIDE.md#page-roles-and-navigation).
 
 Check that the hub reaches the guide, related pages exist, and filename,
 metadata and URI agree. Use destination titles for related-page links and one

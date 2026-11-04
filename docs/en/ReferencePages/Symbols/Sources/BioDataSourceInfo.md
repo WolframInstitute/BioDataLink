@@ -39,10 +39,10 @@ RelatedTutorials: [FindingDataSources]
 
 ## Basic Examples
 
-Inspect the complete PDB namespace record in a compact `Dataset` view:
+Get the PDB namespace record:
 
 ```wl
-Dataset[BioDataSourceInfo["pdb"], MaxItems -> {8, 2}]
+KeyTake[BioDataSourceInfo["pdb"], {"Prefix", "Name", "SampleID"}]
 ```
 
 ## Scope
@@ -50,8 +50,7 @@ Dataset[BioDataSourceInfo["pdb"], MaxItems -> {8, 2}]
 Inspect the declared Gene Ontology identifier convention:
 
 ```wl
-KeyTake[BioDataSourceInfo["go"],
-    {"Prefix", "Pattern", "SampleID", "NamespaceEmbeddedInLUI"}]
+KeyTake[BioDataSourceInfo["go"], {"Prefix", "Pattern", "SampleID", "NamespaceEmbeddedInLUI"}]
 ```
 
 Look up the same source using an uppercase prefix:
@@ -65,8 +64,7 @@ KeyTake[BioDataSourceInfo["PDB"], {"Prefix", "Name"}]
 Inspect the registered PDB endpoints without contacting them:
 
 ```wl
-Dataset[KeyTake[#, {"name", "providerCode", "official", "deprecated"}] & /@
-    BioDataSourceInfo["pdb"]["Resources"]]
+Dataset[BioDataSourceInfo["pdb"]["Resources"]][All, {"name", "providerCode", "official", "deprecated"}]
 ```
 
 The lowercase field names come from the registry. `"official"` and
@@ -76,8 +74,7 @@ availability, a data license or independent biological content.
 Retain evidence identifying the bundled registry used for a lookup:
 
 ```wl
-KeyTake[BioDataSourceInfo["pdb"]["Provenance"],
-    {"Provider", "SourceURL", "SourceSHA256", "RetrievedAt", "License"}]
+KeyTake[BioDataSourceInfo["pdb"]["Provenance"], {"Provider", "SourceURL", "SourceSHA256", "RetrievedAt", "License"}]
 ```
 
 ## Possible Issues

@@ -41,13 +41,12 @@ The expected hash was computed from the checked UCI file used here, rather
 than supplied by the publisher. It pins this particular content. A mismatch
 requires checking the source version and expectations before replacing them.
 
-Keep the retrieval evidence if the operation succeeds:
+After a successful download, inspect the retrieval evidence. Stop if the
+operation returned a `Failure`:
 
 ```wl
 #| eval: false
-If[FailureQ[download], download,
-    KeyTake[download, {"File", "SourceURL", "ResolvedURL", "ByteCount",
-        "ContentHash", "Verification", "RetrievedAt"}]]
+KeyTake[download, {"File", "SourceURL", "ResolvedURL", "ByteCount", "ContentHash", "Verification", "RetrievedAt"}]
 ```
 
 The function leaves a failed transfer out of the destination and preserves any
@@ -57,13 +56,11 @@ the data.
 
 ## Inspect the bundled copy offline
 
-Locate the bundled file and its source record:
+Locate the bundled Iris file and read its source record:
 
 ```wl
-exampleDirectory = FileNameJoin[{
-    PacletObject["WolframInstitute/BioDataLink"]["Location"], "Assets", "Examples"}];
-irisFile = FileNameJoin[{exampleDirectory, "iris.csv"}];
-provenance = Import[FileNameJoin[{exampleDirectory, "iris.provenance.json"}], "RawJSON"];
+irisFile = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "iris.csv"}];
+provenance = Import[FileNameJoin[{DirectoryName[irisFile], "iris.provenance.json"}], "RawJSON"];
 KeyTake[provenance, {"Title", "DOI", "License", "ByteCount", "SHA256"}]
 ```
 
@@ -91,8 +88,13 @@ as `"SourceRow"`:
 ```wl
 rows = DeleteCases[Import[irisFile, "CSV"], {} | {""}];
 columns = {"SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm", "Species"};
-iris = Dataset[MapIndexed[
-    Join[<|"SourceRow" -> First[#2]|>, AssociationThread[columns, #1]] &, rows]];
+records = AssociationThread[columns, #] & /@ rows;
+iris = Dataset[MapIndexed[Append[#1, "SourceRow" -> First[#2]] &, records]];
+```
+
+Show the first five records:
+
+```wl
 iris[1 ;; 5, {"SourceRow", "Species", "PetalLengthCm", "PetalWidthCm"}]
 ```
 
@@ -115,10 +117,8 @@ frequencies or evidence of a sampling design beyond the source documentation.
 Plot petal length against petal width, keeping species labels distinct:
 
 ```wl
-grouped = GroupBy[Normal[iris], #Species &];
-ListPlot[Map[({#PetalLengthCm, #PetalWidthCm} & /@ #) &, Values[grouped]],
-    Frame -> True, FrameLabel -> {"petal length (cm)", "petal width (cm)"},
-    PlotLegends -> Keys[grouped]]
+grouped = GroupBy[rows, Last -> (#[[{3, 4}]] &)];
+ListPlot[grouped, AxesLabel -> {"petal length (cm)", "petal width (cm)"}, PlotLegends -> Automatic]
 ```
 
 The plot describes measurements in this specific file. It does not establish

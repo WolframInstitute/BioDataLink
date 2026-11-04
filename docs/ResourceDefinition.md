@@ -23,7 +23,7 @@ provenance; matrix results preserve aligned metadata and explicit selections.
 
 ## Details & Options
 
-Version 0.3.0 includes 867 Identifiers.org namespaces and 1,039 endpoints, with
+The bundled directory includes 867 Identifiers.org namespaces and 1,039 endpoints, with
 774 active namespaces shown by default. This broad directory spans biological
 and other domains and is not exhaustive. A listing or generated resolver link
 does not establish current availability, open access or data-file import support.

@@ -14,6 +14,8 @@ additional observable would separate their predictions? This tutorial moves
 from one measurement to a panel, then asks how the answer changes when
 measurement precision is limited.
 
+Evaluate the Initialization section at the end before running the examples.
+
 Everything below is synthetic: the candidate models, marker names, predicted
 responses and error bounds. The calculation demonstrates a model-conditional
 comparison, not an experimental result or a recommendation for a biological
@@ -32,24 +34,33 @@ mathematical parameters, not identified genes or mechanisms. Define six
 possible observables: marker A and marker B at a baseline, after a pulse and
 during recovery. The labels describe hypothetical measurement conditions;
 the values below are invented dimensionless signals, not simulated biology.
+The `prediction` helper defines the following six expressions:
+
+```wl
+prediction[{a, b, c}]
+```
+
+Enumerate the eight parameter choices and evaluate their predictions:
 
 ```wl
 candidateParameters = Tuples[{0, 1}, 3];
-modelIDs = Range[Length[candidateParameters]];
-modelNames = ("M" <> ToString[#] &) /@ modelIDs;
-observableNames = {"A baseline", "B baseline", "A pulse", "B pulse", "A recovery", "B recovery"};
-predictions = Function[parameters,
-    With[{a = parameters[[1]], b = parameters[[2]], c = parameters[[3]]},
-        {1 + 2 a, 1 + 2 b, 1 + 2 Mod[a + b, 2],
-            1 + c/2, 1 + a + b, 1 + Mod[a + c, 2]/2}]] /@ candidateParameters;
-Legended[ArrayPlot[predictions, Frame -> True, AspectRatio -> 1,
-    FrameTicks -> {{Transpose[{modelIDs, modelNames}], None},
-        {Transpose[{Range[6], observableNames}], None}},
-    FrameLabel -> {"candidate model", "observable"}, PlotRange -> {1, 3},
-    ColorFunction -> "SolarColors", ImageSize -> 560],
-    BarLegend[{"SolarColors", {1, 3}}, LegendLabel -> "synthetic signal"]]
+predictions = prediction /@ candidateParameters;
 ```
 
+Name the rows and columns before plotting:
+
+```wl
+modelIDs = Range[Length[predictions]];
+observableNames = {"A baseline", "B baseline", "A pulse", "B pulse", "A recovery", "B recovery"};
+measurementIDs = Range[Length[observableNames]];
+```
+
+```wl
+MatrixPlot[predictions, PlotLegends -> Automatic,
+    FrameLabel -> {"candidate model", "observable"}]
+```
+
+Row numbers identify the models; column numbers follow `observableNames`.
 The rows preserve model identity across every later figure. There are eight
 candidate models and six possible observables. Changing only `c` changes the
 affected predictions by half a signal unit, whereas some other differences span
@@ -74,23 +85,15 @@ an error distribution, model probability or likelihood.
 ```wl
 epsilon = 1/10;
 modelPairs = Subsets[modelIDs, {2}];
-measurementIDs = Range[Length[observableNames]];
-separationMatrix[bound_] := Table[
-    Boole[Abs[predictions[[pair[[1]], j]] - predictions[[pair[[2]], j]]] > 2 bound],
-    {pair, modelPairs}, {j, measurementIDs}];
 separation = separationMatrix[epsilon];
-pairLabels = (StringRiffle[modelNames[[#]], " / "] &) /@ modelPairs;
-Legended[ArrayPlot[separation, Frame -> True, AspectRatio -> 1.25,
-    ColorRules -> {0 -> RGBColor[0.93, 0.95, 0.98], 1 -> RGBColor[0.14, 0.36, 0.58]},
-    FrameTicks -> {{Transpose[{Range[Length[modelPairs]], pairLabels}], None},
-        {Transpose[{measurementIDs, observableNames}], None}},
-    FrameLabel -> {"unordered model pair", "single observable"}, ImageSize -> 620],
-    SwatchLegend[{RGBColor[0.93, 0.95, 0.98], RGBColor[0.14, 0.36, 0.58]},
-        {"intervals overlap", "intervals separated"}]]
 ```
 
-Each dark square identifies one pair separated by one observable under this
-bound. Counting dark squares alone is insufficient when selecting several
+```wl
+ArrayPlot[separation, FrameTicks -> Automatic, AspectRatio -> 1, FrameLabel -> {"model pair", "observable"}]
+```
+
+Each black square identifies one pair separated by one observable under this
+bound. Row numbers follow `modelPairs`; columns follow `observableNames`. Counting dark squares alone is insufficient when selecting several
 observables: two columns may separate many of the same pairs.
 
 ## Add measurements that cover unresolved pairs
@@ -100,28 +103,20 @@ of its observables separates that pair. This is an unweighted combinatorial
 objective, not expected information gain. It assigns no different importance
 to models, outcomes, assay costs or biological consequences.
 
-The following greedy procedure repeatedly adds the observable that separates
+The `greedyPanel` helper repeatedly adds the observable that separates
 the most uncovered pairs. Ties go to the first remaining observable in the
-recorded column order. It stops when no observable provides a positive gain:
+recorded column order. It stops when no observable provides a positive gain.
+Its definition is in Initialization:
 
 ```wl
-coveredPairs[panel_, matrix_] := If[panel === {}, {},
-    Select[Range[Length[modelPairs]], Max[matrix[[#, panel]]] == 1 &]];
-coverage[panel_, matrix_] := Length[coveredPairs[panel, matrix]];
-greedyPanel[matrix_] := Module[{panel = {}, remaining = measurementIDs,
-    covered = {}, gains, best},
-    While[remaining =!= {},
-        gains = (Length[Complement[coveredPairs[{#}, matrix], covered]] &) /@ remaining;
-        If[Max[gains] == 0, Break[]];
-        best = remaining[[First[FirstPosition[gains, Max[gains]]]]];
-        AppendTo[panel, best];
-        covered = coveredPairs[panel, matrix];
-        remaining = DeleteCases[remaining, best]];
-    panel];
 greedyOrder = greedyPanel[separation];
-<|"ChosenOrder" -> observableNames[[greedyOrder]],
-    "PairsSeparatedAfterEachAddition" ->
-        Table[coverage[Take[greedyOrder, k], separation], {k, Length[greedyOrder]}]|>
+observableNames[[greedyOrder]]
+```
+
+Count the pairs separated after each addition:
+
+```wl
+coverage[Take[greedyOrder, #], separation] & /@ Range[Length[greedyOrder]]
 ```
 
 The chosen sequence is A recovery, B pulse, then A baseline. It separates
@@ -141,23 +136,18 @@ to reuse the same circle in every graph, so a layout change cannot masquerade
 as a change in model relationships:
 
 ```wl
-fixedCoordinates = Thread[modelIDs -> N[CirclePoints[Length[modelIDs]]]];
-modelGraph[panel_, bound_, title_] := Module[{matrix, unresolved},
-    matrix = separationMatrix[bound];
-    unresolved = Complement[Range[Length[modelPairs]], coveredPairs[panel, matrix]];
-    Graph[modelIDs, (UndirectedEdge @@ # &) /@ modelPairs[[unresolved]],
-        VertexCoordinates -> fixedCoordinates,
-        VertexLabels -> MapThread[#1 -> Placed[Style[#2, White, 11], Center] &,
-            {modelIDs, modelNames}],
-        VertexStyle -> RGBColor[0.14, 0.36, 0.58], VertexSize -> {"Scaled", 0.12},
-        EdgeStyle -> Directive[RGBColor[0.68, 0.43, 0.18], Opacity[0.7], AbsoluteThickness[1.3]],
-        PlotLabel -> Column[{title, ToString[Length[unresolved]] <> " unresolved pairs"},
-            Alignment -> Center], ImagePadding -> 18, ImageSize -> 310]];
+fixedCoordinates = N[CirclePoints[Length[modelIDs]]];
 panels = Table[Take[greedyOrder, k], {k, 0, Length[greedyOrder]}];
-Grid[Partition[Map[Function[panel,
-    modelGraph[panel, epsilon,
-        If[panel === {}, "no measurements", StringRiffle[observableNames[[panel]], " +\n"]]]],
-    panels], 2], Spacings -> {2, 1}]
+graphs = modelGraph[#, epsilon] & /@ panels;
+```
+
+```wl
+panelLabels = Prepend[StringRiffle[observableNames[[#]], " + "] & /@ Rest[panels], "No measurements"];
+GraphicsGrid[Partition[MapThread[Labeled, {graphs, panelLabels}], 2]]
+```
+
+```wl
+EdgeCount /@ graphs
 ```
 
 The graph progresses from 28 edges to 8, then 2, then none. A missing edge is
@@ -175,26 +165,30 @@ adding columns in their original order:
 
 ```wl
 budgets = Range[0, Length[measurementIDs]];
-allPanelScores = Flatten[Table[
-    {k, coverage[panel, separation]}, {k, budgets}, {panel, Subsets[measurementIDs, {k}]}], 1];
-optimalCoverage = Table[Max[coverage[#, separation] & /@ Subsets[measurementIDs, {k}]], {k, budgets}];
-greedyCoverage = Table[coverage[Take[greedyOrder, UpTo[k]], separation], {k, budgets}];
-sourceOrderCoverage = Table[coverage[Take[measurementIDs, k], separation], {k, budgets}];
-coverageStyles = {Directive[RGBColor[0.14, 0.36, 0.58], Thick],
-    Directive[RGBColor[0.85, 0.43, 0.12], Dashed, Thick],
-    Directive[RGBColor[0.35, 0.6, 0.4], Thick]};
-Legended[Show[
-    ListPlot[allPanelScores, PlotStyle -> Directive[Gray, Opacity[0.35], PointSize[0.017]]],
-    ListLinePlot[{Transpose[{budgets, optimalCoverage}],
-        Transpose[{budgets, greedyCoverage}], Transpose[{budgets, sourceOrderCoverage}]},
-        PlotStyle -> coverageStyles, PlotMarkers -> Automatic],
-    Frame -> True, Axes -> False, PlotRange -> {{-0.1, 6.1}, {0, 29}},
-    FrameLabel -> {"observable budget", "separated pairs out of 28"}, ImageSize -> 700],
-    Placed[LineLegend[coverageStyles,
-        {"best exact-size panel", "greedy, up to budget", "source column order"}], Below]]
+allPanelScores = Flatten[Table[{k, coverage[panel, separation]},
+    {k, budgets}, {panel, Subsets[measurementIDs, {k}]}], 1];
 ```
 
-Grey points represent every panel, with overlaps where scores coincide. The
+```wl
+ListPlot[allPanelScores, AxesLabel -> {"observables", "separated pairs"}]
+```
+
+Compute the best score for each exact panel size, then compare both orders:
+
+```wl
+optimalCoverage = Table[Max[coverage[#, separation] & /@ Subsets[measurementIDs, {k}]], {k, budgets}];
+greedyCoverage = coverage[Take[greedyOrder, UpTo[#]], separation] & /@ budgets;
+sourceOrderCoverage = coverage[Take[measurementIDs, #], separation] & /@ budgets;
+```
+
+```wl
+ListLinePlot[{optimalCoverage, greedyCoverage, sourceOrderCoverage}, DataRange -> {0, 6},
+    PlotMarkers -> Automatic, PlotLegends -> {"best exact-size panel", "greedy", "source order"},
+    AxesLabel -> {"observable budget", "separated pairs"}]
+```
+
+The points represent every panel, with overlaps where scores coincide.
+Markers help distinguish the coincident best-panel and greedy curves. The
 greedy curve reaches the exact optimum in this fixture and needs three
 observables for complete separation. Its curve stops adding measurements once
 all pairs are covered; larger budgets are allowances, not measurements actually
@@ -215,13 +209,12 @@ errorBounds = Range[0, 40]/40;
 noiseCoverage = Table[With[{matrix = separationMatrix[bound]},
     {coverage[greedyOrder, matrix], coverage[measurementIDs, matrix],
         Max[coverage[#, matrix] & /@ Subsets[measurementIDs, {3}]]}], {bound, errorBounds}];
-ListStepPlot[(Transpose[{errorBounds, #}] & /@ Transpose[noiseCoverage]), Right,
-    Frame -> True, Axes -> False, PlotRange -> {{0, 1.03}, {-0.5, 29}},
-    FrameLabel -> {"assumed absolute error bound", "separated pairs out of 28"},
-    PlotStyle -> {Directive[RGBColor[0.85, 0.43, 0.12], Thick],
-        Directive[RGBColor[0.14, 0.36, 0.58], Thick], Directive[RGBColor[0.35, 0.6, 0.4], Dashed, Thick]},
-    PlotLegends -> Placed[{"fixed low-error panel", "all six observables", "best three at each bound"}, Below],
-    ImageSize -> 700]
+```
+
+```wl
+ListStepPlot[Transpose[noiseCoverage], Right, DataRange -> {0, 1},
+    PlotLegends -> {"fixed low-error panel", "all six observables", "best three at each bound"},
+    AxesLabel -> {"assumed absolute error bound", "separated pairs"}]
 ```
 
 At a bound of 0.25, the half-unit differences involving `c` no longer guarantee
@@ -241,10 +234,8 @@ Return to A recovery alone, whose possible predictions are 1, 2 and 3. Compare
 three error bounds using the same model positions:
 
 ```wl
-Grid[{Table[Graph[modelGraph[{5}, bound,
-    "A recovery; error bound " <> ToString[N[bound]]], ImageSize -> 240],
-    {bound, {1/10, 3/5, 1}}]},
-    Spacings -> {1, 0}]
+GraphicsRow[Table[Labeled[modelGraph[{5}, bound], Row[{"error bound: ", bound}]],
+    {bound, {1/10, 3/5, 1}}]]
 ```
 
 At a bound of 0.6, a model predicting 1 overlaps a model predicting 2, and that
@@ -261,3 +252,40 @@ shows a setting where candidate predictions come from update rules.
 [Understanding Sparse Measurements](paclet:WolframInstitute/BioDataLink/tutorial/UnderstandingSparseMeasurements)
 shows why an absent measurement cannot be silently treated as a measured zero
 when constructing such a comparison.
+
+
+## Initialization
+
+Define the synthetic prediction model:
+
+```wl
+prediction[{a_, b_, c_}] := {1 + 2 a, 1 + 2 b, 1 + 2 Mod[a + b, 2], 1 + c/2, 1 + a + b, 1 + Mod[a + c, 2]/2};
+```
+
+Compare each pair of prediction rows against the stated error bound:
+
+```wl
+separationMatrix[bound_] := Boole[Thread[Abs[Subtract @@ predictions[[#]]] > 2 bound]] & /@ modelPairs;
+coveredPairs[panel_, matrix_] := Union @@ (Flatten[Position[matrix[[All, #]], 1]] & /@ panel);
+coverage[panel_, matrix_] := Length[coveredPairs[panel, matrix]];
+```
+
+At each greedy step, consider the current panel first, followed by its
+one-observable extensions in column order. `MaximalBy` retains ties in that
+order. Keeping the current panel first stops the process when no extension
+improves its score:
+
+```wl
+greedyStep[panel_, matrix_] := First[MaximalBy[Prepend[Append[panel, #] & /@ Complement[measurementIDs, panel], panel], coverage[#, matrix] &]];
+greedyPanel[matrix_] := NestWhile[greedyStep[#, matrix] &, {}, UnsameQ, 2];
+```
+
+Build each graph from unresolved pairs, retaining all vertices and the same
+coordinates. Labels identify models; their positions do not imply biology:
+
+```wl
+modelGraph[panel_, bound_] := Module[{unresolved},
+    unresolved = Complement[Range[Length[modelPairs]], coveredPairs[panel, separationMatrix[bound]]];
+    Graph[modelIDs, UndirectedEdge @@@ modelPairs[[unresolved]],
+        VertexCoordinates -> fixedCoordinates, VertexLabels -> Automatic]];
+```

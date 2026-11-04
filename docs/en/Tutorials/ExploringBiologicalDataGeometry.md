@@ -29,9 +29,8 @@ Load the local file and preserve its row order. The source row is a record
 position, not a time coordinate or evidence of independent sampling:
 
 ```wl
-exampleDirectory = FileNameJoin[{
-    PacletObject["WolframInstitute/BioDataLink"]["Location"], "Assets", "Examples"}];
-rows = DeleteCases[Import[FileNameJoin[{exampleDirectory, "iris.csv"}], "CSV"], {} | {""}];
+irisFile = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "iris.csv"}];
+rows = DeleteCases[Import[irisFile, "CSV"], {} | {""}];
 measurements = rows[[All, 1 ;; 4]];
 species = rows[[All, 5]];
 variableNames = {"sepal length", "sepal width", "petal length", "petal width"};
@@ -47,10 +46,7 @@ horizontal scales retain their measurement meaning:
 ```wl
 GraphicsGrid[Partition[Table[
     Histogram[measurements[[All, j]], {0.2}, "Count",
-        Frame -> True, Axes -> False,
-        FrameLabel -> {variableNames[[j]] <> " (cm)", "records"},
-        ChartStyle -> ColorData[97][j], ImageSize -> 320],
-    {j, 4}], 2], ImageSize -> 700]
+        AxesLabel -> {variableNames[[j]] <> " (cm)", "records"}], {j, 4}], 2]]
 ```
 
 All four variables share a physical unit, but they have different spreads.
@@ -85,13 +81,10 @@ change of scale:
 ```wl
 rawScores = PrincipalComponents[measurements, Method -> "Covariance"];
 scaledScores = PrincipalComponents[standardized, Method -> "Covariance"];
-GraphicsRow[MapThread[Function[{scores, label},
-    ListPlot[(scores[[#, {1, 2}]] & /@ speciesRows),
-        Frame -> True, Axes -> False, PlotRange -> All,
-        FrameLabel -> {"component 1", "component 2"}, PlotLabel -> label,
-        PlotLegends -> Placed[speciesNames, Below], ImageSize -> 335]],
-    {{rawScores, scaledScores}, {"centimetre variables", "standardized variables"}}],
-    ImageSize -> 720]
+Grid[{MapThread[Function[{scores, label}, ListPlot[scores[[#, {1, 2}]] & /@ speciesRows,
+    Frame -> True, FrameLabel -> {"component 1", "component 2"}, PlotRange -> All, PlotLabel -> label,
+    PlotLegends -> speciesNames]], {{rawScores, scaledScores},
+    {"centimetre variables", "standardized variables"}}]}]
 ```
 
 The projection is a new coordinate system, not a biological trajectory.
@@ -105,9 +98,8 @@ Count the fraction of total variance represented by each component:
 varianceFractions = (Variance[#]/Total[Variance[#]] &) /@ {rawScores, scaledScores};
 BarChart[Transpose[varianceFractions], ChartLayout -> "Grouped",
     ChartLabels -> {{"PC1", "PC2", "PC3", "PC4"}, None},
-    ChartLegends -> Placed[{"centimetre variables", "standardized variables"}, Below],
-    Frame -> True, Axes -> False, FrameLabel -> {"component", "fraction of total variance"},
-    PlotRange -> {0, 1}, ImageSize -> 650]
+    ChartLegends -> {"centimetre variables", "standardized variables"},
+    AxesLabel -> {None, "variance fraction"}]
 ```
 
 The denominator changes when variables are standardized. A larger first
@@ -124,16 +116,9 @@ record with itself. The two colour scales have different units:
 ```wl
 rawDistances = Outer[EuclideanDistance, measurements, measurements, 1];
 scaledDistances = Outer[EuclideanDistance, standardized, standardized, 1];
-Grid[{MapThread[Function[{distances, title},
-    Legended[MatrixPlot[distances, FrameLabel -> {"source row", "source row"},
-        FrameTicks -> {{Automatic, None}, {Automatic, None}},
-        PlotLabel -> title, PlotRange -> {0, Max[distances]},
-        ColorFunctionScaling -> False,
-        ColorFunction -> (ColorData["DeepSeaColors"][#/Max[distances]] &),
-        ImagePadding -> {{45, 10}, {45, 40}}, ImageSize -> 330],
-        BarLegend[{"DeepSeaColors", {0, Max[distances]}}]]],
-    {{rawDistances, scaledDistances}, {"distance in cm", "standardized distance"}}]},
-    Alignment -> Top, Spacings -> {1, 0}]
+Grid[{MapThread[MatrixPlot[#1, PlotLegends -> Automatic,
+    FrameLabel -> {"source row", "source row"}, PlotLabel -> #2] &,
+    {{rawDistances, scaledDistances}, {"distance in cm", "standardized distance"}}]}]
 ```
 
 Source ordering puts the species blocks together, making the block structure
@@ -152,20 +137,13 @@ documented by [ClusteringComponents](https://reference.wolfram.com/language/ref/
 
 ```wl
 seeds = Range[20];
-clusterRuns = Table[
-    Table[ClusteringComponents[data, 3, 1, Method -> "KMeans",
-        DistanceFunction -> EuclideanDistance, RandomSeeding -> seed], {seed, seeds}],
-    {data, {measurements, standardized}}];
-coassignment[assignment_] := Outer[Boole[#1 == #2] &, assignment, assignment];
+clusterRuns = Table[ClusteringComponents[data, 3, 1, Method -> "KMeans",
+    DistanceFunction -> EuclideanDistance, RandomSeeding -> seed],
+    {data, {measurements, standardized}}, {seed, seeds}];
 coassignmentFractions = Mean[coassignment /@ #] & /@ clusterRuns;
-Legended[GraphicsRow[MapThread[
-    MatrixPlot[#1, PlotRange -> {0, 1}, ColorFunctionScaling -> False,
-        FrameTicks -> {{Automatic, None}, {Automatic, None}},
-        ColorFunction -> "TemperatureMap",
-        FrameLabel -> {"source row", "source row"}, PlotLabel -> #2,
-        ImagePadding -> {{45, 10}, {45, 40}}, ImageSize -> 340] &,
-    {coassignmentFractions, {"centimetre variables", "standardized variables"}}],
-    ImageSize -> 700], BarLegend[{"TemperatureMap", {0, 1}}, LegendLabel -> "fraction"]]
+Grid[{MapThread[MatrixPlot[#1, PlotRange -> {0, 1}, PlotLegends -> Automatic,
+    FrameLabel -> {"source row", "source row"}, PlotLabel -> #2] &,
+    {coassignmentFractions, {"centimetre variables", "standardized variables"}}]}]
 ```
 
 A coassignment fraction is the proportion of these 20 runs in which two
@@ -181,15 +159,12 @@ representation. Also compare the two representations at seed 1:
 
 ```wl
 recordPairs = Subsets[Range[Length[measurements]], {2}];
-pairRelations[assignment_] := (Boole[assignment[[#[[1]]]] == assignment[[#[[2]]]]] &) /@ recordPairs;
 pairRuns = Map[pairRelations, clusterRuns, {2}];
-disagreement[a_, b_] := N[Mean[Abs[a - b]]];
 seedDisagreement = Function[runs, disagreement[First[runs], #] & /@ runs] /@ pairRuns;
 scaleDisagreement = disagreement[pairRuns[[1, 1]], pairRuns[[2, 1]]];
-ListPlot[Map[Transpose[{seeds, #}] &, seedDisagreement], Joined -> True,
-    PlotMarkers -> Automatic, Frame -> True, Axes -> False, PlotRange -> {0, 1},
-    FrameLabel -> {"random seed", "fraction of pair relations changed from seed 1"},
-    PlotLegends -> Placed[{"centimetre variables", "standardized variables"}, Below], ImageSize -> 650]
+ListLinePlot[Transpose[{seeds, #}] & /@ seedDisagreement, PlotRange -> {0, 1},
+    Frame -> True, FrameLabel -> {"random seed", "fraction of pair relations changed"},
+    PlotLegends -> {"centimetre variables", "standardized variables"}]
 ```
 
 ```wl
@@ -210,3 +185,14 @@ scales, the distance definition, requested cluster count and random seeds.
 asks what happens when those continuous measurements become finite states.
 [Exploring Simple Predictive Rules](paclet:WolframInstitute/BioDataLink/tutorial/ExploringSimplePredictiveRules)
 uses a separate training and held-out workflow when the question is prediction.
+
+## Initialization
+
+Evaluate these helper definitions before the examples above. The data choices
+and analysis parameters remain in the main examples.
+
+```wl
+coassignment[assignment_] := Outer[Boole[#1 == #2] &, assignment, assignment];
+pairRelations[assignment_] := (Boole[assignment[[#[[1]]]] == assignment[[#[[2]]]]] &) /@ recordPairs;
+disagreement[a_, b_] := N[Mean[Abs[a - b]]];
+```

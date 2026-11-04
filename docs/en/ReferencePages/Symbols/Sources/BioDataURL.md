@@ -51,12 +51,11 @@ BioDataURL[{"doi", BioDataSourceInfo["doi"]["SampleID"]}]
 
 ## Applications
 
-Keep a source name, its supplied sample identifier and the constructed link together:
+Use a source's supplied sample identifier to construct a link:
 
 ```wl
-With[{source = BioDataSourceInfo["pdb"]},
-    <|"Source" -> source["Name"], "ID" -> source["SampleID"],
-        "URL" -> BioDataURL[{source["Prefix"], source["SampleID"]}]|>]
+source = BioDataSourceInfo["pdb"];
+BioDataURL[{source["Prefix"], source["SampleID"]}]
 ```
 
 This example uses PDB's unprefixed sample identifier. For an embedded-prefix

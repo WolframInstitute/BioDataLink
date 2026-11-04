@@ -7,6 +7,8 @@ archiveExclusions = {"__pycache__", "*/__pycache__", "*.pyc"};
 command = If[Length[$ScriptCommandLine] > 1, $ScriptCommandLine[[2]], "build"];
 fail[text_] := (Print["ERROR: ", text]; Exit[1]);
 require[result_, label_] := If[AssociationQ[result], result, fail[{label, result}]];
+
+Get[FileNameJoin[{root, "scripts", "tutorial-initialization.wl"}]];
 If[!MemberQ[{"build", "notebooks", "site", "publish"}, command], fail["expected build, notebooks, site or publish"]];
 CheckAbort[
     manifest = Import[FileNameJoin[{root, "scripts", "build-dependencies.json"}], "RawJSON"];
@@ -27,6 +29,9 @@ CheckAbort[
     If[ExpandFileName[resolved["Location"]] =!= ExpandFileName[FileNameJoin[{root, ".deps", "PacletPage"}]],
         fail["an installed PacletPage shadows the pinned checkout"]];
     Print["PacletPage ", resolved["Version"], " from ", resolved["Location"]];
+    Block[{$Context = "BioDataLinkDocs`", $ContextPath = {"System`"}},
+        Get[FileNameJoin[{root, ".deps", "MarkdownToNotebook", "MarkdownToNotebook.wl"}]]];
+    documentationSource = stageDocumentation[];
     If[command === "publish",
         user = Environment["WOLFRAM_CLOUD_USER"];
         If[!StringQ[user] || user === "", fail["set WOLFRAM_CLOUD_USER to the publishing account"]];
@@ -36,13 +41,14 @@ CheckAbort[
             fail["the kernel must be authenticated as the configured publishing account"]]
     ];
     converted = require[WolframInstitute`PacletPage`BuildPacletDocumentation[pacletDirectory,
-        "Source" -> FileNameJoin[{root, "docs", "en"}],
+        "Source" -> documentationSource,
         "Definition" -> FileNameJoin[{root, "docs", "ResourceDefinition.md"}],
         "Converter" -> FileNameJoin[{root, ".deps", "MarkdownToNotebook", "MarkdownToNotebook.wl"}],
         "Dependencies" -> {FileNameJoin[{root, ".deps", "WolframParser", "Parser"}]},
         "TimeConstraint" -> 240, "Prune" -> True, "Monitor" -> True], "documentation conversion"];
     If[Lookup[converted, "Failed", {"missing result"}] =!= {} ||
             Lookup[converted, "Unevaluated", <||>] =!= <||>, fail[converted]];
+    Scan[restoreTutorialInitialization, converted["Notebooks"]];
     Print["Documentation pages: ", Length[converted["Notebooks"]]];
     If[command === "notebooks", Exit[0]];
     built = require[WolframInstitute`PacletPage`DeployPacletResource[pacletDirectory,

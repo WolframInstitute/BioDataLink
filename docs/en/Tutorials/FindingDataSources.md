@@ -39,8 +39,7 @@ provider for online `BioDatasetQuery` calls.
 Examine the source description and example identifier for the PDB namespace:
 
 ```wl
-KeyTake[BioDataSourceInfo["pdb"],
-    {"Prefix", "Name", "Description", "SampleID", "Deprecated"}]
+KeyTake[BioDataSourceInfo["pdb"], {"Prefix", "Name", "Description", "SampleID", "Deprecated"}]
 ```
 
 The registry can list several access endpoints for one namespace. Its original
@@ -52,8 +51,7 @@ BioDataLink data reader.
 Inspect PDB's registered endpoints in a compact table:
 
 ```wl
-Dataset[KeyTake[#, {"name", "providerCode", "official", "deprecated"}] & /@
-    BioDataSourceInfo["pdb"]["Resources"]]
+Dataset[BioDataSourceInfo["pdb"]["Resources"]][All, {"name", "providerCode", "official", "deprecated"}]
 ```
 
 These flags are the registry's metadata. Two endpoints may serve the same
@@ -62,8 +60,7 @@ underlying records, so they are not independent sources of biological evidence.
 Inspect the registry version evidence used by this lookup:
 
 ```wl
-KeyTake[BioDataSourceInfo["pdb"]["Provenance"],
-    {"SourceURL", "SourceSHA256", "RetrievedAt", "License"}]
+KeyTake[BioDataSourceInfo["pdb"]["Provenance"], {"SourceURL", "SourceSHA256", "RetrievedAt", "License"}]
 ```
 
 `"RetrievedAt"` records when this copy of the registry was collected.
@@ -110,14 +107,12 @@ across providers and do not count independent experiments or biological
 replicates. A textual match alone does not establish that an assay, organism
 or experimental design suits the research question.
 
-Inspect the returned accessions, titles and organism annotations. This online
-example uses the `page` obtained above and preserves a failure if the query did
-not succeed:
+After a successful query, inspect the accessions, titles and organism
+annotations. Stop if the query returned a `Failure`:
 
 ```wl
 #| eval: false
-If[FailureQ[page], page,
-    page["Records"][All, {"ID", "Title", "Organism"}]]
+page["Records"][All, {"ID", "Title", "Organism"}]
 ```
 
 The BioStudies search response used here does not supply structured organism
@@ -129,24 +124,25 @@ Keep the original query, source endpoint and retrieval time with the selection:
 
 ```wl
 #| eval: false
-If[FailureQ[page], page,
-    KeyTake[page, {"Provider", "Query", "SourceURL", "RetrievedAt",
-        "Total", "TotalIsExact"}]]
+KeyTake[page, {"Provider", "Query", "SourceURL", "RetrievedAt", "Total", "TotalIsExact"}]
 ```
 
-Request another page only when a continuation is available:
+Check whether a continuation is available:
 
 ```wl
 #| eval: false
-nextPage = Which[
-    FailureQ[page], page,
-    page["NextCursor"] === None, None,
-    True, BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3,
-        "Cursor" -> page["NextCursor"]]]
+page["NextCursor"]
 ```
 
-Here `None` means the search has no next page; a `Failure` remains distinct
-from that successful end condition. Live records and estimated totals can
+If that value is not `None`, request the next page with the same search:
+
+```wl
+#| eval: false
+nextPage = BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3, "Cursor" -> page["NextCursor"]]
+```
+
+A `None` cursor means the search has no next page. A `Failure` from the query
+is distinct from that successful end condition. Live records and estimated totals can
 change between requests. Retain the returned accessions when documenting a
 selection used for analysis.
 

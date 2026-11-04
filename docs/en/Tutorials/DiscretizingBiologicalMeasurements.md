@@ -28,28 +28,23 @@ Load the four columns in their source order. Use the median of each variable
 as an initial threshold, assigning equality to the lower state:
 
 ```wl
-irisFile = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["Location"],
-    "Assets", "Examples", "iris.csv"}];
+irisFile = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "iris.csv"}];
 rows = DeleteCases[Import[irisFile, "CSV"], {} | {""}];
 measurements = rows[[All, 1 ;; 4]];
 variableNames = {"sepal length", "sepal width", "petal length", "petal width"};
 thresholds = Median /@ Transpose[measurements];
-encodeBinary[point_, cuts_] := MapThread[Boole[#1 > #2] &, {point, cuts}];
 binaryStates = encodeBinary[#, thresholds] & /@ measurements;
 AssociationThread[variableNames, thresholds]
 ```
 
-Place the chosen threshold on each distribution. Each dashed line is a
+Place the chosen threshold on each distribution. Each vertical grid line is a
 specified analysis choice, not a boundary inferred from a biological assay:
 
 ```wl
 GraphicsGrid[Partition[Table[
     Histogram[measurements[[All, j]], {0.2}, "Count",
-        Frame -> True, Axes -> False,
-        FrameLabel -> {variableNames[[j]] <> " (cm)", "records"},
-        Epilog -> {Black, Dashed, Line[{{thresholds[[j]], 0}, {thresholds[[j]], 150}}]},
-        ChartStyle -> ColorData[97][j], ImageSize -> 320],
-    {j, 4}], 2], ImageSize -> 700]
+        AxesLabel -> {variableNames[[j]] <> " (cm)", "records"},
+        GridLines -> {{thresholds[[j]]}, None}], {j, 4}], 2]]
 ```
 
 A median split need not produce equal groups when values are tied. The
@@ -62,34 +57,28 @@ Display one row per plant record and one column per measurement. Dark entries
 are above the variable's median; light entries are at or below it:
 
 ```wl
-ArrayPlot[binaryStates, ColorRules -> {0 -> RGBColor[0.92, 0.95, 0.98],
-        1 -> RGBColor[0.14, 0.35, 0.63]},
-    Frame -> True, AspectRatio -> 1,
+ArrayPlot[binaryStates, Frame -> True, AspectRatio -> 1,
     FrameTicks -> {{Automatic, None},
         {Transpose[{Range[4], {"sepal L", "sepal W", "petal L", "petal W"}}], None}},
-    FrameLabel -> {"source row", "measurement"},
-    PlotLegends -> SwatchLegend[{RGBColor[0.92, 0.95, 0.98], RGBColor[0.14, 0.35, 0.63]},
-        {"at or below median", "above median"}], ImageSize -> 580]
+    FrameLabel -> {"source row", "measurement"}, PlotLegends -> Automatic]
 ```
 
 The source file groups its species labels. That ordering explains why blocks
 appear together in this display. It supplies no sequence of state transitions.
 A row permutation would leave the state counts below unchanged.
 
+Read each bit string in sepal-length, sepal-width, petal-length, petal-width order.
 Four bits allow 16 possible states. Enumerate all of them, including states
 that no record occupies, and count records without merging their source rows:
 
 ```wl
 stateNumbers = FromDigits[#, 2] & /@ binaryStates;
 stateCounts = Table[Count[stateNumbers, state], {state, 0, 15}];
-stateLabels = StringJoin[ToString /@ IntegerDigits[#, 2, 4]] & /@ Range[0, 15];
-BarChart[stateCounts, ChartLabels -> stateLabels,
-    Frame -> True, Axes -> False,
-    FrameLabel -> {"state: sepal length, sepal width, petal length, petal width", "records"},
-    ChartStyle -> RGBColor[0.14, 0.35, 0.63], ImageSize -> 700]
+BarChart[stateCounts, ChartLabels -> Range[0, 15], AxesLabel -> {"state number", "records"}]
 ```
 
-A zero-height bar means this encoding has no matching record in this file.
+The state number is the base-two value of the four bits: 0 is `0000` and
+15 is `1111`. A zero-height bar means this encoding has no matching record in this file.
 It does not show that the state is biologically impossible. Conversely, records
 sharing a state can differ substantially in their original measurements.
 
@@ -107,12 +96,9 @@ shiftedStates = Table[encodeBinary[#, thresholds + shift columnScales] & /@ meas
     {shift, shifts}];
 bitChangeFractions = Mean[Abs[# - binaryStates]] & /@ shiftedStates;
 wholeStateChange = (Mean[MapThread[Boole[#1 =!= #2] &, {#, binaryStates}]] &) /@ shiftedStates;
-ListLinePlot[Join[
-        (Transpose[{shifts, #}] & /@ Transpose[bitChangeFractions]),
-        {Transpose[{shifts, wholeStateChange}]}],
-    Frame -> True, Axes -> False, PlotRange -> {0, 1},
-    FrameLabel -> {"threshold shift (variable standard deviations)", "fraction of records changed"},
-    PlotLegends -> Placed[Append[variableNames, "any bit"], Below], ImageSize -> 700]
+ListLinePlot[Transpose[{shifts, #}] & /@ Append[Transpose[bitChangeFractions], wholeStateChange],
+    PlotRange -> {0, 1}, PlotLegends -> Append[variableNames, "any bit"],
+    Frame -> True, FrameLabel -> {"threshold shift (standard deviations)", "fraction of records changed"}]
 ```
 
 This is sensitivity to a deliberate analysis change. The horizontal scale is
@@ -129,9 +115,6 @@ returns observed values; repeated cuts are removed, and equality stays in the
 lower bin. Ties can therefore leave fewer than q occupied bins.
 
 ```wl
-quantileCuts[q_] := DeleteDuplicates[Quantile[#, Range[q - 1]/q]] & /@ Transpose[measurements];
-encodeBins[point_, cuts_] := MapThread[
-    Function[{value, boundaries}, 1 + Count[boundaries, t_ /; value > t]], {point, cuts}];
 requestedBins = Range[2, 8];
 cutSets = quantileCuts /@ requestedBins;
 binnedStates = Table[encodeBins[#, cuts] & /@ measurements, {cuts, cutSets}];
@@ -145,22 +128,14 @@ prediction error:
 
 ```wl
 petalLength = measurements[[All, 3]];
-reconstruct[binLabels_, values_] := Module[{means},
-    means = GroupBy[Transpose[{binLabels, values}], First -> Last, Mean];
-    Lookup[means, binLabels]];
 petalReconstructions = reconstruct[#[[All, 3]], petalLength] & /@ binnedStates;
 quantizationRMSE = Sqrt[Mean[(# - petalLength)^2]] & /@ petalReconstructions;
-GraphicsRow[{
-    ListLogPlot[{Transpose[{requestedBins, requestedBins^4}],
-        Transpose[{requestedBins, occupiedStates}]}, Joined -> True,
-        PlotMarkers -> Automatic, Frame -> True, Axes -> False,
-        FrameLabel -> {"requested bins per variable", "joint states (log scale)"},
-        PlotLegends -> Placed[{"q^4 possible before ties", "occupied in this file"}, Below],
-        ImageSize -> 340],
-    ListLinePlot[Transpose[{requestedBins, quantizationRMSE}],
-        PlotMarkers -> Automatic, Frame -> True, Axes -> False,
-        FrameLabel -> {"requested bins per variable", "petal-length reconstruction RMSE (cm)"},
-        PlotRange -> All, ImageSize -> 340]}, ImageSize -> 740]
+Grid[{{ListLogPlot[{Transpose[{requestedBins, requestedBins^4}],
+    Transpose[{requestedBins, occupiedStates}]}, Joined -> True,
+    Frame -> True, FrameLabel -> {"bins per variable", "joint states (log scale)"},
+    PlotLegends -> Placed[{"possible before ties", "occupied"}, Below]],
+    ListLinePlot[Transpose[{requestedBins, quantizationRMSE}], PlotRange -> All,
+        Frame -> True, FrameLabel -> {"bins per variable", "petal-length RMSE (cm)"}]} }]
 ```
 
 More possible states rapidly exceed the 150 available records. Finer bins can
@@ -180,10 +155,8 @@ recordPairs = Subsets[Range[Length[measurements]], {2}];
 continuousDistances = EuclideanDistance @@ standardized[[#]] & /@ recordPairs;
 bitDistances = (Total[Abs[Subtract @@ binaryStates[[#]]]] &) /@ recordPairs;
 distancesByBitCount = Table[Pick[continuousDistances, bitDistances, h], {h, 0, 4}];
-BoxWhiskerChart[distancesByBitCount,
-    ChartLabels -> Range[0, 4], Frame -> True, Axes -> False,
-    FrameLabel -> {"number of unequal bits", "Euclidean distance after standardization"},
-    ImageSize -> 650]
+BoxWhiskerChart[distancesByBitCount, ChartLabels -> Range[0, 4],
+    FrameLabel -> {"number of unequal bits", "Euclidean distance after standardization"}]
 ```
 
 Pairs with zero unequal bits need not have zero continuous distance. The box
@@ -206,3 +179,17 @@ the observation interval and test alternatives that could produce the same
 observations. For a static prediction question, continue with
 [Exploring Simple Predictive Rules](paclet:WolframInstitute/BioDataLink/tutorial/ExploringSimplePredictiveRules),
 which separates rule selection from held-out evaluation.
+
+## Initialization
+
+Evaluate these helper definitions before the examples above. The data choices
+and analysis parameters remain in the main examples.
+
+```wl
+encodeBinary[point_, cuts_] := MapThread[Boole[#1 > #2] &, {point, cuts}];
+quantileCuts[q_] := DeleteDuplicates[Quantile[#, Range[q - 1]/q]] & /@ Transpose[measurements];
+encodeBins[point_, cuts_] := MapThread[
+    Function[{value, boundaries}, 1 + Count[boundaries, t_ /; value > t]], {point, cuts}];
+reconstruct[binLabels_, values_] := Lookup[
+    GroupBy[Transpose[{binLabels, values}], First -> Last, Mean], binLabels];
+```

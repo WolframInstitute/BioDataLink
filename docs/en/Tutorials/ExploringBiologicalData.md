@@ -9,21 +9,11 @@ Keywords: [application, biology, catalog, expression, provenance, synthetic data
 RelatedGuides: [BioDataLink, Catalog, DataAccess]
 ---
 
-Evaluate the Initialization section before the examples.
-
 A biological dataset needs both values and their meaning: which cells and genes
 the values describe, how the measurements were transformed, and where the data
 came from. The bundled catalog supports offline discovery. A small synthetic
 file shows the supported local format without downloading a study's expression
 matrix. The synthetic values do not represent an experiment or a biological result.
-
-## Initialization
-
-```wl
-exampleFile[] := FileNameJoin[{
-    PacletObject["WolframInstitute/BioDataLink"]["Location"],
-    "Assets", "Examples", "toy-expression.json"}];
-```
 
 ## Find a data source
 
@@ -53,7 +43,8 @@ general H5AD reader support does not independently validate those files.
 Load the synthetic file and inspect the returned matrix, metadata and provenance:
 
 ```wl
-data = BioDatasetLoad[File[exampleFile[]]]
+file = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "toy-expression.json"}];
+data = BioDatasetLoad[File[file]]
 ```
 
 The bundled synthetic file has three example cells on rows and two example
@@ -61,8 +52,7 @@ genes on columns. Its integer values are labeled `"Counts"`. Show the matrix
 with a color key for these synthetic values:
 
 ```wl
-MatrixPlot[data["ExpressionMatrix"], PlotLegends -> Automatic,
-    FrameLabel -> {"cell", "gene"}]
+MatrixPlot[data["ExpressionMatrix"], PlotLegends -> Automatic, FrameLabel -> {"cell", "gene"}]
 ```
 
 The displayed zeros are numerical zeros. In this file format, every omitted
@@ -95,11 +85,14 @@ Select the rows labeled `"treated"` and find the column named `"gene-A"`:
 ```wl
 cells = Normal[data["CellMetadata"]];
 genes = Normal[data["GeneMetadata"]];
-rows = Pick[Range[Length[cells]], Lookup[cells, "Condition"], "treated"];
+rows = Flatten[Position[Lookup[cells, "Condition"], "treated"]];
 column = First[FirstPosition[Lookup[genes, "ID"], "gene-A"]];
-Dataset[MapThread[<|"CellID" -> #1, "gene-A" -> #2|> &,
-    {Lookup[cells[[rows]], "ID"],
-        Normal[data["ExpressionMatrix"][[rows, column]]]}]]
+```
+
+Associate each selected cell identifier with its value:
+
+```wl
+AssociationThread[Lookup[cells[[rows]], "ID"], Normal[data["ExpressionMatrix"][[rows, column]]]]
 ```
 
 The result retains the row identifiers beside values 0 and 2. The positions
@@ -122,14 +115,16 @@ particular selection explicit.
 
 ## Summarize recorded values
 
-Associate each example cell with its total recorded counts and the number of
-genes having nonzero values:
+Associate each example cell with its total recorded counts:
 
 ```wl
-Dataset[MapThread[Join[#1,
-        <|"RecordedCountTotal" -> #2, "GenesWithNonzeroValue" -> #3|>] &,
-    {cells, Normal[Total[data["ExpressionMatrix"], {2}]],
-        Normal[Total[Unitize[data["ExpressionMatrix"]], {2}]]}]]
+AssociationThread[Lookup[cells, "ID"], Normal[Total[data["ExpressionMatrix"], {2}]]]
+```
+
+Count genes with nonzero values in each cell:
+
+```wl
+AssociationThread[Lookup[cells, "ID"], Normal[Total[Unitize[data["ExpressionMatrix"]], {2}]]]
 ```
 
 The totals are 3, 5 and 3, and the nonzero-gene counts are 1, 1 and 2.

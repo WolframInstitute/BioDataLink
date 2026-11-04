@@ -34,7 +34,7 @@ RelatedTutorials: [FindingDataSources]
 | `"Deprecated"` | Whether the registry marks the namespace deprecated |
 | `"ResourceCount"` | Number of registered access endpoints, including any deprecated endpoints |
 
-- Options are listed with defaults in the middle column:
+- The following options can be given:
 
 | | | |
 | --- | --- | --- |
@@ -43,11 +43,10 @@ RelatedTutorials: [FindingDataSources]
 
 ## Basic Examples
 
-Find sources mentioning proteins and display two columns at a time.
-The returned dataset retains all source fields:
+Find sources mentioning proteins:
 
 ```wl
-Dataset[BioDataSourceSearch["protein", "Limit" -> 3], MaxItems -> {3, 2}]
+BioDataSourceSearch["protein", "Limit" -> 3][All, {"Prefix", "Name"}]
 ```
 
 ## Scope
@@ -55,18 +54,17 @@ Dataset[BioDataSourceSearch["protein", "Limit" -> 3], MaxItems -> {3, 2}]
 Find source records mentioning PDB and show their names:
 
 ```wl
-BioDataSourceSearch["pdb", "Limit" -> 5][All, {"Prefix", "Name"}]
+BioDataSourceSearch["pdb"][All, {"Prefix", "Name"}]
 ```
 
 ## Options
 
 ### IncludeDeprecated
 
-Include historical namespaces when examining registry coverage:
+Include deprecated namespaces, then select those historical records:
 
 ```wl
-BioDataSourceSearch["", "IncludeDeprecated" -> True, "Limit" -> 3][All,
-    {"Prefix", "Deprecated"}]
+BioDataSourceSearch["", "IncludeDeprecated" -> True][Select[#Deprecated &], {"Prefix", "Name"}]
 ```
 
 ### Limit
@@ -82,8 +80,7 @@ BioDataSourceSearch["", "Limit" -> 2][All, {"Prefix", "Name"}]
 Find protein-related namespaces that list more than one access endpoint:
 
 ```wl
-BioDataSourceSearch["protein"][Select[#ResourceCount > 1 &],
-    {"Prefix", "Name", "ResourceCount"}]
+BioDataSourceSearch["protein"][Select[#ResourceCount > 1 &], {"Prefix", "Name", "ResourceCount"}]
 ```
 
 Multiple endpoints can provide alternative routes to a source record. Their

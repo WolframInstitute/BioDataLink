@@ -20,6 +20,10 @@ Compute each figure from recorded inputs. Inspect returned identifiers and
 matrix orientation before interpreting a heatmap or embedding. State the scope
 of each result and the assumptions linking measurements to interpretation.
 Do not infer a causal molecular mechanism from an attractive plot alone.
+Keep each computational step concise and use native presentation defaults;
+preserve the labels, common scales and fixed layouts needed for comparison.
+Keep reusable definitions in the tutorial's final Initialization section,
+following the [reproducible-example rules](../../GUIDE.md#reproducible-examples).
 
 Keep expensive or live analyses in explicitly run steps. Provide small local
 examples for documentation builds and identify their reduced scope. Record

@@ -12,7 +12,7 @@ RelatedTutorials: [DownloadingBiologicalData]
 
 ## Usage
 
-<code>[BioDatasetDownload]()[*url*, File[*path*]]</code> downloads an HTTPS data file to the specified local path after checking its byte count and optional expected SHA-256.
+<code>[BioDatasetDownload]()[*url*, File[*path*]]</code> downloads an HTTPS data file to a local path, checking its size and optional expected SHA-256.
 
 ## Details & Options
 
@@ -34,10 +34,10 @@ RelatedTutorials: [DownloadingBiologicalData]
 | `"Verification"` | `"VerifiedSHA256"` when a supplied digest matched; otherwise `"ComputedSHA256Only"` |
 | `"RetrievedAt"`, `"RedirectCount"` | Retrieval time in UTC and number of redirects followed |
 
-- A computed hash identifies the retrieved bytes. With `"ExpectedSHA256" -> Automatic`, no independently supplied digest is checked. A supplied byte count is still checked separately.
+- A computed hash identifies the retrieved bytes. `"ExpectedSHA256" -> Automatic` computes a hash without checking an independently supplied digest. A supplied byte count is checked separately.
 - Agreement with an expected hash does not establish biological validity, source authenticity or license terms. The caller must retain the origin of that expected value.
 - The result does not contain a parsed dataset. Use `Import` or a supported `BioDatasetLoad` format after the download succeeds.
-- Options are listed with defaults in the middle column:
+- The following options can be given:
 
 | | | |
 | --- | --- | --- |
@@ -52,72 +52,86 @@ RelatedTutorials: [DownloadingBiologicalData]
 
 ## Basic Examples
 
-Download the small public UCI Iris file into a newly created temporary
-directory. This online input is not evaluated during documentation generation:
+Download the small public UCI Iris file into a new temporary directory.
+This online example is not evaluated during documentation builds:
 
 ```wl
 #| eval: false
-BioDatasetDownload[
-    "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data",
-    File[FileNameJoin[{CreateDirectory[], "iris.csv"}]],
-    "MaxFileBytes" -> 10000]
+url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
+file = FileNameJoin[{CreateDirectory[], "iris.csv"}];
+BioDatasetDownload[url, File[file]]
 ```
 
 ## Options
 
-### ExpectedSHA256
+### ExpectedByteCount
 
-Pin both the size and SHA-256 of the checked example file in an online download:
+Require the downloaded file to contain exactly 4551 bytes. This example is online:
 
 ```wl
 #| eval: false
-BioDatasetDownload[
-    "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data",
-    File[FileNameJoin[{CreateDirectory[], "iris.csv"}]],
-    "MaxFileBytes" -> 10000, "ExpectedByteCount" -> 4551,
-    "ExpectedSHA256" ->
-        "6f608b71a7317216319b4d27b4d9bc84e6abd734eda7872b71a458569e2656c0"]
+url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
+file = FileNameJoin[{CreateDirectory[], "iris.csv"}];
+BioDatasetDownload[url, File[file], "ExpectedByteCount" -> 4551]
 ```
 
-This expected hash was computed from the UCI file checked for the documentation;
-it was not published by UCI. A later change in those bytes causes a mismatch
-rather than silently substituting a new version.
+A matching byte count does not establish identical content.
+
+### ExpectedSHA256
+
+Require the retrieved bytes to match the checked example's SHA-256. This example is online:
+
+```wl
+#| eval: false
+url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
+file = FileNameJoin[{CreateDirectory[], "iris.csv"}];
+BioDatasetDownload[url, File[file], "ExpectedSHA256" -> "6f608b71a7317216319b4d27b4d9bc84e6abd734eda7872b71a458569e2656c0"]
+```
+
+This hash was computed from the UCI file checked for the documentation; UCI did
+not publish it. A change in those bytes gives a mismatch.
 
 ### Overwrite
 
-Explicitly permit replacement of a chosen existing file after the new transfer
-passes its checks. Replace the example path before evaluating this online input:
+Permit replacement of a chosen existing file after the transfer passes its
+checks. Replace the example path before evaluating this online input:
 
 ```wl
 #| eval: false
-BioDatasetDownload[
-    "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data",
-    File["/path/to/iris.csv"], "MaxFileBytes" -> 10000,
-    "ExpectedSHA256" ->
-        "6f608b71a7317216319b4d27b4d9bc84e6abd734eda7872b71a458569e2656c0",
-    "Overwrite" -> True]
+url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
+BioDatasetDownload[url, File["/path/to/iris.csv"], "Overwrite" -> True]
 ```
 
 ## Applications
 
-Read a downloaded CSV only after checking that retrieval succeeded. This
-online example creates its own temporary directory:
+Download the checked Iris file before reading its measurements. This online
+example creates its own temporary directory:
 
 ```wl
 #| eval: false
-With[{result = BioDatasetDownload[
-    "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data",
-    File[FileNameJoin[{CreateDirectory[], "iris.csv"}]],
-    "MaxFileBytes" -> 10000, "ExpectedByteCount" -> 4551,
-    "ExpectedSHA256" ->
-        "6f608b71a7317216319b4d27b4d9bc84e6abd734eda7872b71a458569e2656c0"]},
-    If[FailureQ[result], result,
-        Take[Import[result["File"], "CSV"], 3]]]
+url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data";
+file = FileNameJoin[{CreateDirectory[], "iris.csv"}];
+download = BioDatasetDownload[url, File[file], "ExpectedSHA256" -> "6f608b71a7317216319b4d27b4d9bc84e6abd734eda7872b71a458569e2656c0"]
+```
+
+Stop if the download returns a `Failure`. After success, keep the retrieval evidence:
+
+```wl
+#| eval: false
+KeyTake[download, {"SourceURL", "ByteCount", "ContentHash", "Verification", "RetrievedAt"}]
+```
+
+Read the first three records:
+
+```wl
+#| eval: false
+Take[Import[download["File"], "CSV"], 3]
 ```
 
 The file contains four floral measurements in centimetres and a species label,
-without a header. The linked tutorial assigns names from UCI's variable
-documentation and retains the download evidence before plotting values.
+without a header. The
+[Downloading Biological Data](paclet:WolframInstitute/BioDataLink/tutorial/DownloadingBiologicalData)
+tutorial assigns names from UCI's variable documentation and plots the measurements.
 
 ## Possible Issues
 
@@ -127,14 +141,15 @@ An HTTP URL is rejected before any transfer:
 BioDatasetDownload["http://example.org/data.csv", File["data.csv"]]
 ```
 
+---
+
 An expected size exceeding the byte limit is rejected before any transfer:
 
 ```wl
-BioDatasetDownload["https://example.org/data.csv", File["data.csv"],
-    "MaxFileBytes" -> 100, "ExpectedByteCount" -> 101]
+BioDatasetDownload["https://example.org/data.csv", File["data.csv"], "MaxFileBytes" -> 100, "ExpectedByteCount" -> 101]
 ```
 
 Source failures, timeouts, oversized responses and mismatched checksums produce
-`Failure` results. They do not constitute empty datasets or completed local
-files. Inspect the failure before retrying; retrying cannot resolve an
-incorrect expected checksum or an unsuitable file format.
+`Failure` results. They are not empty datasets or completed local files.
+Inspect the failure before retrying; retrying cannot resolve an incorrect
+expected checksum or an unsuitable file format.

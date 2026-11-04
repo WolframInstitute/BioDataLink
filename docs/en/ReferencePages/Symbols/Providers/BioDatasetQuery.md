@@ -12,7 +12,7 @@ RelatedTutorials: [FindingDataSources]
 
 ## Usage
 
-<code>[BioDatasetQuery]()[*provider*, *query*]</code> searches a supported source online and returns one page of public study metadata with retrieval information.
+<code>[BioDatasetQuery]()[*provider*, *query*]</code> gives one page of public study metadata from an online provider.
 
 ## Details & Options
 
@@ -51,7 +51,7 @@ RelatedTutorials: [FindingDataSources]
 - Cursor strings must be returned unchanged with the same provider and query. They are not accessions accepted by `BioDatasetInfo`.
 - Requests are paginated. GEO summaries are retrieved in a batch for each page. Page size limits records, not bytes or the size of associated scientific files.
 - A timeout, invalid response or unavailable provider gives a `Failure`, not a successful empty search. Transient errors are not retried automatically.
-- Options are listed with defaults in the middle column:
+- The following options can be given:
 
 | | | |
 | --- | --- | --- |
@@ -65,7 +65,8 @@ RelatedTutorials: [FindingDataSources]
 ## Basic Examples
 
 Search public BioStudies records online. This input is not evaluated during
-documentation generation; evaluate it to retrieve a current result:
+documentation generation. Stop if an online call returns a `Failure` before
+using its result in a later input:
 
 ```wl
 #| eval: false
@@ -90,8 +91,7 @@ appears in this online input:
 
 ```wl
 #| eval: false
-BioDatasetQuery["GEO", "CRISPR", "PageSize" -> 3,
-    "APIKey" -> {"Environment", "NCBI_API_KEY"}]
+BioDatasetQuery["GEO", "CRISPR", "APIKey" -> {"Environment", "NCBI_API_KEY"}]
 ```
 
 ### Cursor
@@ -101,15 +101,17 @@ These inputs make up to two online queries:
 
 ```wl
 #| eval: false
-With[{first = BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3]},
-    Which[
-        FailureQ[first], first,
-        first["NextCursor"] === None, None,
-        True, BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3,
-            "Cursor" -> first["NextCursor"]]]]
+page = BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3];
 ```
 
-The `None` branch means pagination has ended. Do not pass that terminal value
+Continue only when a cursor is available:
+
+```wl
+#| eval: false
+If[page["NextCursor"] =!= None, BioDatasetQuery["BioStudies", "CRISPR", "Cursor" -> page["NextCursor"]]]
+```
+
+A `"NextCursor"` value of `None` means pagination has ended. Do not pass it
 as a new cursor or use a changing total to infer how many pages remain.
 
 ### PageSize
@@ -136,10 +138,14 @@ Review accession, title and organism together after one bounded online query:
 
 ```wl
 #| eval: false
-With[{page = BioDatasetQuery["GEO", "CRISPR AND Homo sapiens[Organism]",
-        "PageSize" -> 5]},
-    If[FailureQ[page], page,
-        page["Records"][All, {"ID", "Title", "Organism"}]]]
+page = BioDatasetQuery["GEO", "CRISPR AND Homo sapiens[Organism]", "PageSize" -> 5];
+```
+
+Display the fields needed to review the matches:
+
+```wl
+#| eval: false
+page["Records"][All, {"ID", "Title", "Organism"}]
 ```
 
 The organism annotation is supplied by GEO. It can be a string or a list of
@@ -150,10 +156,14 @@ Retain the query and retrieval evidence for an online search:
 
 ```wl
 #| eval: false
-With[{page = BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3]},
-    If[FailureQ[page], page,
-        KeyTake[page, {"Provider", "Query", "SourceURL", "RetrievedAt",
-            "Total", "TotalIsExact", "NextCursor"}]]]
+page = BioDatasetQuery["BioStudies", "CRISPR", "PageSize" -> 3];
+```
+
+Keep the provider, query, endpoint and retrieval time:
+
+```wl
+#| eval: false
+KeyTake[page, {"Provider", "Query", "SourceURL", "RetrievedAt"}]
 ```
 
 This records a particular search, not a frozen release of the provider's

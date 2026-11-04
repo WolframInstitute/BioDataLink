@@ -26,7 +26,7 @@ RelatedTutorials: [ExploringBiologicalData]
 - An empty query matches all records before filters and limits are applied.
 - No matches gives an empty `Dataset`.
 - A catalog match does not imply a verified import route for its particular file. `"NativeImportSupported"` is currently `False` for all Pertpy records, independently of generic H5AD format support.
-- Options are listed with defaults in the middle column:
+- The following options can be given:
 
 | | | |
 | --- | --- | --- |
@@ -36,11 +36,10 @@ RelatedTutorials: [ExploringBiologicalData]
 
 ## Basic Examples
 
-Find catalog records mentioning CRISPR and display two columns at a time.
-The returned dataset retains the complete records:
+Find catalog records mentioning CRISPR:
 
 ```wl
-Dataset[BioDatasetSearch["CRISPR", "Limit" -> 3], MaxItems -> {3, 2}]
+BioDatasetSearch["CRISPR", "Limit" -> 3][All, {"Provider", "ID"}]
 ```
 
 ## Scope
@@ -74,7 +73,7 @@ source has no structured organism annotations, so this returns no records.
 This does not imply an absence of human studies:
 
 ```wl
-BioDatasetSearch["", "Organism" -> "Homo sapiens", "Limit" -> 3]
+BioDatasetSearch["", "Organism" -> "Homo sapiens"]
 ```
 
 ### Provider
@@ -82,7 +81,7 @@ BioDatasetSearch["", "Organism" -> "Homo sapiens", "Limit" -> 3]
 Restrict discovery to the Pertpy snapshot and show compact catalog columns:
 
 ```wl
-BioDatasetSearch["", "Provider" -> "Pertpy", "Limit" -> 3][All, {"Provider", "ID"}]
+BioDatasetSearch["", "Provider" -> "Pertpy"][All, {"Provider", "ID"}]
 ```
 
 ## Applications
@@ -90,8 +89,7 @@ BioDatasetSearch["", "Provider" -> "Pertpy", "Limit" -> 3][All, {"Provider", "ID
 Compare catalog entries for processed and raw variants before selecting a file:
 
 ```wl
-BioDatasetSearch["norman_2019"][All,
-    {"ID", "Organism", "NativeImportSupported"}]
+BioDatasetSearch["norman_2019"][All, {"ID", "Organism", "NativeImportSupported"}]
 ```
 
 The two entries refer to variants associated with the same study. The suffix

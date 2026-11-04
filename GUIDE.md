@@ -259,6 +259,11 @@ providers, return forms, properties, options and limits. Tutorials complete a
 small workflow with interpreted results. Keep long implementation decisions
 in `docs/design.md` or `docs/notes/` rather than user-facing pages.
 
+Keep the root README a concise entry point: purpose, installation, a small
+quickstart and the main documentation links. Put detailed provider coverage,
+complete tutorial lists and extended explanations in the documentation hub
+and topic guides, with links from the README.
+
 Use Markdown sources under `docs/en/` and the converter's `Guide`, `Symbol`
 and `TechNote` templates. Each page needs consistent `Name`, `Context`, `Paclet`
 and `URI` metadata. Names must be unique within a page type because generated
@@ -285,8 +290,14 @@ Start examples with the smallest useful call and show its returned data or a
 useful view. Put input variations in Scope, non-default choices in Options,
 comparisons in Properties and Relations, and expected limits in Possible
 Issues. Cover meaningful behavior rather than aiming for a fixed example count.
+Use the native symbol-reference structure rather than turning reference pages
+into tutorials. Keep each example focused on one public operation.
 
 ### Reproducible examples
+
+Locate bundled fixtures through the existing `"Examples"` asset and
+`FileNameJoin`. Keep asset declarations nonoverlapping: Wolfram 15 PacletTools
+copies a directory asset's contents and fails if another alias names the same file.
 
 Use local fixtures for examples evaluated during ordinary documentation builds.
 Show online examples explicitly as online operations, with data sizes, required
@@ -307,11 +318,21 @@ per input cell and avoid bundling unrelated outputs in a list.
 
 Reference examples stand alone after loading the context. Headings and thematic
 breaks may reset bindings in the converter; start each independent example
-with its own data. Tutorials thread the running example through document order under the direct
-PacletPage build. Put necessary setup before its first use and keep data
-selection visible. Name bindings clearly and re-show relevant data when a
-reader enters a later section. Do not assume a final initialization section
-is executed early unless the configured converter explicitly supports it.
+with its own data. Tutorials keep data choices and scientific parameters in
+the narrative, then thread that running example through the body. Put reusable
+helper definitions in a final `## Initialization` section. The documentation
+build evaluates enabled helpers before the body, then places them at the
+bottom of the generated notebook as native initialization cells. Keep their
+inputs visible; do not use `#| input: false` for helpers. Optional backend and
+online inputs retain `#| eval: false` and are never initialization cells; explain
+when the reader should run them. Define the running example once, name
+bindings clearly and re-show relevant data when entering a later section.
+
+Prefer short idiomatic Wolfram Language expressions, on one line when readable.
+Use built-in data and presentation functions directly. Omit display options
+that only repeat defaults or impose decorative styling. Retain labels, units,
+shared ranges and scales, seeds, fixed comparison coordinates and any option
+needed to interpret or reproduce a result.
 
 Compute figures from the example. Use labeled heatmaps or distributions when
 they explain expression data, and compact tables for metadata. Preserve scales
@@ -330,6 +351,10 @@ examples or rendered notebooks. Inspect representative visual output in light an
 when formatting changes. Check that counts, legends and prose agree with the
 saved result. Report unavailable front-end or build tools
 and avoid calling the page visually verified when inspection was not possible.
+For a tutorial with helpers, also verify initialization-only evaluation in a
+fresh notebook, the final section position, and exclusion of `eval: false`
+cells from initialization. A source check evaluates enabled helpers first,
+then enabled body inputs; it must not run optional or online cells.
 
 Check independent copied inputs as well as a whole-page run. Ensure examples
 use public symbols and match their documented version. Recheck affected pages

@@ -16,6 +16,9 @@ options in Details & Options. Specify provider capability, matrix axis order,
 identifier semantics, count/normalization status and relevant limits. Use the
 [Reference page conventions](../../GUIDE.md#reference-pages) for placeholder
 formatting and headerless tables. Keep implementation history in design notes.
+Preserve the native Usage, Details & Options and Examples structure. Use short
+idiomatic inputs and presentation defaults; move extended workflow discussion
+to a tutorial rather than expanding every reference example.
 
 Start with a small useful result. Examples evaluated in ordinary builds use
 local fixtures; explicitly identify synthetic data and online operations.
