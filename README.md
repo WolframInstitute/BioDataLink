@@ -15,10 +15,10 @@ Requires Wolfram Language 15.0 or later.
 
 ## Get started
 
-Install version 0.3.0 from its GitHub release, then load the paclet:
+Install the latest release, then load the paclet:
 
 ```wl
-PacletInstall["https://github.com/WolframInstitute/BioDataLink/releases/download/v0.3.0/WolframInstitute__BioDataLink-0.3.0.paclet"]
+PacletInstall["https://github.com/WolframInstitute/BioDataLink/releases/latest/download/WolframInstitute__BioDataLink.paclet"]
 Needs["WolframInstitute`BioDataLink`"]
 ```
 
