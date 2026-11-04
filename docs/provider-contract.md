@@ -1,39 +1,22 @@
 # Provider adapter contract
 
-An adapter connects a provider's catalog and artifact access to BioDataLink's
-public operations. Keep provider details behind those operations. This is the
-extension contract; the [build index](build-index.md) identifies implemented
-capabilities.
-
-The long-term scope spans biological data domains. The cells-by-genes rules
-below apply to expression imports, not to every future provider: sequences,
-structures, images and other data require their own documented representations.
+Adapters expose source capabilities through BioDataLink's public operations.
+The [build index](build-index.md) lists implemented functions. Expression-matrix
+rules below do not define future sequence, image or structure representations.
 
 ## Identity and evidence
 
-Identify a dataset by `{provider, id}`. The provider is an explicit namespace;
-the identifier is the exact identifier supported by that adapter. Treat both
-as case-sensitive unless the provider documents normalization. Never resolve
-an ambiguous short name by selecting the first match.
+Use `{provider, id}` with exact source identifiers, case-sensitive unless a
+provider specifies otherwise. State whether an ID names a study, dataset,
+processed version, loader or file. Pertpy loader names are not accessions;
+retain source accessions separately. Never resolve an ambiguous name by taking
+the first match.
 
-State what an identifier names: a study, dataset, processed version, loader or
-data file. A study may produce several catalog records. In the initial Pertpy
-catalog the ID is a loader name, not a repository accession. Preserve source
-accessions separately when available; do not infer them from loader names.
-
-Record the source landing page, citation and source release where available.
-An adapter review must identify which metadata were read from provider records
-and which fields were curated. Preserve absent values explicitly. Discovery
-should display the source's license or terms when supplied without asserting
-that every dataset shares a single license.
+Keep landing page, citation, release and source-specific terms when supplied.
+Distinguish source metadata from curated fields and local checks. Missing
+values stay missing; one provider need not have one license for all datasets.
 
 ## Capabilities
-
-Each adapter advertises only implemented operations. Version 0.3 provides the
-offline Identifiers.org source directory, resolver links, live BioStudies/GEO
-metadata queries, the offline Pertpy catalog, explicit HTTPS file downloads,
-local BioDataLink JSON reading and optional selected H5AD reading. Remote
-matrix subsets are planned:
 
 | Capability | Meaning |
 | --- | --- |
@@ -44,107 +27,70 @@ matrix subsets are planned:
 | Native import | A documented format can be converted to Wolfram data |
 | Remote subset | The provider returns a requested slice before a full artifact is downloaded |
 
-A cell limit applied after downloading a file is not remote subset support.
-Display transfer requirements separately from the amount of data returned to
-the caller. H5AD downloads alone do not establish AnnData conversion support,
-and a generic H5AD reader does not certify each catalog file. Keep per-entry
-import flags false until the particular source and import route are checked.
+Current support covers the Identifiers.org directory, resolver links,
+BioStudies/GEO metadata, Pertpy catalog, HTTPS downloads, JSON import and
+selected H5AD reading. Remote subsets remain planned.
+
+A selection made after downloading a whole file is not a remote subset.
+Generic format support does not certify each catalog file; advertise native
+import per entry only after checking that source and import route.
 
 ## Metadata search and credentials
 
-Source-directory records describe identifier systems; live query results
-describe source studies or other explicitly documented entities. Keep these
-record types distinct. The current GEO query returns Series, while BioStudies
-returns study records. Preserve the provider's complete search hit or summary
-alongside normalized fields, and retain missing values explicitly.
+Keep namespace records distinct from study records. GEO returns Series and
+BioStudies returns studies. Preserve full source hits beside normalized fields.
+Each page records query, endpoint, retrieval time, total, exactness and cursor.
+Follow continuation signals, not estimated totals. Live indexes can shift
+between pages; page size limits records, not file bytes. Batch summaries when
+the provider supports it.
 
-A live query returns one page with retrieval time, source endpoint, query,
-reported total, total exactness and continuation cursor. Use provider-side
-pagination and batch metadata summaries when available. Do not present a page
-size as a byte-transfer limit. An estimated total must not determine whether
-pagination has ended; follow the source's continuation signal. State when
-pages can shift as a live index changes.
-
-Accept credential references, not literal secrets. Resolve references only
-when a request runs, and exclude credentials from records, cursors, provenance
-and failures. The current implementation supports optional GEO API-key references for public
-request quotas; it does not implement private-study access. A future private
-provider needs a reviewed authentication flow, explicit access scope, and
-separate tests demonstrating authorized retrieval without disclosure.
+Accept credential references, resolved only when requests run. Keep secrets
+out of results, cursors, provenance and failures. Current GEO keys affect
+public quotas. Private access needs its own reviewed authorization flow,
+documented scope and tests.
 
 ## Artifacts
 
-An artifact has a source URL, format and filename. Include source byte length
-and checksum when available, and distinguish these expected values from values
-measured after download. An adapter must reject unsupported formats explicitly
-before attempting a conversion.
+Record source URL, format, filename and any expected size or checksum.
+Retrieve files only through an explicit data operation. Reuse the shared
+downloader for limits, timeouts, temporary files, validation and placement;
+reject unsupported formats before conversion.
 
-Retrieve data only after an explicit data operation. Keep search and metadata
-inspection cheap. The shared downloader owns byte limits, expected size/hash
-checks, timeouts, temporary files and final placement. An adapter must not
-introduce a second downloader with different semantics. The current downloader
-does not cache, retry, resume or decompress data; a future cache must preserve
-the same integrity checks.
-
-Expected hashes need their own provenance. A successful comparison proves
-agreement with the supplied digest, not that the source published it. Retain
-computed and expected hashes separately. Source URL query parameters are
-removed from the retrieval record; the exact requested URL is represented by
-a hash instead of exposing potentially sensitive query values.
+Keep expected and computed hashes separate, including the origin of an
+expected hash. Matching proves agreement with that digest, not its provenance.
+Retrieval records redact URL query values and retain a hash of the exact request.
+Current downloads do not cache, retry, resume or decompress; future facilities
+must preserve the same integrity checks.
 
 ## Native expression imports
 
-For a cells-by-genes matrix, preserve:
+Preserve dimensions, sparse storage, ordered IDs, aligned metadata, units,
+layer, processing, source revision and selection. Distinguish zero from
+unmeasured values. Do not silently replace missing annotations or collapse
+duplicate IDs. Integer values and layer names do not establish raw counts or
+normalization; keep source declarations separate from local validation.
 
-- Matrix dimensions and sparse storage.
-- Ordered cell and gene identifiers with aligned metadata.
-- Measurement layer, units and transformation state.
-- The distinction between numerical zero and an unmeasured or unknown value.
-- Source release, artifact identity and subset description.
-- Missing and duplicate metadata values without silently inventing replacements.
+JSON version 1 has no measurement mask. Refuse unsupported conversion or
+document a selection with no unknown entries; never silently zero-fill
+unmeasured genes. Unique labels do not establish cell identity or replication.
 
-Readers need to know whether values are raw counts, normalized measurements or
-another layer. Matrix orientation and annotation alignment are part of the
-public result contract, not implementation details. Integer-valued data alone
-do not establish that values are raw counts, and counts may refer to reads or
-molecules. A declared normalization label is not evidence that the procedure
-was correctly applied. Retain the source's statements and local validation
-results as distinct evidence.
-
-BioDataLink JSON version 1 represents every omitted matrix coordinate as zero.
-It cannot preserve a missing-measurement mask. A provider reader must refuse an
-unsupported conversion or make an explicit, documented selection that avoids
-unknown entries; it must not fill unmeasured genes with zeros silently. Unique
-row and column labels establish alignment, not cell type, biological replication
-or a valid gene-reference mapping.
-
-The current H5AD reader is explicitly selected by format and interpreter.
-It retains a selected matrix, ordered axis metadata and source positions;
-duplicate labels remain separate. It does not construct a complete AnnData
-object, import all unstructured provenance or infer processing from layer
-names. Every result lists omitted structures. Its file-size and modification
-fingerprint is not a full-file checksum, and its result-size limits are not
-promises about all decompressed HDF5 data or process memory.
+H5AD requires an explicit format and configured interpreter. It preserves a
+selected matrix, metadata and source positions, including duplicates, and lists
+omitted structures. It is not a complete AnnData conversion. File size and
+modification time are not checksums; result limits do not bound every HDF5 read
+or all process memory.
 
 ## Failure handling
 
-Distinguish an unknown dataset, unsupported capability, unavailable provider,
-invalid source response, interrupted transfer and checksum mismatch. A failed
-transfer must not be returned as a completed artifact. A provider outage must
-not produce an empty catalog that appears to be a successful search.
-
-Return enough structured evidence for a caller to diagnose a failed retrieval
-without exposing credentials or access tokens. Preserve original source
-identifiers and URLs in provenance, with secret query parameters removed when
-applicable.
+Distinguish unknown IDs, unsupported capabilities, provider outages, invalid
+responses, interrupted transfers and checksum mismatches. Outages must not
+appear as successful empty searches; incomplete files must not appear complete.
+Return diagnostic context without credentials or secret URL values.
 
 ## Adapter acceptance
 
-Before advertising support, add an offline fixture and tests for the complete
-small result, unsupported inputs, missing fields, wrong checksums, cache hits
-and malformed artifacts where applicable. Test native imports against expected
-matrix entries and labels obtained independently from the reader.
-
-Keep live checks opt-in. Record their provider, release, time, artifact and
-result. Update the catalog snapshot and relevant symbol pages only after the
-implemented capability and its limits have been checked.
+Test small offline results against independently specified values and labels.
+Cover unsupported inputs, missing fields, corrupt files, checksum errors and
+cache behavior where applicable. Keep live checks opt-in and record provider,
+release, time, artifact and result. Update capability flags and documentation
+only after the advertised path is checked.

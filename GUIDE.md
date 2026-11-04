@@ -2,412 +2,263 @@
 
 ## Terms and scope
 
-A **provider** exposes a source of biological data. A **study** can produce
-several datasets, processed versions and data files. A **catalog record**
-describes the entity named by its provider-specific identifier; that entity
-may be a study, dataset, loader or file. An **accession** is an identifier
-assigned by a repository. Pertpy loader names are not repository accessions.
-An **import** interprets bytes as a documented data representation. A record
-being searchable does not establish that its files were downloaded, its
-scientific annotations reviewed or its matrix interpretation verified.
+A **provider** exposes data; a **study** may produce several datasets and files.
+A **catalog record** describes a provider-specific study, dataset, loader or
+file. An **accession** is repository-assigned; Pertpy loader names are not
+accessions. An **import** interprets bytes under a documented representation.
+Keep discovery, download, import and scientific validation distinct.
 
-The initial shared representation is single-cell expression data. Provider
-adapters may support different capabilities; report those capabilities
-explicitly. Keep requested discovery, download, import and analysis operations
-separate in the API. Loading the package must not fetch biological data.
+The initial shared representation is single-cell expression. Other providers
+must declare their capabilities. Loading the package stays offline.
 
-The preferred source is the PureMath `develop` branch at commit
-`e2dacfa90c526c3bc9902ef7fa24d29932fb3b22`, read without changing its working
-checkout. Its [general guide](https://github.com/WolframInstitute/PureMath/blob/e2dacfa90c526c3bc9902ef7fa24d29932fb3b22/GUIDE.md),
-project-specific review rules and task playbooks supply the interface,
-integration, reproduction and documentation conventions adapted here.
-The initial build and authoring setup also draws on
-[Ruliology](https://github.com/WolframInstitute/Ruliology) commit
-`41d7a9d6f4a2edc20fe3048b0739c9bb2b43100d`.
-
-BioDataLink keeps its documented command names, four-space indentation and
-local notebook build workflow. PureMath's mathematics taxonomy, dev-pod setup,
-mandatory review branch sequence and external issue-posting steps do not apply
-here. Its useful checks are adapted to biological data contracts and the
-user's authorized scope.
+Conventions derive from [PureMath develop at e2dacfa](https://github.com/WolframInstitute/PureMath/blob/e2dacfa90c526c3bc9902ef7fa24d29932fb3b22/GUIDE.md),
+with initial tooling from [Ruliology](https://github.com/WolframInstitute/Ruliology)
+at `41d7a9d6f4a2edc20fe3048b0739c9bb2b43100d`. Source checkouts remain unchanged.
+BioDataLink keeps its commands, four-space indentation and notebook workflow.
+PureMath's taxonomy, dev pods, mandatory branch sequence and external issue
+posting do not apply; follow the user's authorized scope.
 
 ## Dataset contracts
 
-Before implementing an adapter, state its catalog identifiers, supported
-operations, source API or file format, version policy and failure behavior.
-Record source documentation and evidence in `docs/design.md` or a focused
-record under `docs/notes/` when a decision spans symbols. Keep a provider's published claims separate from local checks.
+Before implementing an adapter, record identifiers, supported operations,
+source API/format, version policy and failures in `docs/design.md` or `docs/notes/`.
+Separate provider claims from local checks. Validate and document:
 
-For matrices, document and validate:
+- Axis order, shape, numeric type, sparsity and aligned identifiers.
+- Zero versus unmeasured values, missing annotations and duplicate labels.
+- Counts, normalization, layer, units and transformations.
+- Gene namespace, organism and reference assembly when supplied.
+- Accession, revision, retrieval time, file identity, citation and license.
 
-- Axis order and the identifiers attached to each axis.
-- Shape, numeric type, sparse encoding, and the distinction between numerical
-  zero and an unmeasured or unknown value.
-- Whether values are counts, normalized expression, logarithms, or another
-  measurement; preserve the relevant layer and transformations.
-- Gene identifier namespace, organism and reference assembly when available.
-- Missing annotations, duplicate identifiers and source-specific fields.
+Use stable source IDs for joins. Do not silently reorder, collapse duplicates,
+combine assays, normalize or zero-fill missing measurements. Record deliberate
+transformations and selections. JSON version 1 has no missing-measurement mask.
+Integer counts do not establish reads versus molecules; unique IDs do not
+validate biological annotations. Keep unknown metadata as `Missing` where allowed.
 
-Use stable source identifiers for joins. A display gene symbol is not a
-universal unique key. Do not silently reorder cells or genes, drop duplicate
-identifiers, combine assays, normalize values, or replace missing values with
-zero. Expose an intentional transformation and retain its provenance.
-
-BioDataLink JSON version 1 treats every omitted matrix coordinate as zero and
-cannot preserve a missing-measurement mask. Do not imply that successful import
-establishes biological validity: integer checks do not establish read versus
-molecule counts or preprocessing, unique IDs do not establish cell type or
-gene-reference correctness, and required provenance strings remain declarations
-from the source. An observed zero count does not prove biological absence.
-
-A dataset object should preserve source accession, source release or revision,
-retrieval time, exact file location, available checksum, and citation. Record
-unknown values as `Missing` where the contract permits. A locally computed
-checksum records downloaded bytes; distinguish it from a checksum supplied by
-the source. Preserve source license information and original-study citations.
-The software's MIT license does not relicense downloaded datasets.
+Distinguish computed hashes from source-supplied checksums and preserve both.
+The software's MIT license does not relicense datasets.
 
 ## Public interfaces
 
-Settle the input forms, result, and first ordinary example before writing code.
-Check existing behavior in Wolfram Language, the Function Repository and this
-paclet, then check the proposed symbol for a System name collision in the
-target kernel. Record the kernel version used. A new exported symbol should
-answer a recognizable research task rather than expose an internal helper.
+Define input forms, result and a useful first example before implementation.
+Check existing paclet, Wolfram Language and Function Repository behavior and
+System-name collisions in the target kernel. New exports must serve a research
+task with a clear functional difference from existing tools.
 
-Use clear UpperCamelCase names and documented string properties. Keep provider
-selection and dataset identifiers explicit. Return `Dataset` for tabular
-metadata, `Association` for structured records, and `SparseArray` for sparse
-matrices when materializing in Wolfram Language. Use a documented external
-handle for data that stays in a backend; accessing it must not silently
-materialize an entire large matrix.
-
-Write usage messages with signature first and one input form per line. Keep
-usage, reference pages, implemented patterns and options consistent. Declare
-which provider capabilities are available now. Proposed symbols belong in
-design records until they work and have tests.
+Use UpperCamelCase names, explicit providers/IDs and documented string properties.
+Return `Dataset` for tables, `Association` for records and `SparseArray` for
+sparse matrices. External handles must disclose lifecycle and materialization.
+Keep usage, implemented patterns, options and reference pages consistent;
+proposed APIs belong in the roadmap until implemented and tested.
 
 ### Scope and representation guards
 
-A validator must accept the same supported representations as the operations
-it guards. Match the assumptions required by the algorithm: matrix orientation,
-counts versus normalized values, supported schema, and unique identifier rules.
-Test each boundary explicitly. A wrong-shaped input left unevaluated and an
-attempted import returning `Failure` are different outcomes and need different
-checks. A data-quality question that cannot be decided from available metadata
-must retain that uncertainty.
-
-Before adding properties, check whether a standard Wolfram operation already
-answers the task on the returned representation. Preserve standard `Dataset`,
-`Association` and `SparseArray` behavior. Add a custom accessor only when it
-exposes genuinely different data or lifecycle semantics.
+Validators must accept the representations their operations support and enforce
+actual assumptions: axes, shape, scale, schema and ID rules. Test boundaries.
+Distinguish an unsupported form left unevaluated from an attempted operation
+returning `Failure`. Preserve uncertainty that metadata cannot resolve.
+Use standard operations on returned Wolfram objects before adding accessors.
 
 ### Failures and missing data
 
-Keep unsupported inputs distinguishable from a valid empty query result.
-Use specific patterns for supported forms; do not return a plausible partial
-result for a malformed identifier. A computation that starts but fails returns
-a `Failure` carrying useful cause and context. A timeout, inaccessible source,
-checksum mismatch or unavailable Python dependency must not become an empty
-catalog or an empty expression matrix.
-
-Use `Missing` for absent metadata under a documented contract. Preserve the
-difference between absent metadata and a backend failure. Avoid exposing
-credentials, tokens, or sensitive local paths in failure details.
+Malformed identifiers and backend failures must not produce plausible partial
+results or successful empty searches. Use specific supported patterns and
+structured `Failure` causes. Keep absent metadata distinct from operational
+failure. Exclude credentials, tokens and sensitive paths from diagnostics.
 
 ## Wolfram Language code
 
 ### Definitions and evaluation
 
-Feature files have sections for package declarations, usage messages and
-function definitions. Use four-space indentation, LF endings and UTF-8.
-Prefer documented public built-ins. New dependencies on private kernel
-internals need a specific reason and a version check.
+Use UTF-8, LF endings, four-space indentation and sections for declarations,
+usage and definitions. Prefer public built-ins; private kernel dependencies
+need a reason and version check. Localize work with `Module`, fixed bindings
+with `With`, and deliberate dynamic scope with `Block`. Check attributes and
+overlapping patterns; keep private symbols out of results.
 
-Use `Module` for local work, `With` for fixed bindings and `Block` for intentional
-dynamic scope. Localize all working symbols. Check attributes before using a
-built-in as symbolic notation. Avoid private symbols leaking into public data.
-Use delayed definitions when work must happen for each call, and test
-intersections between overlapping patterns.
-
-Keep shared area helpers in `Helpers.wl` with `PackageScoped`. Loading the
-public context supplies them; `PackageScope` is not a package to load with
-`Needs`. Use `Lookup` for record fields and named `Function` arguments where
-nested slots would be unclear.
+Declare shared helpers with `PackageScoped` in area `Helpers.wl`. Loading the
+public context supplies them; do not load `PackageScope` with `Needs`.
+Use `Lookup` and named arguments when nested slots obscure meaning.
 
 ### Options
 
-Declare actual defaults once in `Options[f]`, consume them through
-`OptionsPattern[]` and `OptionValue`, and explain what `Automatic` means.
-Validate option values before network or filesystem work. Preserve explicit
-caller settings and `SetOptions` changes. For forwarded options, use
-`FilterRules[Flatten[{opts, Options[f]}], Options[inner]]`: caller rules precede
-fallback defaults because the first duplicate setting wins.
+Define defaults once in `Options[f]`; use `OptionsPattern[]` and `OptionValue`.
+Explain `Automatic` and validate settings before I/O. Preserve caller overrides
+and `SetOptions`. Forward options with
+`FilterRules[Flatten[{opts, Options[f]}], Options[inner]]`: first matching rules win.
 
-Use native visualization defaults, including `ImageSize -> Automatic` when
-supported. Preserve colors that encode biological categories across subsets.
-Resource limits and cache controls are computational options, not display
-preferences. Follow the [options playbook](.agent-skills/wolfram-kernel-options/SKILL.md)
-when changing these behaviors.
+Use native display defaults, including `ImageSize -> Automatic` when supported.
+Keep category colors consistent. Resource limits are separate from styling.
+Follow the [options playbook](.agent-skills/wolfram-kernel-options/SKILL.md).
 
 ### Cost and backend boundaries
 
-Check cheap shape and option conditions before expensive work. Preserve
-sparsity, request provider-side subsets where supported, and record when a
-provider requires a full download before local slicing. A maximum returned
-cell count must not be presented as a network-byte limit.
+Validate cheaply before expensive work. Preserve sparsity and request remote
+subsets where supported; disclose full downloads before local filtering.
+Bound and paginate requests, batch summaries, respect rate limits and prefer
+official APIs. Bound retries; do not repeatedly retry bad credentials or data.
 
-Keep Python environments explicit and reproducible. Prefer a thin adapter that
-returns documented values over exposing arbitrary Python evaluation. Transfer
-large data in bounded chunks or through files/handles, and check dimension and
-identifier alignment at the language boundary. Pin tested dependency versions
-without treating every newer version as supported.
-
-Cache keys must distinguish provider, dataset revision and relevant query
-parameters. Validate downloaded content before promoting it to the cache;
-write through temporary files so an interrupted download cannot appear valid.
-Cache reads must not bypass checksum or schema checks promised by the API.
-Do not make ordinary searches erase or mutate cached datasets.
-
-Bound network requests, paginate explicitly, and handle provider rate limits.
-Retry transient failures within a declared limit. Do not retry authentication
-errors or corrupt data indefinitely. Use the original source's API rather than
-scraping a human page when it offers the required capability.
+Keep Python environments explicit and pinned. Use thin adapters and bounded
+transfers or handles; check dimensions and identifiers at language boundaries.
+Newer dependency versions are untested until checked. Cache keys must include
+provider, revision and relevant query choices. Validate before atomic placement;
+cache hits must retain promised checks. Searches must not erase data caches.
 
 ### Optional library lifecycle
 
-An installed package is ready only after its required runtime, modules and a
-small representative operation work. Readiness checks must not download or
-install anything. Loading BioDataLink must succeed without optional libraries;
-install/update is an explicit operation, separate from method dispatch.
+Readiness requires a working runtime, modules and a representative operation.
+Checks install or download nothing. Core loading must work without optional
+libraries; setup and method dispatch stay separate.
 
-Reuse owned sessions per Wolfram kernel and preserve caller-supplied sessions.
-Clean up temporary objects on success and failure with `WithCleanup` when
-appropriate. Invalidate session-bound handles and caches on restart; do not
-share them across parallel kernels. Distinguish missing installation, failed
-connection, incompatible version, conversion failure and provider failure.
+Reuse owned sessions, preserve caller sessions and clean temporary objects on
+success and failure. Restart invalidates session handles and caches; never
+share them across parallel kernels. Distinguish installation, connection,
+version, conversion and provider failures.
 
-Where multiple methods exist, document explicit method behavior. A requested
-external method must report inability to run; automatic fallback is valid only
-when it preserves the promised result. Record which method actually ran.
-Measure the public operation including conversion, separating startup from
-repeated calls, before selecting an automatic performance policy. CI checks
-method selection and correctness, not machine-specific timing thresholds.
+Explicit methods must report inability to run. Automatic fallback must preserve
+the contract and record the method used. Measure public operations including
+conversion, separating startup and repeated calls. Test correctness and method
+selection in CI, not hardware-specific timing thresholds.
 
 ## Tests and evidence
 
-Default tests run offline with small, explicit fixtures. Keep live-provider
-checks opt-in and clearly report what they verify. A source catalog check is
-not an end-to-end import check. Build dependency downloads are separate from
-provider tests and must be reported when relevant.
+Default tests use small offline fixtures. Live-provider checks and build-tool
+downloads are separate evidence. Use descriptive `TestID` values and independent
+expected results; a round trip can share an error in both directions.
+Conversion fixtures should expose transposition, zeros, missing metadata and
+axis alignment with an asymmetric named matrix.
 
-Use descriptive `TestID` values. Test public behavior with independently
-specified expected data, not values computed through the function under test.
-For conversion, use a small asymmetric matrix with named axes, zeros and
-missing metadata so transposition and alignment errors are visible. A round
-trip complements a known value; two inverse functions can share one mistake.
+Cover relevant empty results, unknown IDs, unsupported capabilities, malformed
+data, missing dependencies, checksum failures and interrupted writes. Test
+consumed option overrides; avoid assertions that merely mirror implementation
+or prose. A parse error, timeout, unexpected message or zero tests is not a pass.
 
-Test applicable boundaries: no matches, unknown accession, unsupported
-capability, empty subset, malformed source data, missing optional dependency,
-checksum mismatch and interrupted cache writes. Check explicit option overrides
-and `SetOptions` only for options the feature consumes. Avoid tests that merely
-match prose or mirror implementation details.
-
-Run tests in a fresh kernel loaded from this checkout. A parse error, timeout,
-unexpected message or zero executed tests is a failed or incomplete check.
-Keep fixtures small and provenance clear. Synthetic data must be labeled
-synthetic; a tiny derived fixture must identify its source and transformation.
-Treat cells from one biological sample as nested observations in analysis
-examples; resampling cells alone does not create biological replication.
+Use a fresh kernel resolving to this checkout. Label synthetic fixtures and
+document derived selections. Cells from one sample are nested observations,
+not independent biological replicates.
 
 ## Reviews and reproduction evidence
 
-For supplied review notes, retain the source's issue status and reasoning
-separately from the current-code verdict. Record rejected alternatives as well
-as chosen designs. Attribute reusable rules by review date and issue identifier;
-keep names and short quotations in the review record. Resolve routine details
-within the existing contract and user request; ask about material unresolved
-choices while continuing independent work.
+Keep source review status and reasoning separate from the current-code verdict,
+chosen action and evidence. Record rejected alternatives and attribute reusable
+lessons by date/issue. Resolve routine choices within authorization; ask only
+about material uncertainty. Preserve user edits and scope wider work separately.
 
-A review finding closes with evidence for the reported behavior. Track fixed,
-already fixed, deferred, outside this repository and unresolved outcomes.
-Check whether a reusable lesson duplicates, refines or conflicts with an
-existing rule before changing the guide. Preserve one shared statement of the
-rule and point task skills to it. Scope a wider sweep separately from the
-specific fix and preserve user changes in the shared checkout.
+Close findings with evidence for the reported behavior. Distinguish fixed,
+already fixed, deferred, outside-repository and unresolved outcomes. Keep each
+shared rule here once; skills link to it.
 
-For a published-result reproduction, register the claim, source locus,
-qualifiers, input dataset and expected comparison before computing. Preserve
-organism, assay, sampling unit, normalization, population and uncertainty
-assumptions. Separate access validation, reproduced measurement, method
-agreement and biological inference. A shared source construction or shared
-processed matrix is not an independent validation route.
-
-Use the [reproduction playbook](.agent-skills/reproduce-published-paper/SKILL.md)
-and its templates for a durable case record. A returned value that disagrees
-requires checking data revisions, preprocessing and conventions before calling
-it a software defect. Missing data or a missing adapter is a blocked route;
-no supported analysis is uncovered; timeouts and unresolved ambiguity are
-inconclusive. Report each outcome rather than counting skips as passes.
+For [reproduction work](.agent-skills/reproduce-published-paper/SKILL.md), register
+the exact claim, qualifiers, dataset, preprocessing, sampling unit and expected
+comparison before computing. Separate access validation, reproduced values,
+method agreement and biological inference. Shared input construction is not
+independent validation. Check revisions and conventions before reporting a
+defect. Missing data/adapters are blocked routes; no supported analysis is
+uncovered; timeouts or ambiguity are inconclusive. Do not count skips as passes.
 
 ## Documentation
 
 ### Page roles and navigation
 
-Guide pages organize tasks. Reference pages define exact signatures, supported
-providers, return forms, properties, options and limits. Tutorials complete a
-small workflow with interpreted results. Keep long implementation decisions
-in `docs/design.md` or `docs/notes/` rather than user-facing pages.
+Write for scientists who know biology but not BioDataLink. Lead with the task,
+then the minimum workflow and its interpretation. Define unfamiliar terms once.
+Keep selection, units, scale, provenance and material limitations; remove repeated
+warnings, extended theory and secondary analyses. Link to a canonical page
+instead of repeating setup or contracts. Keep tutorials focused on one question.
 
-Keep the root README a concise entry point: purpose, installation, a small
-quickstart and the main documentation links. Put detailed provider coverage,
-complete tutorial lists and extended explanations in the documentation hub
-and topic guides, with links from the README.
+Guides organize tasks; references define APIs; tutorials show a complete workflow.
+README covers installation, quickstart and top links. Put implementation decisions
+in design notes and future APIs in the roadmap.
 
-Use Markdown sources under `docs/en/` and the converter's `Guide`, `Symbol`
-and `TechNote` templates. Each page needs consistent `Name`, `Context`, `Paclet`
-and `URI` metadata. Names must be unique within a page type because generated
-notebook filenames are flat. A rename updates the filename, metadata, URI and
-incoming links together.
-
-Every guide must be reachable from the BioDataLink hub. Keep related-guide and
-tutorial lists alphabetical, with `$` names last. Within a guide section, list
-paclet symbols first and then external built-ins or Function Repository
-functions, sorted within each group. Mark external links WL and WFR and explain
-those labels. Use the destination's readable title for related pages and one
-link per entry. Label worked tutorial links Applications in rendered pages.
+Use Markdown `Guide`, `Symbol` and `TechNote` templates with consistent Name,
+Context, Paclet and URI. Names are unique within a type. Renames update filenames,
+metadata and incoming links. Every guide must be reachable from the hub.
+Alphabetize guides, tutorials and symbols, with `$` names last. Put paclet exports
+before external functions and label the latter WL/WFR. Use destination titles
+and one link per entry. Render worked tutorial links as Applications.
 
 ### Reference pages
 
-Start with actual usage forms; omit generic `opts` placeholders. Define
-arguments and properties in Details & Options. State defaults and the meaning
-of `Automatic`; explain matrix axes and data processing status where relevant.
-Use headerless documentation tables (an empty Markdown header row) for accepted
-forms, named properties and options. Keep argument placeholders italicized,
-and literal Wolfram syntax in code formatting.
+Use [CellularAutomaton](https://reference.wolfram.com/language/ref/CellularAutomaton.html)
+and [FileHash](https://reference.wolfram.com/language/ref/FileHash.html) as style
+references. Give each supported signature a short usage sentence. Put argument
+forms, properties and defaults in compact notes and headerless tables under
+Details, or Details & Options when options exist. Use italic placeholders and
+code formatting for literal syntax; omit generic `opts`.
 
-Start examples with the smallest useful call and show its returned data or a
-useful view. Put input variations in Scope, non-default choices in Options,
-comparisons in Properties and Relations, and expected limits in Possible
-Issues. Cover meaningful behavior rather than aiming for a fixed example count.
-Use the native symbol-reference structure rather than turning reference pages
-into tutorials. Keep each example focused on one public operation.
+Start Basic Examples with a small useful result. Use short captions ending in
+a colon, followed by input and evaluated output. Each example demonstrates one
+operation; related inputs can share visible setup within the same group.
+Use Scope, Options, Applications, Properties & Relations and Possible Issues
+only for distinct content. Separate independent examples with `---`; each group
+must run after context loading. Keep longer workflows in tutorials.
+
+Guide abstracts should be one short paragraph followed by grouped function
+links with brief descriptions. Keep detailed contracts in symbol references.
+Tutorials use short step captions, visible inputs and outputs, with scientific
+interpretation next to the relevant result.
 
 ### Reproducible examples
 
-Locate bundled fixtures through the existing `"Examples"` asset and
-`FileNameJoin`. Keep asset declarations nonoverlapping: Wolfram 15 PacletTools
-copies a directory asset's contents and fails if another alias names the same file.
+Locate fixtures with the `"Examples"` asset and `FileNameJoin`. Asset aliases
+must not overlap. Ordinary builds use local data. Mark online and optional
+inputs with `#| eval: false`, explain prerequisites and never invent saved
+outputs. Test live operations separately.
 
-Use local fixtures for examples evaluated during ordinary documentation builds.
-Show online examples explicitly as online operations, with data sizes, required
-backend and dataset revision when known. The build must not download large
-biological datasets to render a page. Preserve a data example's organism,
-source identifiers, preprocessing, gene selection, sample selection and seed.
+Keep organism, source IDs, revisions, processing, selections and seeds explicit.
+Prefer small real public datasets for scientific examples; retain license,
+checksum and selection rules in the [example data record](BioDataLink/Assets/Examples/README.md).
+Use `scripts/exampleData.wls` for pinned regeneration. Label synthetic examples
+and state the limits of subsets or single-donor data.
 
-For instructions that make live metadata requests, use the converter's
-`#| eval: false` directive inside a `wl` fence. This preserves an ordinary Input
-cell without running it during documentation generation. State that the input
-is online and unevaluated, and do not fabricate a saved result. Test the live
-operation separately and keep ordinary documentation builds offline.
+Show the actual data or a useful view before counts or truth values. Keep one
+observation per input. Reference examples reset their own data after headings
+and thematic breaks. Tutorials define one running dataset with visible choices.
 
-Show an operation's actual return value at least once before a downstream
-reduction. A numeric count or a truth value supports a demonstration but cannot
-replace the dataset, record or matrix being introduced. Keep one observation
-per input cell and avoid bundling unrelated outputs in a list.
+Place reusable tutorial helpers in a final `## Initialization` section. Build
+enabled helpers before the body and retain native initialization cells in one
+closed group with a visible opener. Keep inputs inspectable; do not use
+`#| input: false`. Online and optional cells remain disabled and are never
+initialization cells.
 
-Reference examples stand alone after loading the context. Headings and thematic
-breaks may reset bindings in the converter; start each independent example
-with its own data. Tutorials keep data choices and scientific parameters in
-the narrative, then thread that running example through the body. Put reusable
-helper definitions in a final `## Initialization` section. The documentation
-build evaluates enabled helpers before the body, then places them at the
-bottom of the generated notebook as native initialization cells. Group the
-heading, explanation and helper cells in one Initialization group, closed by
-default with a visible group opener. Keep inputs available when the group is opened; do not use
-`#| input: false` for helpers. Optional backend and
-online inputs retain `#| eval: false` and are never initialization cells; explain
-when the reader should run them. Define the running example once, name
-bindings clearly and re-show relevant data when entering a later section.
-
-Prefer short idiomatic Wolfram Language expressions, on one line when readable.
-Use built-in data and presentation functions directly. Omit display options
-that only repeat defaults or impose decorative styling. Retain labels, units,
-shared ranges and scales, seeds, fixed comparison coordinates and any option
-needed to interpret or reproduce a result.
-
-Make each figure one copyable input. Put short, figure-only setup inside `With`
-with the plotting call rather than in a preceding input. Previously loaded
-data, deliberate selections and reused analysis state may remain explicit
-prerequisites. Do not duplicate the full workflow for each figure or add nested
-scoping when an existing input is already clear and complete.
-
-Compute figures from the example. Use labeled heatmaps or distributions when
-they explain expression data, and compact tables for metadata. Preserve scales
-and category colors across comparisons. Inspect axes, labels and missing-data
-representations; a visually plausible matrix plot does not prove orientation.
-Avoid fixed styling in each example unless it conveys information or fixes a
-specific readability issue. A synthetic example demonstrates software behavior,
-not a biological conclusion.
-
-Prefer real public data when an example teaches science. Bundle a small subset
-with its source, license, checksum and selection rule, and regenerate it from
-pinned downloads with `scripts/exampleData.wls`; see the
-[example data record](BioDataLink/Assets/Examples/README.md). State what the
-subset cannot show, such as genes left out or a single donor.
+Use concise native Wolfram Language and presentation defaults. Each figure is
+one copyable input, with short figure-only setup in `With`. Shared data and
+analysis prerequisites remain explicit. Keep units, labels, seeds, shared scales,
+fixed comparison coordinates and options needed for interpretation; omit
+decorative repetition. Verify axis orientation and missingness, not only appearance.
 
 ### Figures
 
-Choose the plot from the question and the data type: distributions for spread,
-log scales for counts and abundances, heat maps ordered by an explicit rule for
-matrices, and small multiples with shared scales for comparisons. Draw dense
-scatter plots with small points, and plot the cells that express a gene on top
-of those that do not. Size marks by area, as in dot plots and rose charts.
-Check automatic plot ranges, which can drop outlying points; set
-`PlotRange -> All` when extremes carry the result.
+Choose distributions for spread, log scales for counts, explicitly ordered
+heatmaps for matrices and shared scales for comparisons. Use small marks in
+dense plots; draw expressing cells above zeros. Encode magnitude by area in
+dot/rose plots. Check automatic ranges and use `PlotRange -> All` when extremes
+carry the result.
 
-Color encodes data, so choose maps by the kind of value
-([Crameri, Shephard and Heron 2020](https://doi.org/10.1038/s41467-020-19160-7)):
+Choose color by value type
+([Crameri et al. 2020](https://doi.org/10.1038/s41467-020-19160-7)):
 
-- **Categories:** consider the Okabe-Ito palette for up to seven groups
-  ([Wong 2011](https://doi.org/10.1038/nmeth.1618)) or
-  [Paul Tol's muted palette](https://sronpersonalpages.nl/~pault/) for eight
-  or nine. Check contrast at the actual mark size and background; pale yellow
-  can be difficult to distinguish on white. Check both custom and default
-  palettes under color-vision-deficiency simulation.
-- **Magnitudes:** use a map whose lightness changes monotonically, such as
-  `"BlueGreenYellow"`, or a light-to-dark map such as
-  `ColorData[{"LakeColors", "Reverse"}]` when zeros should recede.
-- **Signed values:** use a diverging map such as `"ThermometerColors"` centered
-  on the neutral value. For a zero-centered comparison, use a shared symmetric
-  range and verify the color scaling as well as the plot range; automatic
-  rescaling must not move the neutral color away from zero.
-- **Rainbows:** avoid `"Rainbow"`-like maps, whose uneven lightness creates
-  false boundaries.
+- Categories: [Okabe-Ito](https://doi.org/10.1038/nmeth.1618) for up to seven,
+  or [Tol muted](https://sronpersonalpages.nl/~pault/) for eight or nine. Check
+  actual mark size, background and color-vision-deficiency simulations.
+- Magnitudes: monotonic lightness, such as `"BlueGreenYellow"` or reversed
+  `"LakeColors"` when zeros should recede.
+- Signed values: a diverging map centered on the neutral value; use a shared
+  symmetric range and check color scaling, not just plot range.
+- Avoid rainbow-like maps that create false boundaries.
 
-Label groups directly or with a legend, and keep one color per biological
-category in every figure. Two-dimensional embeddings such as UMAP emphasize
-local neighborhoods and can distort distances, densities and apparent cluster
-sizes. Check conclusions in the original analysis space.
+Label groups and reuse their colors. UMAP can distort global distances,
+densities and group sizes; check conclusions in the analysis space.
 
 ### Documentation verification
 
-Check copied figure inputs after their documented data and initialization
-prerequisites, without relying on disposable bindings from an earlier plot.
+Run examples in a fresh checkout kernel, build with `make notebooks`, inspect
+outputs/layout and check links. Source checks alone do not verify notebooks.
+Inspect representative light/dark output when formatting changes. Verify prose,
+counts, legends and saved results agree; report missing tooling or inspection.
 
-Run examples in a fresh kernel resolving to this checkout. Build notebooks
-with `make notebooks`, inspect actual outputs and layout, and check the
-relevant links. A successful Markdown check is not evidence of evaluated
-examples or rendered notebooks. Inspect representative visual output in light and dark notebook appearances
-when formatting changes. Check that counts, legends and prose agree with the
-saved result. Report unavailable front-end or build tools
-and avoid calling the page visually verified when inspection was not possible.
-For a tutorial with helpers, also verify initialization-only evaluation in a
-fresh notebook, the final closed group, and exclusion of `eval: false`
-cells from initialization. A source check evaluates enabled helpers first,
-then enabled body inputs; it must not run optional or online cells.
-
-Check independent copied inputs as well as a whole-page run. Ensure examples
-use public symbols and match their documented version. Recheck affected pages
-after changing a shared data contract or formatting helper. Keep comparison
-claims within the datasets, measurements and evidence actually examined.
+Check individual figure inputs after their documented prerequisites as well as
+whole-page runs. For helpers, verify initialization-only evaluation, the final
+closed group and exclusion of disabled cells. Recheck affected pages after
+contract or helper changes. Keep every claim within the evidence examined.

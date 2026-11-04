@@ -3,8 +3,8 @@
 [![CI](https://github.com/WolframInstitute/BioDataLink/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/WolframInstitute/BioDataLink/actions/workflows/ci.yml)
 [![Release](https://github.com/WolframInstitute/BioDataLink/actions/workflows/release.yml/badge.svg)](https://github.com/WolframInstitute/BioDataLink/actions/workflows/release.yml)
 
-Biological data for Wolfram Language. Discover sources, search public studies,
-download selected files and read supported measurements with their metadata.
+Find biological datasets, download files and read measurements with their
+metadata in Wolfram Language.
 
 [Documentation](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#guide/BioDataLink) ·
 [Wolfram resource](https://www.wolframcloud.com/obj/wolframinstitute/DeployedResources/Paclet/WolframInstitute/BioDataLink/) ·
@@ -13,7 +13,7 @@ download selected files and read supported measurements with their metadata.
 
 ## Installation
 
-Requires Wolfram Language 15.0 or later.
+Requires Wolfram Language 15.0 or later:
 
 ```wl
 PacletInstall[ResourceObject["https://wolfr.am/1IzdEvymT"]]
@@ -22,42 +22,34 @@ Needs["WolframInstitute`BioDataLink`"]
 
 ## Quick start
 
-Find registered sources and construct an accession link:
+Find sources and build an accession link offline:
 
 ```wl
 BioDataSourceSearch["protein", "Limit" -> 5][All, {"Prefix", "Name"}]
 BioDataURL[{"pdb", "1CRN"}]
 ```
 
-Search public study metadata online:
+Search GEO studies online:
 
 ```wl
 BioDatasetQuery["GEO", "CRISPR AND Homo sapiens[Organism]", "PageSize" -> 3]
 ```
 
-Read the bundled single-cell example: selected genes from 2,700 human blood
-cells measured by 10x Genomics:
+Read the bundled counts for 2,700 human blood cells and 513 selected genes:
 
 ```wl
 BioDatasetLoad[File[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "PBMC3k", "pbmc3k-subset.json"}]]]["ExpressionMatrix"]
 ```
 
-Worked case studies analyze single-cell expression, protein structures,
-genomes and gene-expression time series; see
-the [documentation](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#guide/BioDataLink).
+The [applications](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#guide/ComputationalExplorations)
+cover single-cell expression, protein structures, genomes and time series.
 
 ## Development
 
-Run `make all` for local checks and the paclet build. See
-[CONTRIBUTING.md](CONTRIBUTING.md) for setup, optional backend tests and release
-procedures.
+Run `make all` for local validation. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License and citation
 
-The code is [MIT licensed](LICENSE). Bundled
-[Identifiers.org metadata](BioDataLink/Assets/Sources/README.md) and the
-[example datasets](BioDataLink/Assets/Examples/README.md) keep their own
-licenses and attribution: CC BY 4.0, CC0 or NCBI's terms. Other datasets retain
-their own licenses and access terms.
-
-Cite [BioDataLink](CITATION.cff) and the original data sources used in your work.
+Code: [MIT](LICENSE). [Registry metadata](BioDataLink/Assets/Sources/README.md)
+and [example data](BioDataLink/Assets/Examples/README.md) retain their own licenses.
+Cite [BioDataLink](CITATION.cff) and the original data sources.

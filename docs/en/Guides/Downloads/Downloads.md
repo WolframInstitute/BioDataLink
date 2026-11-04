@@ -13,29 +13,20 @@ RelatedTutorials: [ComparingCoronavirusGenomes, ComparingProteinConformations, D
 
 ## Abstract
 
-A study record may link to several files with different processing histories.
-Choose the required file explicitly, set a byte limit and retain its source
-and checksum. BioDataLink downloads an HTTPS file into a temporary location,
-checks the result, then places it at the chosen destination. Existing files
-are preserved unless replacement is explicitly requested and the new download
-passes its checks.
+Download a chosen HTTPS file with size limits and optional checksum
+verification. The result records the file, source URL, retrieval time and
+content hash. Downloaded files can be read with `BioDatasetLoad` or `Import`.
 
-The download result records what was retrieved. A matching expected SHA-256
-confirms agreement with the supplied digest; it does not establish a data
-license, correct scientific annotation or suitability for an analysis.
-Interpret the file with an appropriate reader after retrieval. Downloads
-require curl 8.4 or later; the paclet does not install it automatically.
+WL denotes a built-in Wolfram Language function.
 
 ## Functions
 
 ### Retrieve and Verify a File
 
-- `BioDatasetDownload` retrieve an HTTPS file with byte limits and optional expected size and SHA-256
-- `FileHash` (WL) compute a local file's content hash
+- `BioDatasetDownload` download an HTTPS file with integrity checks
+- `FileHash` (WL) compute a file content hash
 
 ### Read the Retrieved Data
 
-- `BioDatasetLoad` read supported local expression formats
-- `Import` (WL) read other formats such as CSV using the file's documented structure
-
-WL marks a built-in Wolfram Language function.
+- `BioDatasetLoad` import a local matrix with aligned metadata
+- `Import` (WL) read data from a file

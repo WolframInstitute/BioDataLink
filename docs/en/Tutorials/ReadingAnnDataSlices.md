@@ -9,46 +9,35 @@ Keywords: [application, AnnData, H5AD, sparse arrays, metadata, selection]
 RelatedGuides: [BioDataLink, DataAccess, Downloads]
 ---
 
-An H5AD file can contain a measurement matrix, alternative layers, axis
-annotations, embeddings and other analysis results. Reading one selected
-matrix is not a complete import of that object. This tutorial makes the
-selected layer and axis positions explicit, preserves missing annotations and
-duplicate labels, and records what was omitted.
+Read a selected H5AD matrix with its row and column metadata. Other AnnData
+structures are listed as omitted. The bundled file is **synthetic**.
 
-The bundled file is synthetic. Its labels and values test data handling rather
-than describe biological observations. The examples require an explicitly
-configured Python interpreter and are not evaluated during ordinary
-documentation builds. After configuring the interpreter, work through the
-examples in order. Stop if a call returns a `Failure`.
+These examples require the optional Python reader and are not evaluated during
+ordinary documentation builds. Run them in order after setup; stop on `Failure`.
 
-## Configure the optional local reader
+## Configure Python
 
-The tested requirements are Python 3.13 with h5py 3.16.0 and NumPy 2.5.4.
-Create a separate environment and install the pinned requirements from
-`Assets/Python/requirements-h5ad.txt` in the paclet directory. For example,
-after replacing these paths on a system using a `bin/python` environment:
+Tested versions are Python 3.13, h5py 3.16.0 and NumPy 2.5.4. Replace the paths
+and install the paclet's pinned requirements into a separate environment:
 
 ```sh
 python3.13 -m venv /path/to/biodatalink-h5ad
 /path/to/biodatalink-h5ad/bin/python -m pip install -r /path/to/paclet/Assets/Python/requirements-h5ad.txt
 ```
 
-Installation is an explicit setup step. Loading BioDataLink does not install
-Python packages. The reader uses h5py and NumPy to read supported H5AD
-encodings; it does not create a complete Python AnnData object. Alternatively,
-set `BIODATALINK_PYTHON` to the interpreter's absolute path before starting
-the Wolfram kernel.
-
-For the calls below, set the interpreter explicitly:
+Select the configured interpreter:
 
 ```wl
 #| eval: false
 python = "/path/to/biodatalink-h5ad/bin/python";
 ```
 
-## Read a small, explicit selection
+Alternatively, set `BIODATALINK_PYTHON` to the interpreter's absolute path before
+starting the kernel. Loading BioDataLink does not install dependencies.
 
-Read the first two observations and first three variables from `X`:
+## Select rows and columns
+
+Read two observations and three variables from `X`:
 
 ```wl
 #| eval: false
@@ -57,66 +46,49 @@ slice = BioDatasetLoad[File[file], "Format" -> "AnnData",
     "PythonExecutable" -> python, "Cells" -> {1, 2}, "Genes" -> {1, 2, 3}]
 ```
 
-The checked fixture selection has values `{{0, 2, 0}, {7, 0, 11}}`.
-Inspect its sparse matrix with a labeled color scale:
+Plot the selected matrix:
 
 ```wl
 #| eval: false
 MatrixPlot[slice["ExpressionMatrix"], PlotLegends -> Automatic, FrameLabel -> {"observation", "variable"}]
 ```
 
-The result records `"MatrixValueType"` (here `"int64"`). Integer measurements
-remain exact, including integers larger than a machine real can represent
-exactly. Floating-point layers remain approximate real measurements.
-
-Positions are one-based source positions, and a requested order is preserved.
-In general AnnData, observations need not be cells and variables need not be
-genes. BioDataLink retains the property names `"CellMetadata"` and
-`"GeneMetadata"` for this interface; check the source assay before interpreting
-those axes biologically.
+The selected values are `{{0, 2, 0}, {7, 0, 11}}`. Positions are one-based and
+requested order is preserved. Integer values stay exact; floating-point values
+remain approximate. AnnData observations and variables need not mean cells and
+genes, despite the interface names `CellMetadata` and `GeneMetadata`.
 
 ## Preserve labels and missing annotations
-
-Inspect the variable labels beside their original positions:
 
 ```wl
 #| eval: false
 slice["GeneMetadata"][All, {"SourceIndex", "ID"}]
 ```
 
-The first two variables both have ID `"g1"`, at positions 1 and 2. They remain
-separate columns. Building an association keyed only by this ID would lose that
-distinction; retain the source position when labels are not unique.
-
-Show selected observation annotations without overwriting the axis ID:
+The first two variables both have ID `g1`. Use `SourceIndex` to distinguish
+them; joining solely on a repeated ID loses columns.
 
 ```wl
 #| eval: false
 slice["CellMetadata"][All, {"SourceIndex", "ID", "Annotations"}]
 ```
 
-The second observation's `"kind"` is missing; the reader preserves that absence.
-The source also has an annotation column named `"ID"`, kept inside
-`"Annotations"` separately from the axis label. The labels `"T"` and `"B"`
-in this fixture are invented categories, not inferred cell types.
-
-Inspect the source encoding information for the categorical column:
+Missing annotations stay missing. Annotation fields, including a field named
+`ID`, are nested under `Annotations` separately from the axis ID.
 
 ```wl
 #| eval: false
 slice["CellMetadataEncoding"]["kind"]
 ```
 
-This records whether categories are ordered, their total source count and the
-selected labels at their original category positions. Unused category labels
-are not imported. Missing annotations differ from missing numerical
-measurements: selected NaN or infinite matrix values are rejected instead of
-being converted to zero. Other missing-measurement information elsewhere in a
-file is not inferred as a mask for this matrix.
+Categorical metadata retain ordering, source category count and selected
+labels at their source positions. Unused labels are omitted. Selected NaN or
+infinite measurements are rejected; omitted structures are not inferred as
+missing-measurement masks.
 
-## Choose a different layer deliberately
+## Choose the layer
 
-Select the floating-point layer named `normalized`, reversing the row order:
+Read a named layer with reversed row order:
 
 ```wl
 #| eval: false
@@ -125,12 +97,10 @@ KeyTake[BioDatasetLoad[File[file], "Format" -> "AnnData", "PythonExecutable" -> 
     {"SourceLayer", "SelectedCells", "SelectedGenes", "Normalization"}]
 ```
 
-The selected values are `{{1.1, 0}, {0, 0.2}}`. The name `normalized` does not
-verify a transformation or measurement scale, so `"Normalization"` remains
-`Missing["NotSpecified"]`. Consult source processing information before
-comparing this layer with `X` or another study.
+Its selected values are `{{1.1, 0}, {0, 0.2}}`. A name such as `normalized`
+does not verify processing; `Normalization` remains `Missing["NotSpecified"]`.
 
-The raw storage location can have a different variable axis:
+The `raw` location can have its own variable axis:
 
 ```wl
 #| eval: false
@@ -138,14 +108,10 @@ BioDatasetLoad[File[file], "Format" -> "AnnData", "PythonExecutable" -> python,
     "Cells" -> {1, 2}, "Genes" -> {5, 2}, "Layer" -> {"Raw", "X"}]["GeneMetadata"][All, {"SourceIndex", "ID"}]
 ```
 
-This file's raw matrix has five variables, compared with four in `X`.
-The requested raw positions refer to `"r5"` and `"r2"`. A storage location
-named `raw` is not evidence that values are unprocessed counts.
+Here `raw` has five variables, versus four in `X`. Its name does not establish
+that values are unprocessed counts.
 
-## Record the selection and its limits
-
-Keep source dimensions, selected positions, omitted structures and interpreter
-versions with the result:
+## Keep the selection record
 
 ```wl
 #| eval: false
@@ -153,18 +119,11 @@ KeyTake[slice, {"SourceShape", "SourceLayer", "MatrixValueType", "SelectedCells"
     "OmittedStructures", "BackendVersion", "ContentHash"}]
 ```
 
-The result omits unselected layers and other AnnData structures, including
-embeddings and unstructured annotations. It does not import a citation or infer
-scientific provenance from those omitted structures. The source file's size and
-modification time are recorded, but no full-file hash is computed: hashing a
-large local file would require reading it in full. Retain a separate verified
-download record or compute a file hash explicitly when the workflow requires it.
+Retain the layer, positions, source shape, omitted structures and backend
+versions. No whole-file hash is computed; keep a verified download record or
+compute a hash separately when needed.
 
-The default `"MaxFileBytes"` is 10,000,000 bytes for the entire file. For a
-larger local file, explicitly choose a suitable larger limit or `Infinity`.
-`"MaxSelectedElements"` limits selected rows times columns, including zeros;
-`"MaxTransferBytes"` limits the serialized result and metadata returned to
-Wolfram Language. These are not limits on all disk reads, decompressed HDF5
-chunks or interpreter memory. Select the needed rows, columns and layer rather
-than assuming that a small number of nonzero values makes every full-file
-operation inexpensive.
+The default whole-file limit is 10,000,000 bytes. Raise `MaxFileBytes`
+explicitly for larger files. `MaxSelectedElements` bounds selected rows ×
+columns, including zeros; `MaxTransferBytes` bounds the serialized result.
+Neither bounds all HDF5 disk reads or interpreter memory.

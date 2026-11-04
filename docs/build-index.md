@@ -1,19 +1,18 @@
 # Build index
 
-The functions in this paclet and the contracts they implement. Update this
-inventory when adding or changing a public symbol. Status records source
-presence; it does not establish that tests passed or that notebooks were built,
-evaluated or visually inspected. Record those checks separately.
+All eight functions below have implementation, test and documentation sources.
+This inventory does not assert that a particular checkout passed runtime or
+rendering checks; record validation separately.
 
 ## Functions
 
-| Symbol | Area | Does | Sources | Status |
-| --- | --- | --- | --- | --- |
-| `BioDataSourceInfo` | Sources | returns complete registered namespace metadata and source provenance | [Design](design.md) | implementation + test/doc sources |
-| `BioDataSourceSearch` | Sources | searches the bundled Identifiers.org directory | [Design](design.md) | implementation + test/doc sources |
-| `BioDataURL` | Sources | constructs a resolver link without contacting the source | [Validation note](notes/2026-11-04-source-discovery-validation.md) | implementation + test/doc sources |
-| `BioDatasetDownload` | Downloads | retrieves an explicit HTTPS file with size and optional SHA-256 checks | [Provider contract](provider-contract.md) | implementation + test/doc sources |
-| `BioDatasetInfo` | Catalog | returns a dataset record using its provider and source identifier | [Provider contract](provider-contract.md) | implementation + test/doc sources |
-| `BioDatasetLoad` | DataAccess | reads JSON expression data or a supported selected H5AD matrix | [Interchange format](interchange-format.md), [AnnData tutorial](en/Tutorials/ReadingAnnDataSlices.md) | implementation + test/doc sources |
-| `BioDatasetQuery` | Providers | searches public BioStudies and GEO study metadata one page at a time | [Provider contract](provider-contract.md) | implementation + test/doc sources |
-| `BioDatasetSearch` | Catalog | searches the bundled metadata snapshot with provider and organism filters | [Design](design.md) | implementation + test/doc sources |
+| Symbol | Task | Contract |
+| --- | --- | --- |
+| `BioDataSourceInfo` | Inspect namespace metadata and provenance | [Design](design.md) |
+| `BioDataSourceSearch` | Search the offline source directory | [Design](design.md) |
+| `BioDataURL` | Construct a resolver link offline | [Validation](notes/2026-11-04-source-discovery-validation.md) |
+| `BioDatasetDownload` | Download and check an HTTPS file | [Provider contract](provider-contract.md) |
+| `BioDatasetInfo` | Inspect one catalog record | [Provider contract](provider-contract.md) |
+| `BioDatasetLoad` | Read JSON or a selected H5AD matrix | [JSON](interchange-format.md), [H5AD](en/Tutorials/ReadingAnnDataSlices.md) |
+| `BioDatasetQuery` | Search BioStudies or GEO online | [Provider contract](provider-contract.md) |
+| `BioDatasetSearch` | Search the offline Pertpy catalog | [Design](design.md) |

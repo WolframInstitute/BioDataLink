@@ -5,22 +5,21 @@ Context: WolframInstitute`BioDataLink`
 Paclet: WolframInstitute/BioDataLink
 URI: WolframInstitute/BioDataLink/ref/BioDataSourceInfo
 Keywords: [sources, registry, identifiers, provenance, endpoints]
-SeeAlso: [Association, BioDataSourceSearch, BioDataURL, BioDatasetQuery]
+SeeAlso: [BioDataSourceSearch, BioDataURL, BioDatasetQuery, Association]
 RelatedGuides: [BioDataLink, Sources]
 RelatedTutorials: [FindingDataSources]
 ---
 
 ## Usage
 
-<code>[BioDataSourceInfo]()[*prefix*]</code> gives the source record for a registered identifier namespace.
+<code>[BioDataSourceInfo]()[*prefix*]</code> gives metadata for a registered identifier namespace.
 
-## Details & Options
+## Details
 
 - The result is an `Association` from the bundled Identifiers.org registry. No network request is made.
-- The prefix lookup is case-insensitive; the returned `"Prefix"` uses the registry's canonical form.
-- Deprecated namespaces can be inspected. An unknown prefix gives `Failure["UnknownSource", ...]`.
-- Source descriptions, patterns and endpoint metadata are registry declarations, not independent checks of scientific content, current availability or access rights.
-- The complete record contains these fields:
+- *prefix* is a string. Lookup is case-insensitive and returns the canonical prefix.
+- Deprecated namespaces remain available.
+- Returned properties include:
 
 | | |
 | --- | --- |
@@ -32,14 +31,13 @@ RelatedTutorials: [FindingDataSources]
 | `"RegistryRecord"` | Complete namespace record using the registry's original field names |
 | `"Provenance"` | Registry retrieval metadata, source hash, license and transformation description |
 
-- Absent JSON values in the registry are returned as `Missing["NotAvailable"]`. Original field names are retained within `"Resources"` and `"RegistryRecord"`.
-- `"SampleID"` is preserved as supplied. It may omit a prefix that `BioDataURL` requires for an embedded-prefix namespace; use the identifier's complete original form in that case.
-- Endpoint flags can describe deprecated or protected resources. A source's actual terms and authentication requirements must be checked at that source; registry flags are not permission to access data.
-- Registry data and prefix indexes are reused within a Wolfram kernel session after their first successful load.
+- Missing values are represented by `Missing["NotAvailable"]`. Nested registry fields retain their source names.
+- Patterns, descriptions and access flags are registry declarations; they do not verify current availability or access terms.
+- `"SampleID"` can omit a prefix required by `BioDataURL`. Embedded-prefix namespaces require the complete original identifier.
 
 ## Basic Examples
 
-Get the PDB namespace record:
+Get the name and sample identifier for PDB:
 
 ```wl
 KeyTake[BioDataSourceInfo["pdb"], {"Prefix", "Name", "SampleID"}]
@@ -47,13 +45,15 @@ KeyTake[BioDataSourceInfo["pdb"], {"Prefix", "Name", "SampleID"}]
 
 ## Scope
 
-Inspect the declared Gene Ontology identifier convention:
+Inspect identifier conventions for Gene Ontology:
 
 ```wl
 KeyTake[BioDataSourceInfo["go"], {"Prefix", "Pattern", "SampleID", "NamespaceEmbeddedInLUI"}]
 ```
 
-Look up the same source using an uppercase prefix:
+---
+
+Namespace lookup ignores case:
 
 ```wl
 KeyTake[BioDataSourceInfo["PDB"], {"Prefix", "Name"}]
@@ -61,17 +61,15 @@ KeyTake[BioDataSourceInfo["PDB"], {"Prefix", "Name"}]
 
 ## Applications
 
-Inspect the registered PDB endpoints without contacting them:
+List registered endpoints:
 
 ```wl
 Dataset[BioDataSourceInfo["pdb"]["Resources"]][All, {"name", "providerCode", "official", "deprecated"}]
 ```
 
-The lowercase field names come from the registry. `"official"` and
-`"deprecated"` record the registry's assessments; they do not establish current
-availability, a data license or independent biological content.
+---
 
-Retain evidence identifying the bundled registry used for a lookup:
+Get the registry snapshot's provenance:
 
 ```wl
 KeyTake[BioDataSourceInfo["pdb"]["Provenance"], {"Provider", "SourceURL", "SourceSHA256", "RetrievedAt", "License"}]
@@ -79,11 +77,8 @@ KeyTake[BioDataSourceInfo["pdb"]["Provenance"], {"Provider", "SourceURL", "Sourc
 
 ## Possible Issues
 
-An unknown namespace gives a structured failure:
+Unknown prefixes give `Failure["UnknownSource", ...]`:
 
 ```wl
 BioDataSourceInfo["no-such-biodatalink-source"]
 ```
-
-The registry's identifier pattern is informative metadata. `BioDataURL` does
-not apply that pattern or check whether a particular identifier exists.

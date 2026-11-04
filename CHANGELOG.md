@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.3 — 2026-11-05
+
+- Simplify all seven guides, eight symbol references and sixteen tutorials,
+  retaining data provenance, measurement units, analysis choices and scientific
+  limitations. Shorten supporting project and data-format documentation.
+- Follow Wolfram Language reference conventions with concise usage descriptions,
+  compact details, short example captions and separate scope, option and issue
+  examples. Show imported matrices before metadata and provenance.
+- Remove redundant analyses and unused tutorial helpers. Preserve native
+  initialization, offline examples and explicit optional-backend requirements.
+
 ## 0.3.2 — 2026-11-04
 
 - Add five case-study tutorials on real public data: single-cell expression in

@@ -12,20 +12,18 @@ RelatedTutorials: [ExploringBiologicalData]
 
 ## Usage
 
-<code>[BioDatasetSearch]()[]</code> gives the bundled biological dataset catalog as a [Dataset]().
+<code>[BioDatasetSearch]()[]</code> gives the bundled dataset catalog as a [Dataset]().
 
-<code>[BioDatasetSearch]()[*query*]</code> selects records containing the text *query*.
+<code>[BioDatasetSearch]()[*query*]</code> finds catalog records containing *query*.
 
 ## Details & Options
 
-- Search uses the bundled catalog and performs no network request.
-- The current catalog contains 55 Pertpy loader records, including examples and processed variants. This is not a count of independent studies.
-- Text matching is a case-insensitive substring search over dataset identifiers, titles and descriptions.
-- Descriptions are taken from the source, not scientifically curated by BioDataLink. Text matches do not establish assay, organism or experimental suitability.
-- The provider and organism filters use exact values. `All` disables a filter.
+- The catalog contains 55 Pertpy loader records and is searched offline.
+- *query* is a string. Matching is case-insensitive across identifiers, titles and descriptions.
 - An empty query matches all records before filters and limits are applied.
+- Provider and organism filters use exact matches. `All` disables a filter; missing annotations do not match a string.
 - No matches gives an empty `Dataset`.
-- A catalog match does not imply a verified import route for its particular file. `"NativeImportSupported"` is currently `False` for all Pertpy records, independently of generic H5AD format support.
+- Records include processed variants and examples, not just independent studies. All current records have `"NativeImportSupported" -> False`.
 - The following options can be given:
 
 | | | |
@@ -44,13 +42,15 @@ BioDatasetSearch["CRISPR", "Limit" -> 3][All, {"Provider", "ID"}]
 
 ## Scope
 
-Show provider and identifier columns for two records from the complete catalog:
+Show identifiers from the catalog:
 
 ```wl
 BioDatasetSearch[][1 ;; 2, {"Provider", "ID"}]
 ```
 
-Search by a dataset identifier and show compact catalog columns:
+---
+
+Search by identifier:
 
 ```wl
 BioDatasetSearch["norman_2019"][All, {"Provider", "ID"}]
@@ -60,7 +60,7 @@ BioDatasetSearch["norman_2019"][All, {"Provider", "ID"}]
 
 ### Limit
 
-Return one record and show its provider and identifier:
+Return at most one record:
 
 ```wl
 BioDatasetSearch["", "Limit" -> 1][All, {"Provider", "ID"}]
@@ -68,9 +68,7 @@ BioDatasetSearch["", "Limit" -> 1][All, {"Provider", "ID"}]
 
 ### Organism
 
-Request records with an explicit human organism annotation. The current
-source has no structured organism annotations, so this returns no records.
-This does not imply an absence of human studies:
+The current catalog has no structured organism annotations, so filtering gives an empty result:
 
 ```wl
 BioDatasetSearch["", "Organism" -> "Homo sapiens"]
@@ -78,7 +76,7 @@ BioDatasetSearch["", "Organism" -> "Homo sapiens"]
 
 ### Provider
 
-Restrict discovery to the Pertpy snapshot and show compact catalog columns:
+Select one provider:
 
 ```wl
 BioDatasetSearch["", "Provider" -> "Pertpy"][All, {"Provider", "ID"}]
@@ -86,25 +84,18 @@ BioDatasetSearch["", "Provider" -> "Pertpy"][All, {"Provider", "ID"}]
 
 ## Applications
 
-Compare catalog entries for processed and raw variants before selecting a file:
+Compare available metadata for file variants:
 
 ```wl
 BioDatasetSearch["norman_2019"][All, {"ID", "Organism", "NativeImportSupported"}]
 ```
 
-The two entries refer to variants associated with the same study. The suffix
-alone does not document their measurement scale or preprocessing. Inspect each
-source record and its linked description before comparing or loading values.
-The missing organism annotation is a gap in this catalog, not an assertion
-about the study's biology.
+Processing and measurement scale must be checked at the source.
 
 ## Possible Issues
 
-A query that matches no catalog text returns an empty result:
+A query with no matches gives an empty dataset:
 
 ```wl
 BioDatasetSearch["no-such-biodatalink-dataset"]
 ```
-
-Provider and organism filters do not infer metadata that the source
-omits. A catalog record with a missing organism is excluded by an organism filter.

@@ -16,66 +16,33 @@ Links: ["[Source repository](https://github.com/WolframInstitute/BioDataLink)", 
 
 ## Basic Description
 
-BioDataLink helps Wolfram Language researchers find data sources, construct
-identifier links, search public study metadata, download selected files and
-read supported local measurements. Source and retrieval records retain
-provenance; matrix results preserve aligned metadata and explicit selections.
+Find biological datasets, download a chosen file and read local measurements
+in Wolfram Language. Results retain identifiers, metadata and provenance.
 
 ## Details & Options
 
-The bundled directory includes 867 Identifiers.org namespaces and 1,039 endpoints, with
-774 active namespaces shown by default. This broad directory spans biological
-and other domains and is not exhaustive. A listing or generated resolver link
-does not establish current availability, open access or data-file import support.
-Directory search, source inspection and link construction run offline.
+- Search the bundled Identifiers.org directory and 55 Pertpy loader records
+  offline. Listings are source metadata, not verified data imports.
+- Search public BioStudies studies or GEO Series online, one page at a time.
+- Download an explicit HTTPS file with a size limit and optional expected
+  SHA-256. Requires curl 8.4 or later.
+- Read BioDataLink JSON as a cells-by-genes sparse matrix. Unlisted entries are
+  zero; the format has no missing-measurement mask.
+- Read selected AnnData H5AD measurements with an explicitly configured Python
+  interpreter, h5py and NumPy. This preserves selected axis metadata, not the
+  complete AnnData object. Normalization is unspecified; no whole-file hash is
+  computed.
 
-Live queries search public BioStudies study metadata or GEO Series one page
-at a time, retaining source descriptions, original metadata, retrieval time
-and a continuation cursor. Reported totals can change between requests.
-Optional GEO API-key references affect public request quotas; private-data
-access is not implemented.
+Readers check structure without normalizing values or validating biological
+claims. Optional dependencies are installed separately.
 
-The separate Pertpy catalog contains 55 records from a fixed revision of its data
-loaders. They include examples and processed variants, rather than 55
-independent studies. Descriptions and links are source-declared metadata,
-not scientific annotations reviewed by BioDataLink. Search and metadata
-inspection do not download expression matrices.
+Applications cover single-cell expression, protein structures, genomes and
+circadian rhythms. Real examples retain their sources, selections, licenses
+and checksums; synthetic examples are labeled.
 
-Explicit HTTPS downloads use byte limits and optional expected size and SHA-256
-checks. A verified result is moved to the selected destination; failed transfers
-preserve an old destination. Downloads require curl 8.4 or later, with no
-automatic installation, retry, resume or cache.
+The code is MIT licensed. Data keep their own terms: CC BY 4.0 for the registry,
+Iris and PBMC examples; CC0 for PDB structures; NCBI policies for sequences and
+GEO data.
 
-The default local reader accepts BioDataLink JSON version 1 and returns a cells-by-genes
-sparse matrix, aligned cell and gene metadata, source provenance and a content
-hash. Omitted entries become numerical zeros; the format cannot separately
-represent missing measurements. Structural validation does not establish the
-meaning of the values or verify a declared normalization procedure. The bundled
-JSON example is synthetic.
-
-An explicit AnnData format reads selected supported H5AD matrices using a
-configured Python interpreter with h5py and NumPy. It preserves original axis
-positions, duplicate labels and missing annotations, and lists omitted
-structures. The result is not a complete AnnData object. Normalization is
-unspecified and no whole-file checksum is computed. Optional dependencies are
-not installed automatically.
-
-Sixteen worked tutorials connect discovery and import to measurement geometry,
-finite-state encodings, sparse-data interpretation, similarity networks,
-held-out rule comparison, explicit cellular-automaton observation models and
-measurement selection under stated error bounds. Five case studies analyze real
-public data: single-cell expression in human blood, open and closed structures
-of an enzyme, a bacterial chromosome, three coronavirus genomes and an hourly
-liver time series. Computed figures use these datasets, attributed Iris
-measurements or clearly labeled synthetic inputs. The examples use built-in
-Wolfram Language and do not require a sibling modeling paclet.
-
-The source registry is provided by Identifiers.org under CC BY 4.0. Its license
-and attribution are retained alongside the bundled data; the paclet code is MIT.
-The UCI Iris example and the 10x Genomics single-cell subset are CC BY 4.0, the
-Protein Data Bank structures are CC0, and the NCBI sequences and GEO time series
-follow NCBI's data policies. Each example keeps its source citation, retrieval
-record and content hash beside the data.
-
-After installing a built paclet archive, load its main context with
+After installation, load the package with
 <code>Needs["WolframInstitute\`BioDataLink\`"]</code>.

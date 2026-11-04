@@ -9,27 +9,16 @@ Keywords: [application, iris, principal components, distance, clustering, scalin
 RelatedGuides: [BioDataLink, ComputationalExplorations, DataAccess, Downloads]
 ---
 
-Which plant records look similar, and how much does that answer depend on the
-measurement scale? A distance, a projection and a clustering all make choices
-about which differences matter. This tutorial exposes those choices before
-interpreting a figure.
+See how scaling changes distances, principal components and clustering in the
+[UCI Iris measurements](https://archive.ics.uci.edu/dataset/53/iris).
+The file has 150 plant records and four floral measurements in centimetres.
+Species labels are used only for display. This is a descriptive analysis of
+the whole file, not a prediction test.
 
-The data are the 150 plant records in the bundled [UCI Iris file](https://archive.ics.uci.edu/dataset/53/iris),
-with sepal length, sepal width, petal length and petal width measured in
-centimetres. Its three species labels are used for display, not to fit the
-principal components or clusters. These are descriptive calculations on the
-whole file, with no claim about prediction on new plants. The
-[download tutorial](paclet:WolframInstitute/BioDataLink/tutorial/DownloadingBiologicalData)
-checks the exact file and its CC BY 4.0 attribution. UCI documents differences
-from Fisher's historical article; the distributed values are retained here.
+The [download tutorial](paclet:WolframInstitute/BioDataLink/tutorial/DownloadingBiologicalData)
+records the file identity and CC BY 4.0 attribution. Evaluate **Initialization**, then run the examples in order.
 
-Evaluate the final Initialization group, then load the data below. Later inputs
-reuse the named data and analysis results introduced in the text.
-
-## Keep the observation and variables explicit
-
-Load the local file and preserve its row order. The source row is a record
-position, not a time coordinate or evidence of independent sampling:
+## Load and scale measurements
 
 ```wl
 rows = DeleteCases[Import[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "iris.csv"}], "CSV"], {} | {""}];
@@ -42,24 +31,8 @@ speciesRows = Flatten[Position[species, #]] & /@ speciesNames;
     "CompleteNumericMatrix" -> MatrixQ[measurements, NumericQ]|>
 ```
 
-First inspect the four distributions. Use the same 0.2 cm bin width so the
-horizontal scales retain their measurement meaning:
-
-```wl
-GraphicsGrid[Partition[Table[Histogram[measurements[[All, j]], {0.2},
-    AxesLabel -> {variableNames[[j]] <> " (cm)", "records"}], {j, 4}], 2]]
-```
-
-All four variables share a physical unit, but they have different spreads.
-A variable with a larger spread can contribute more to squared Euclidean
-distance. That contribution is a mathematical weighting; it is not evidence
-that the variable is more biologically important.
-
-## Compare two explicitly defined geometries
-
-The first representation retains centimetres. The second subtracts each
-column mean and divides by its sample standard deviation. A difference of one
-in the second representation means one standard deviation in this file:
+Compare centimetres with standardized values: subtract each variable's mean
+and divide by its sample standard deviation.
 
 ```wl
 standardized = Standardize[measurements];
@@ -67,15 +40,13 @@ TableForm[{Mean[measurements], StandardDeviation[measurements]},
     TableHeadings -> {{"mean (cm)", "standard deviation (cm)"}, variableNames}]
 ```
 
-These means and scales were fitted to all 150 records for description. A
-predictive analysis must estimate them using training records and apply those
-same values to held-out records. A zero-variance variable would require an
-explicit decision before dividing; none occurs in this file.
+Standardization changes how variables contribute to distance. All scales here
+use the full dataset; a predictive workflow must fit them on training data only.
+No variable has zero variance in this file.
 
-[PrincipalComponents](https://reference.wolfram.com/language/ref/PrincipalComponents.html)
-forms uncorrelated linear combinations ordered by their variance. Apply its
-covariance method to both representations, rather than allowing an implicit
-change of scale:
+## Compare principal components and distances
+
+Use the covariance method for both representations:
 
 ```wl
 rawScores = PrincipalComponents[measurements, Method -> "Covariance"];
@@ -86,12 +57,8 @@ Grid[{MapThread[Function[{scores, label}, ListPlot[scores[[#, {1, 2}]] & /@ spec
     {"centimetre variables", "standardized variables"}}]}]
 ```
 
-The projection is a new coordinate system, not a biological trajectory.
-Component signs can reverse without changing the geometry. Coloured groups
-show how the supplied species labels sit in the projection; their appearance
-is not a measured classification accuracy.
-
-Count the fraction of total variance represented by each component:
+Components are linear combinations, not biological trajectories. Their signs
+are arbitrary. Compare the variance fractions:
 
 ```wl
 BarChart[Transpose[Normalize[Variance[#], Total] & /@ {rawScores, scaledScores}],
@@ -99,16 +66,8 @@ BarChart[Transpose[Normalize[Variance[#], Total] & /@ {rawScores, scaledScores}]
     ChartLegends -> {"centimetre variables", "standardized variables"}, AxesLabel -> {None, "variance fraction"}]
 ```
 
-The denominator changes when variables are standardized. A larger first
-component fraction in one representation does not make that representation
-scientifically preferable. It says how concentrated variance is under that
-choice of weighting.
-
-## Inspect distances before assigning groups
-
-Compute all pairwise Euclidean distances in the four-dimensional spaces. The
-rows and columns stay in source order in both panels; the diagonal compares a
-record with itself. The two colour scales have different units:
+Each representation has its own total variance. A larger first-component
+fraction does not make a scale biologically preferable.
 
 ```wl
 Grid[{MapThread[MatrixPlot[DistanceMatrix[#1], PlotLegends -> Automatic,
@@ -116,19 +75,15 @@ Grid[{MapThread[MatrixPlot[DistanceMatrix[#1], PlotLegends -> Automatic,
     {{measurements, standardized}, {"distance in cm", "standardized distance"}}]}]
 ```
 
-Source ordering puts the species blocks together, making the block structure
-easy to see. Reordering records changes this display but does not change any
-pairwise distance. Both matrices summarize measurements; neither describes a
-causal connection between plants.
+Distance matrices use source row order and separate color scales. Species are
+grouped in the source file, which makes blocks visible; reordering rows changes
+the display, not the distances.
 
-## Separate scale sensitivity from algorithm sensitivity
+## Check clustering sensitivity
 
-For a controlled comparison, request three k-means clusters in each
-representation and repeat seeds 1 through 20. The requested count is an
-analysis setting, not an estimated number of biological types. Specify
-Euclidean distance so that the clustering function does not automatically
-preprocess the supplied representation. This behavior and the seed option are
-documented by [ClusteringComponents](https://reference.wolfram.com/language/ref/ClusteringComponents.html).
+Request three k-means groups with Euclidean distance and repeat seeds 1–20.
+The number of groups is an assumption. Each heat-map value is the fraction of
+runs assigning a pair to the same group:
 
 ```wl
 seeds = Range[20];
@@ -140,16 +95,8 @@ GraphicsRow[MapThread[MatrixPlot[Mean[coassignment /@ #1], PlotRange -> {0, 1}, 
     {clusterRuns, {"centimetre variables", "standardized variables"}}]]
 ```
 
-A coassignment fraction is the proportion of these 20 runs in which two
-records belong to the same cluster. It avoids comparing arbitrary cluster
-numbers: renaming cluster 1 to cluster 2 changes no pair relation. Intermediate
-values identify pairs whose grouping changes across the chosen seeds. The
-fraction measures algorithmic sensitivity in this experiment, not a biological
-probability or sampling uncertainty.
-
-Quantify changes using every distinct unordered pair of records, excluding
-the diagonal. For each seed, compare the pair relations to seed 1 in the same
-representation. Also compare the two representations at seed 1:
+Comparing pair membership avoids arbitrary cluster numbers. Measure changes
+relative to seed 1, then compare scales at seed 1:
 
 ```wl
 recordPairs = Subsets[Range[Length[measurements]], {2}];
@@ -159,29 +106,26 @@ ListLinePlot[Table[disagreement[First[runs], run], {runs, pairRuns}, {run, runs}
     PlotLegends -> {"centimetre variables", "standardized variables"}]
 ```
 
+Compare scaling at a fixed seed:
+
 ```wl
 <|"RecordPairs" -> Length[recordPairs],
     "FractionChangedByScalingAtSeed1" -> disagreement[pairRuns[[1, 1]], pairRuns[[2, 1]]]|>
 ```
 
-The comparison holds the dataset and requested cluster count fixed. It does
-not cover uncertainty from sampling, measurement error, alternative distance
-functions or other cluster counts. A robust-looking clustering under these
-seeds can still change under those choices.
+These fractions measure sensitivity to the chosen seeds and scaling, not
+biological probabilities. Sampling, measurement error, distance choice and
+cluster count remain other sources of uncertainty.
 
-## Carry the representation into the next question
-
-The useful result is a recorded chain: source rows and units, fitted means and
-scales, the distance definition, requested cluster count and random seeds.
-[Discretizing Biological Measurements](paclet:WolframInstitute/BioDataLink/tutorial/DiscretizingBiologicalMeasurements)
-asks what happens when those continuous measurements become finite states.
-[Exploring Simple Predictive Rules](paclet:WolframInstitute/BioDataLink/tutorial/ExploringSimplePredictiveRules)
-uses a separate training and held-out workflow when the question is prediction.
+Retain units, fitted scales, distances, cluster count and seeds. For thresholded
+states, continue with
+[Discretizing Biological Measurements](paclet:WolframInstitute/BioDataLink/tutorial/DiscretizingBiologicalMeasurements);
+for held-out evaluation, use
+[Exploring Simple Predictive Rules](paclet:WolframInstitute/BioDataLink/tutorial/ExploringSimplePredictiveRules).
 
 ## Initialization
 
-Evaluate these helper definitions before the examples above. The data choices
-and analysis parameters remain in the main examples.
+Helpers compare pair membership across clusterings:
 
 ```wl
 coassignment[assignment_] := Outer[Boole[#1 == #2] &, assignment, assignment];

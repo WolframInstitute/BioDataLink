@@ -5,24 +5,20 @@ Context: WolframInstitute`BioDataLink`
 Paclet: WolframInstitute/BioDataLink
 URI: WolframInstitute/BioDataLink/ref/BioDatasetInfo
 Keywords: [catalog, metadata, provenance, identifiers]
-SeeAlso: [Association, BioDatasetDownload, BioDatasetLoad, BioDatasetSearch]
+SeeAlso: [BioDatasetDownload, BioDatasetLoad, BioDatasetSearch, Association]
 RelatedGuides: [BioDataLink, Catalog]
 RelatedTutorials: [ExploringBiologicalData]
 ---
 
 ## Usage
 
-<code>[BioDatasetInfo]()[{*provider*, *id*}]</code> gives the bundled catalog record for the specified provider and identifier.
+<code>[BioDatasetInfo]()[{*provider*, *id*}]</code> gives the bundled metadata for a dataset.
 
-## Details & Options
+## Details
 
-- The result is an `Association` containing the complete record.
-- Both *provider* and *id* are case-sensitive strings.
-- Information comes from the bundled catalog; this operation performs no network request.
-- Pertpy identifiers are data-loader names, not repository accessions. Multiple records can refer to files or processed versions from the same study.
-- Descriptions and links are extracted from the source. BioDataLink has not independently reviewed them as scientific annotations.
-- An unknown pair gives a `Failure` with tag `"UnknownDataset"`.
-- The catalog records these fields:
+- The result is an `Association` obtained without a network request.
+- *provider* and *id* are case-sensitive strings. Pertpy IDs are loader names, not repository accessions.
+- Returned properties include:
 
 | | |
 | --- | --- |
@@ -34,43 +30,37 @@ RelatedTutorials: [ExploringBiologicalData]
 | `"DownloadURLs"` | Data-file links recorded from the source loader |
 | `"NativeImportSupported"` | Whether this catalog entry advertises a verified import route |
 
-- Source links are metadata. This function neither downloads those files nor verifies that a remote server is currently available.
-- `"Organism"` is `Missing["NotAvailable"]` throughout the current catalog because the source lacks structured organism annotations. This does not imply that the underlying studies lack organism information.
-- `"NativeImportSupported"` is `False` for all current Pertpy records.
-- A general H5AD reader does not by itself verify every provider file. The catalog flag remains separate from format support and optional-interpreter availability.
+- Descriptions and links are source declarations. Several records can refer to one study.
+- Current Pertpy records have `"NativeImportSupported" -> False` and `"Organism" -> Missing["NotAvailable"]`.
+- A catalog record does not establish a verified download or import. Missing catalog metadata do not imply missing study information.
 
 ## Basic Examples
 
-Inspect the record for Pertpy's `"norman_2019"` loader:
+Get a catalog record's identifier and title:
 
 ```wl
-BioDatasetInfo[{"Pertpy", "norman_2019"}]
+KeyTake[BioDatasetInfo[{"Pertpy", "norman_2019"}], {"Provider", "ID", "Title"}]
 ```
 
 ## Scope
 
-Inspect the source citation alongside an unavailable organism annotation:
+Get reported organism and citation metadata:
 
 ```wl
 KeyTake[BioDatasetInfo[{"Pertpy", "norman_2019"}], {"ID", "Organism", "Citation"}]
 ```
 
-Keep `Missing["NotAvailable"]` as unknown. A citation or a familiar study title
-does not supply a structured organism annotation that can safely be inferred
-by this function.
-
 ## Applications
 
-Inspect file links for two versions associated with one study:
+Compare download links for two file variants:
 
 ```wl
 Dataset[KeyTake[BioDatasetInfo[{"Pertpy", #}], {"ID", "DownloadURLs"}] & /@ {"norman_2019", "norman_2019_raw"}]
 ```
 
-These are source-declared links. The metadata lookup neither transfers the
-files nor verifies that their processing makes them suitable for a comparison.
+---
 
-Retain the source revision alongside a selected identifier:
+Record the catalog revision:
 
 ```wl
 KeyTake[BioDatasetInfo[{"Pertpy", "norman_2019"}], {"Provider", "ID", "SourceRevision", "DocumentationURL"}]
@@ -78,7 +68,7 @@ KeyTake[BioDatasetInfo[{"Pertpy", "norman_2019"}], {"Provider", "ID", "SourceRev
 
 ## Possible Issues
 
-An unknown source identifier gives a structured failure:
+Unknown identifiers give `Failure["UnknownDataset", ...]`:
 
 ```wl
 BioDatasetInfo[{"Pertpy", "no-such-biodatalink-dataset"}]

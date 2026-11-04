@@ -10,30 +10,16 @@ RelatedGuides: [BioDataLink, DataAccess]
 RelatedTutorials: [DownloadingBiologicalData]
 ---
 
-Can a small, readable program predict a species label from floral measurements?
-This tutorial enumerates a finite family of threshold rules, measures every
-candidate on training records, and evaluates one selected rule on held-out
-records. All inputs use the attributed Iris file bundled with BioDataLink;
-no network access, Python session or additional paclet is required.
+Predict `Iris-virginica` versus the other two Iris labels using petal length
+and width. Enumerate simple threshold rules, select one on training data and
+evaluate it once on held-out records.
 
-The inspiration is Ruliology's practice of examining a whole finite rule space
-and Ruliobiology's separation of rules, states and measurements. Here a rule
-maps two measurements to a label. It is not a developmental update rule: the
-table contains neither time series nor interventions. A successful prediction
-does not identify the mechanism that produced a flower.
+The bundled [UCI Iris file](https://archive.ics.uci.edu/dataset/53/iris)
+(CC BY 4.0) preserves UCI's distributed values. The analysis predicts labels
+from static measurements; it does not identify developmental mechanisms.
+Evaluate **Initialization**, then run the examples in order.
 
-Evaluate the final Initialization group, then load the data below. Later inputs
-reuse the named data and analysis results introduced in the text.
-
-## Pin the measurements and the question
-
-The [UCI Iris description](https://archive.ics.uci.edu/dataset/53/iris) specifies
-150 plant records, four measurements in centimetres, and three species labels.
-It also records differences between the distributed file and Fisher's article.
-We retain the distributed values. The bundled provenance records the source,
-CC BY 4.0 license, retrieval date and a locally computed content hash.
-
-Load that provenance and check the bytes before interpreting the columns:
+## Check and load the data
 
 ```wl
 irisFile = FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "iris.csv"}];
@@ -42,10 +28,8 @@ If[FileHash[irisFile, "SHA256", "HexString"] =!= provenance["SHA256"], Abort[]];
 KeyTake[provenance, {"Title", "DOI", "License", "SHA256"}]
 ```
 
-Read nonblank records. The source file has no header; its variable definitions
-assign the third and fourth columns to petal length and width. The response is
-1 for `Iris-virginica` and 0 for the other two source labels combined. This
-binary question and these two predictors are fixed before the search.
+Columns three and four contain petal measurements in centimetres. Set the
+response to 1 for virginica and 0 for the other labels:
 
 ```wl
 irisRows = DeleteCases[Import[irisFile, "CSV"], {} | {""}];
@@ -56,20 +40,10 @@ Dataset[MapIndexed[<|"SourceRow" -> First[#2], "PetalLengthCm" -> #1[[3]], "Peta
     "Species" -> #1[[5]]|> &, Take[irisRows, 5]]]
 ```
 
-`SourceRow` is the nonblank record position, not a biological accession.
-There is no scaling, imputation or biological normalization in this workflow.
+## Split before selecting a rule
 
-## Separate training from evaluation
-
-Randomly assign 35 records from each original species to training, leaving
-15 from each for evaluation. Stratification preserves the supplied species
-counts in both partitions. It does not establish independent sampling or
-representativeness of an external plant population.
-
-[BlockRandom](https://reference.wolfram.com/language/ref/BlockRandom.html)
-isolates the random-generator state. An explicit seed and generator make the
-split reproducible in the tested Wolfram Language version. Retain the row
-indices as part of an analysis record when sharing results.
+Use 35 records per source species for training and 15 for testing. Retain the
+seed, generator and row indices:
 
 ```wl
 split = BlockRandom[SeedRandom[20261104, Method -> "MersenneTwister"];
@@ -80,34 +54,16 @@ trainY = response[[split["Train"]]];
 Dataset[<|"Records" -> Length[#], "SourceSpeciesCounts" -> Counts[species[[#]]]|> & /@ split]
 ```
 
-The training partition has 105 records; the held-out partition has 45.
-Only the training measurements and labels enter the next figures and search.
-All mistakes receive equal cost per record, so the two source species merged
-into “rest” jointly receive twice the weight of virginica in this split.
+Training has 105 records; testing has 45. Equal error costs give the combined
+“rest” class twice virginica's weight. The split does not establish independent
+sampling or representativeness of new populations.
 
-```wl
-classNames = {"rest", "virginica"};
-ListPlot[Table[Pick[trainX, trainY, class], {class, {0, 1}}],
-    AxesLabel -> {"petal length (cm)", "petal width (cm)"}, PlotLegends -> classNames]
-```
+## Enumerate threshold rules
 
-The overlapping region is important: a cutoff can make errors even when
-measurements and labels are recorded correctly.
-
-## Define a finite program family
-
-Consider five forms: a constant prediction, a length cutoff, a width cutoff,
-the AND of both cutoffs, and the OR of both cutoffs. A comparison uses strict
-`>`; equality follows the false branch. The family contains only increasing
-thresholds. It excludes negative comparisons, additional predictors, oblique
-boundaries and longer programs. Enumeration will be complete within this
-declared family, not among all possible classifiers.
-
-For each measurement, place candidate thresholds halfway between consecutive
-distinct training values. These gaps enumerate the distinct nonconstant
-training partitions for a single increasing cutoff. They are not estimated
-physical transition points, and other locations within a gap can differ on
-new measurements. Constant programs supply the two extreme predictions.
+Consider constants, a length cutoff, a width cutoff, and their AND/OR
+combinations. Use strict `>`; equality follows the false branch. Cutoffs are
+midpoints between distinct training values. This is a complete search only
+within this increasing-threshold family.
 
 ```wl
 lengthCuts = midpoints[trainX[[All, 1]]];
@@ -122,22 +78,8 @@ orErrors = Outer[Plus, lengthErrors, widthErrors] - andErrors;
     "Programs" -> 2 + Length[lengthCuts] + Length[widthCuts] + 2 Length[lengthCuts] Length[widthCuts]|>
 ```
 
-The rows of `lengthPass` and `widthPass` are binary predictions, calculated
-once per cutoff. Multiplication implements AND; `a + b - a b` implements OR
-for binary values. The OR error identity reuses the single-cutoff and AND
-counts. [Outer](https://reference.wolfram.com/language/ref/Outer.html) evaluates
-all pairs without repeating file reads or building a symbolic classifier for
-each record. The matrices are small enough to inspect directly.
-
-## Map the rule space
-
-Each heatmap cell is one pair of training-derived cutoffs. The vertical axis
-is the length cutoff; the horizontal axis is the width cutoff. Both panels
-use the same error scale; their legends count training mistakes.
-These are discrete candidates; the display does not interpolate a continuous
-loss surface.
-Cells are equally spaced by cutoff index; the tick labels give the cutoff
-values in centimetres, rather than implying equally spaced measurements.
+Plot training errors for all cutoff pairs. Both panels share an error scale;
+cells are equally spaced by index, with cutoff values in centimetres:
 
 ```wl
 With[{errorRange = MinMax[{andErrors, orErrors}]},
@@ -148,14 +90,13 @@ With[{errorRange = MinMax[{andErrors, orErrors}]},
         {{andErrors, orErrors}, {"AND rule", "OR rule"}}]}], BarLegend[{"GrayTones", errorRange}]]]
 ```
 
-Broad low-error regions mean several programs fit these training observations
-similarly. A sharp minimum does not establish a unique biological mechanism.
+Several rules can fit similarly. A good fit does not identify a unique mechanism.
 
-## Trade prediction errors against program size
+## Select and freeze one rule
 
-Represent each candidate explicitly. Complexity is the number of threshold
-comparisons: 0, 1 or 2. This is a simple, declared description of this grammar,
-not a universal program-length measure; AND and OR have equal complexity here.
+Define complexity as the number of comparisons. Fix the objective to training
+errors plus two per comparison, then break ties by fewer comparisons and
+enumeration ID:
 
 ```wl
 programs = candidatePrograms[trainY, lengthCuts, widthCuts, lengthErrors, widthErrors, andErrors, orErrors];
@@ -167,12 +108,7 @@ bestBySize = Table[First[SortBy[Select[scoredPrograms, #["Comparisons"] === size
 Dataset[bestBySize]
 ```
 
-Before looking at held-out predictions, fix the objective as training errors
-plus two error-count units per comparison. This penalty is an illustrative
-preference for shorter programs, not a parameter optimized on these data.
-Select the smallest objective; break ties by fewer comparisons and then the
-enumeration ID. Changing the grammar or penalty after inspecting evaluation
-results would make that evaluation part of model selection.
+Select a rule and compare error with complexity:
 
 ```wl
 chosen = First[SortBy[scoredPrograms, {#["Objective"] &, #["Comparisons"] &, #["ID"] &}]];
@@ -181,37 +117,17 @@ ListLinePlot[{Lookup[bestBySize, "TrainErrors"], Lookup[bestBySize, "Objective"]
     PlotLegends -> {"training errors", "penalized objective"}]
 ```
 
-The plot shows training fit and the fixed complexity cost. It does not show
-held-out errors for competing programs. Keeping final evaluation separate
-from selection addresses the selection-bias problem discussed by
-[Cawley and Talbot (2010)](https://www.jmlr.org/papers/v11/cawley10a.html).
-
-Inspect the frozen rule before opening the evaluation partition:
+Inspect the selected rule:
 
 ```wl
 Dataset[{chosen}]
 ```
 
-With this file and split, the selected program predicts virginica when petal
-length exceeds 4.95 cm OR petal width exceeds 1.65 cm. It makes three training
-errors, giving objective 7. The best one-comparison program makes six training
-errors, giving objective 8, so the extra comparison is retained under the
-declared penalty.
+The selected rule predicts virginica when petal length > 4.95 cm **or** width
+> 1.65 cm. It makes three training errors (objective 7); the best single-cutoff
+rule makes six (objective 8).
 
-## See what each additional comparison changes
-
-Make the increase in expressiveness concrete before evaluating predictions.
-At size zero, a constant rule gives every record the same label. One comparison
-cuts the measurement plane with a single horizontal or vertical line. Two
-comparisons can combine a length and width condition using AND or OR. In this
-grammar that creates a rectangular intersection or an L-shaped union; it does
-not permit an arbitrary curved boundary.
-
-Compare the best training program at each size using the helper definitions
-in Initialization. All three panels use the same training records, domain,
-axes and colors.
-No held-out labels enter this comparison. Shading marks predictions of virginica;
-point colors distinguish the source labels in their earlier order.
+Compare the best training rule at each size on the same domain:
 
 ```wl
 With[{lengthRange = MinMax[trainX[[All, 1]]] + {-0.4, 0.4}, widthRange = MinMax[trainX[[All, 2]]] + {-0.2, 0.2}},
@@ -223,21 +139,13 @@ With[{lengthRange = MinMax[trainX[[All, 1]]] + {-0.4, 0.4}, widthRange = MinMax[
         PlotLabel -> Row[{program["Comparisons"], " comparisons"}]], {program, bestBySize}]]]
 ```
 
-The constant baseline makes 35 training errors, the best single comparison
-makes six, and the best two-comparison rule makes three. The second comparison
-adds a specific representational ability and reduces training errors by three;
-the previously declared penalty charges two for that addition. This connects
-the decision-region pictures to the numerical selection criterion.
+Keep the grammar and penalty fixed before testing. Choosing them after seeing
+test results leaks evaluation data into model selection
+([Cawley and Talbot 2010](https://www.jmlr.org/papers/v11/cawley10a.html)).
 
-Longer formulas or additional predictors would define a larger family. They
-would need a fresh training/validation design before interpreting a comparison
-as evidence of improved prediction. A more elaborate decision boundary is not
-evidence of a more realistic biological mechanism.
+## Evaluate once and retain the record
 
-## Evaluate the frozen rule once
-
-Apply only `chosen` to the held-out measurements. Subsequent figures reuse
-these predictions.
+Apply only the frozen rule to held-out measurements:
 
 ```wl
 testX = measurements[[split["Test"]]];
@@ -248,49 +156,22 @@ With[{errors = Total[Abs[testPredictions - testY]]},
         "AlwaysRestAccuracy" -> N[Count[testY, 0]/Length[testY]]|>]
 ```
 
-The constant “rest” baseline is correct for two thirds of this partition.
-The selected program makes no mistakes among these 45 held-out records; zero
-observed errors does not imply zero error risk.
-Repeated feature pairs can occur in both partitions; this is evaluation on
-held-out records, not necessarily on previously unseen measurement pairs.
-One held-out result on a small, familiar benchmark is not an estimate of
-performance across other locations, acquisition methods or plant populations.
-The source does not provide collection groups that would support a separate
-group-based split here.
+It makes zero errors among these 45 records; the always-rest baseline scores
+two thirds. Zero observed errors does not imply zero future risk. Identical
+feature pairs may occur in both partitions, and this split does not test
+transfer across locations, acquisition methods or populations.
 
-Plot the region predicted as virginica beside the held-out observations.
-Point colors indicate source labels. This split has no mistakes
-to highlight. The display domain is set from training
-ranges plus a fixed margin, before any held-out plotting choices.
+Rows of the confusion matrix are observed labels; columns are predictions:
 
 ```wl
-With[{lengthRange = MinMax[trainX[[All, 1]]] + {-0.4, 0.4}, widthRange = MinMax[trainX[[All, 2]]] + {-0.2, 0.2}},
-    Show[RegionPlot[ruleCondition[chosen, length, width],
-            {length, First[lengthRange], Last[lengthRange]}, {width, First[widthRange], Last[widthRange]}],
-        ListPlot[Table[Pick[testX, testY, class], {class, {0, 1}}], PlotLegends -> classNames],
-        FrameLabel -> {"petal length (cm)", "petal width (cm)"}]]
-```
-
-Nearby measurements can fall on opposite sides of a threshold. That is a
-property of this program family; it does not imply that a plant changes
-species when a measured petal width crosses the fitted cutoff.
-
-## Distinguish the two kinds of error
-
-Rows in the confusion matrix are observed labels; columns are predictions.
-The upper-right cell counts non-virginica records predicted as virginica.
-The lower-left cell counts virginica records predicted as the other class.
-The color scale reports record counts, not percentages.
-
-```wl
+classNames = {"rest", "virginica"};
 confusion = Table[Count[Transpose[{testY, testPredictions}], {observed, predicted}],
     {observed, {0, 1}}, {predicted, {0, 1}}];
 MatrixPlot[confusion, PlotLegends -> Automatic, FrameLabel -> {"observed label", "predicted label"},
     FrameTicks -> {{Transpose[{Range[2], classNames}], None}, {Transpose[{Range[2], classNames}], None}}]
 ```
 
-Keep the split, the entire declared search family and the selected rule with
-the result, rather than retaining accuracy alone:
+Record the data split and selected model:
 
 ```wl
 analysisRecord = <|"DataSHA256" -> provenance["SHA256"],
@@ -307,34 +188,15 @@ analysisRecord = <|"DataSHA256" -> provenance["SHA256"],
 KeyTake[analysisRecord, {"ProgramCount", "SelectedRule", "HeldOutConfusionMatrix"}]
 ```
 
-## What transfers to richer biological data
-
-The transferable workflow is to retain source definitions, declare an
-interpretable model family, enumerate it efficiently, and separate choosing a
-rule from evaluating it. A next experiment could use grouped training and
-evaluation records from a new study, or a predeclared richer grammar. A new
-grammar or penalty chosen after seeing these results needs fresh evaluation
-data or a properly nested selection procedure.
-
-Ruliology's
-[rule-space tutorial](https://www.wolframcloud.com/obj/wolframinstitute/DeployedResources/Paclet/WolframInstitute/Ruliology/Documentation/tutorial/AnalyzingCellularAutomatonRuleSpace.html)
-examines compatible update rules and changes between rules. Ruliobiology's
-[FiniteCellularAutomaton](https://www.wolframcloud.com/obj/wolframinstitute/DeployedResources/Paclet/WolframInstitute/Ruliobiology/Documentation/ref/FiniteCellularAutomaton.html)
-and [AdaptiveCellularAutomaton](https://www.wolframcloud.com/obj/wolframinstitute/DeployedResources/Paclet/WolframInstitute/Ruliobiology/Documentation/ref/AdaptiveCellularAutomaton.html)
-simulate specified dynamical systems and search over their behavior. Those
-are useful directions when observations include actual state transitions and
-the observation process is explicit. Their APIs are not called in this
-example, and prediction from a cross-sectional table does not validate a
-cellular-automaton model of a plant.
-
-Causal questions require an explicit causal model and supporting assumptions,
-as described in [Pearl (2009)](https://ftp.cs.ucla.edu/pub/stat_ser/r350.pdf).
-The threshold programs here describe a predictive association only.
+Retain source hash, split, search family, cutoffs, penalty, tie rules and the
+confusion matrix. Changing the model family after this evaluation requires new
+evaluation data or a nested selection procedure. Biological datasets with
+multiple observations per donor need splits that respect those groups.
 
 ## Initialization
 
-Evaluate these helper definitions before the examples above. The data choices
-and analysis parameters remain in the main examples.
+Helpers generate cutoff candidates, express each rule and enumerate its
+training score:
 
 ```wl
 midpoints[values_] := Mean /@ Partition[Union[values], 2, 1];

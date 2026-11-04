@@ -13,29 +13,19 @@ RelatedTutorials: [ExploringBiologicalData, FindingDataSources]
 
 ## Abstract
 
-The bundled catalog contains 55 entries extracted from a fixed revision of
-Pertpy's data loaders. Search runs locally and returns source descriptions and
-links; it does not retrieve expression matrices. A provider and identifier
-select one complete record. These descriptions are source-declared metadata,
-not scientific annotations reviewed by BioDataLink.
+Search the bundled Pertpy catalog and inspect source metadata offline.
+Records describe loaders and file variants; catalog inclusion does not
+establish a verified download or import.
 
-A study can produce several datasets or processed versions, each stored in one
-or more data files. A repository accession identifies a record at its source.
-The Pertpy identifiers used here are loader names, not repository accessions:
-55 catalog entries do not imply 55 independent studies. Inspect the linked
-source to establish the study, assay, processing and citation.
-
-For live BioStudies and GEO metadata queries, see
-[Online Study Search](paclet:WolframInstitute/BioDataLink/guide/Providers).
-Live results are separate from the records in this offline catalog.
+WL denotes a built-in Wolfram Language function.
 
 ## Functions
 
 ### Dataset Discovery
 
-- `BioDatasetInfo` inspect one record by provider and identifier
-- `BioDatasetSearch` find records by text, provider and organism
-- `Dataset` (WL) query returned metadata
+- `BioDatasetInfo` get a catalog record and its provenance
+- `BioDatasetSearch` search the bundled dataset catalog
+- `Dataset` (WL) query and display structured metadata
 
 ## References
 

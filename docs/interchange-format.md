@@ -1,8 +1,7 @@
 # BioDataLink JSON version 1
 
-`BioDatasetLoad[File[path]]` reads a local JSON object with this structure. The
-initial format represents one cells-by-genes numerical matrix with ordered
-metadata. It does not read H5AD files or preserve every part of an AnnData object.
+`BioDatasetLoad[File[path]]` reads one cells-by-genes matrix with ordered
+metadata. This JSON format is separate from the optional H5AD reader.
 
 | Field | Contract |
 | --- | --- |
@@ -14,47 +13,33 @@ metadata. It does not read H5AD files or preserve every part of an AnnData objec
 | `Normalization` | Nonblank string declaring the measurement scale or processing state |
 | `Provenance` | Object including nonblank `Source` and `Citation` strings |
 
-Each sparse coordinate appears at most once and lies within `Shape`. Values
-must be finite nonzero numbers. With `Normalization` set to `Counts`, stored
-entries must be positive integers; the complete matrix is nonnegative because
-unlisted entries are zero. Cell and gene identifiers are unique within their
-own axis; an identifier may occur on both axes.
+Coordinates must be unique and within `Shape`; values must be finite and
+nonzero. `Counts` requires positive stored integers. Metadata lengths must
+match the axes. IDs are unique within each axis but may occur on both axes.
 
 ## Zero values and missing measurements
 
-Every unlisted coordinate becomes numerical zero on the declared measurement
-scale. Version 1 has no missing-value mask: it cannot distinguish zero from
-an unknown value or a gene that was not measured. Do not export such values by
-omitting them. Data with unknown entries need a representation that preserves
-that distinction, or an explicitly documented selection with no unknown entries.
+Every omitted coordinate becomes zero. Version 1 has no missing-measurement
+mask: do not omit unknown or unmeasured entries as though they were zeros.
+Use another representation or an explicitly documented complete selection.
 
-A zero in a count matrix means no count was recorded at that position, not that
-the transcript was necessarily absent from the cell. Sparse storage describes
-how numbers are stored; it does not explain why zeros occur. The distinction
-also matters when combining studies: for example, CELLxGENE Census keeps a
-separate record of which genes were measured in each dataset. See the
-[Census schema](https://chanzuckerberg.github.io/cellxgene-census/cellxgene_census_docsite_schema.html).
+A recorded zero does not prove transcript absence. When combining studies,
+retain assay coverage; for example, the
+[Census schema](https://chanzuckerberg.github.io/cellxgene-census/cellxgene_census_docsite_schema.html)
+stores gene measurement presence separately.
 
 ## Measurement scale and identifiers
 
-`Counts` is a declaration from the file's author. The reader checks integer
-values but cannot establish whether they count sequencing reads or molecules,
-or whether preprocessing has altered them. Both read and molecule counts occur
-in single-cell repositories, including
-[CELLxGENE Census](https://chanzuckerberg.github.io/cellxgene-census/cellxgene_census_docsite_schema.html).
-Other `Normalization` labels are retained without interpreting or verifying
-the claimed transformation. The reader never normalizes values.
+`Normalization` and provenance are declarations. Integer validation does not
+establish reads versus molecules or unprocessed counts. Other scale labels
+are retained without checking the transformation; import never normalizes.
 
-Record the assay, counting method, selected source layer and transformations
-alongside the source accession and release. For gene identifiers, include the
-identifier namespace, organism and reference version when known. Cell labels
-must retain the relationship to their samples and experimental conditions.
-Unique labels allow alignment; they do not verify gene identity, cell type,
-biological replication or comparability of measurements.
+Record assay, counting method, layer, processing, accession and release.
+Retain gene namespace, organism and reference version when known, and link
+cells to samples and conditions. Unique labels establish alignment, not
+annotation accuracy, biological replication or comparability.
 
 ## Synthetic example
-
-This minimal file contains invented values and labels:
 
 ```json
 {
@@ -71,23 +56,13 @@ This minimal file contains invented values and labels:
 }
 ```
 
-The reader returns an association containing `ExpressionMatrix` as a
-`SparseArray`, `CellMetadata` and `GeneMetadata` as ordered `Dataset` objects,
-and `SchemaVersion`, `Normalization` and `Provenance`. It also records
-`SourceFile` and a SHA-256 `ContentHash` calculated from the same bytes that
-were parsed. This records local content identity, not agreement with an
-independently supplied source checksum.
+The result contains a sparse `ExpressionMatrix`, ordered `CellMetadata` and
+`GeneMetadata` datasets, schema version, declared scale and provenance.
+`SourceFile` and SHA-256 `ContentHash` identify the exact bytes parsed; the
+hash is not an independent upstream verification.
 
-The default `MaxFileBytes` limit is 10,000,000 bytes. File size, JSON structure,
-metadata alignment and sparse entries are checked before a result is returned.
-A malformed file produces a structured failure rather than a partial matrix.
-
-Files must use UTF-8 JSON. To bound numeric parsing, exponents in numerical
-values must lie between -10000 and 10000, inclusive. Larger exponent magnitudes
-give `Failure["UnsupportedNumericRange", ...]` before JSON parsing. This limit
-does not apply to text inside quoted strings.
-
-The required `Source` and `Citation` strings record declared provenance. Their
-presence does not establish correct attribution, data quality or scientific
-validity. The reader does not infer a reference genome or recover a missing
-citation. Check the original source and processing history before analysis.
+The whole-file limit defaults to 10,000,000 bytes. Malformed structure,
+misaligned metadata and invalid sparse entries return a structured failure.
+UTF-8 is required. Numeric exponents outside −10000 to 10000 give
+`Failure["UnsupportedNumericRange", ...]` before parsing; strings are unaffected.
+Required `Source` and `Citation` strings do not validate attribution or biology.

@@ -1,24 +1,18 @@
 # Contributing to BioDataLink
 
-Read [AGENTS.md](AGENTS.md) for repository layout and playbooks, and
-[GUIDE.md](GUIDE.md) for code, data and documentation conventions.
+See [AGENTS.md](AGENTS.md) for layout and playbooks and [GUIDE.md](GUIDE.md)
+for data, code and documentation conventions.
 
 ## Development environment
 
-Use Wolfram Language 15.0 or later, `wolframscript`, Python 3 and GNU Make or a
-compatible `make`. The catalog and ordinary metadata operations should be
-usable without Python biological-analysis packages. Optional provider backends
-must report their dependencies and tested versions separately.
-
-Documentation builds call PacletPage directly with the configured Markdown
-converter. The project keeps thin check/test/build entry points. Run
-`make bootstrap` explicitly to install missing documentation tooling. Provider
-data is not part of that bootstrap. Keep biological examples and default tests
-local and deterministic. See the build scripts for actual tool resolution.
+Use Wolfram Language 15.0+, `wolframscript`, Python 3 and Make. Core metadata
+operations need no Python biology packages. Install missing pinned documentation
+tools explicitly with `make bootstrap`; this does not fetch provider datasets.
+Default tests and evaluated documentation use local data.
 
 ## Load from source
 
-Start a fresh kernel and register the inner paclet directory:
+In a fresh kernel:
 
 ```wolfram
 PacletDirectoryLoad["/path/to/BioDataLink/BioDataLink"];
@@ -26,10 +20,8 @@ Needs["WolframInstitute`BioDataLink`"];
 FindFile["WolframInstitute`BioDataLink`"]
 ```
 
-Confirm that the resolved path belongs to the checkout before testing. An
-already loaded installed release can hide source changes; use a fresh kernel
-rather than trying to repair its symbol state. The test runner should load the
-checkout itself.
+Confirm the resolved path belongs to this checkout. An installed release already
+loaded in a kernel can hide edits; test runners register the checkout themselves.
 
 ## Check your work
 
@@ -41,168 +33,99 @@ checkout itself.
 | Python automation | `make python-tests` and affected command |
 | Build, packaging or release workflow | `make all` and review the resulting archive/workflow changes |
 
-`make test` runs all Wolfram tests; the `FILES` value accepts test paths relative
-to the repository. `make check-publish` validates local publication artifacts
-without deploying them. `make documentation-tests` verifies tutorial initialization
-and cached notebook builds. `make all` is the complete local validation target.
-Run `make help` for the maintained command list. The build index is maintained
-manually; source-file presence does not establish that tests or notebook
-verification passed.
+`make test FILES="..."` accepts paths relative to the repository.
+`make documentation-tests` checks tutorial initialization and caching;
+`make check-publish` validates artifacts without deployment. `make all` runs
+the complete local suite; `make help` lists commands.
 
-Use small offline fixtures for default tests. Keep live-provider checks
-explicit, bounded and separate from normal CI. Record dataset releases,
-checksums and actual observations for any live import that is tested. Do not
-represent a mock test as evidence that a remote service works.
-
-Report commands and outcomes, including missing runtimes, front-end access,
-optional dependencies and skipped checks. Rerun affected checks after the final
-edit. A failed parse or a test file with no executed tests is not a pass.
+Report commands, results and skipped checks. Rerun affected checks after the
+final edit. Parse errors and zero executed tests are not passes. Keep live
+checks bounded and opt-in, with source versions and observed results; fixtures
+do not establish provider availability.
 
 ## Optional runtime and transport checks
 
-The ordinary test suite does not require the H5AD Python environment. To test
-the selected H5AD reader explicitly, create or choose an isolated interpreter
-and install the pinned test requirements. Supply its absolute path for this
-command:
+Use an isolated interpreter for H5AD integration tests:
 
 ```sh
 /path/to/environment/bin/python -m pip install -r BioDataLink/Tests/Python/requirements.txt
 BIODATALINK_PYTHON=/path/to/environment/bin/python make h5ad-tests
 ```
 
-This runs Python encoding/selection checks and Wolfram-to-Python integration
-checks on local fixtures. The pinned requirements include AnnData for fixture
-validation; runtime reading uses h5py and NumPy. Nothing is installed by the
-paclet or the test target.
-
-Run the download transport checks separately:
+Tests include AnnData for independent fixtures; runtime reading uses h5py/NumPy.
+The paclet and test target do not install dependencies automatically.
 
 ```sh
 make download-tests
 ```
 
-These require curl 8.4 or later, OpenSSL, Python 3 and Wolfram Language. The
-checks create a temporary local HTTPS server and certificate to exercise
-streaming limits, redirects, failure cleanup and destination preservation. They
-do not establish the availability of an external data provider. Live provider
-checks remain explicit and separate.
+Download transport tests require curl 8.4+, OpenSSL, Python and Wolfram Language.
+They use a temporary loopback HTTPS server and certificate, not live providers.
 
 ## Style and documentation
 
-Use four-space indentation, descriptive `TestID` values and clear
-UpperCamelCase public names. Follow [GUIDE.md](GUIDE.md) for sparse matrices,
-axis identifiers, failure handling and option forwarding. Keep source metadata
-and returned values aligned across filtering and conversion.
+Use four-space indentation, descriptive test IDs and UpperCamelCase public
+names. Preserve sparsity, aligned metadata and option overrides. Edit Markdown
+under `docs/en/`, using the relevant [playbook](AGENTS.md#playbooks).
+Keep scientist-facing pages brief, with reproducibility and interpretation
+details; put implementation decisions and proposed APIs in design records.
 
-Edit documentation Markdown under `docs/en/`. Use the appropriate
-[playbook](AGENTS.md#playbooks). Keep proposed behavior in design records until
-its implementation and examples work. Notebook generation and visual inspection
-are separate checks; report both accurately.
-
-In Markdown, write a Wolfram context with double-backtick spans and spaces
-inside: `` WolframInstitute`BioDataLink` ``.
+Write contexts with double-backtick spans and spaces:
+`` WolframInstitute`BioDataLink` ``. Build and visually inspect executable docs.
 
 ## Git hooks and commits
 
-Enable the local hooks explicitly with `make hooks`. Inspect the hooks before
-changing their behavior; they run only for this checkout.
-
-Use Conventional Commits: `type(scope): subject`, at most 72 characters in the
-subject. Useful types are `feat`, `fix`, `docs`, `test`, `refactor`, `perf`,
-`build`, `ci`, `chore` and `style`. Keep changes focused and describe their
-observable effect and validation in the pull request. Preserve another
-contributor's uncommitted work. Follow the user's branch and commit instructions.
+Enable this checkout's hooks with `make hooks`; inspect before modifying them.
+Use Conventional Commits with subjects ≤72 characters. Keep changes focused,
+preserve others' work and follow the user's branch/commit instructions.
 
 ## Continuous integration
 
-Pull requests and main-branch pushes are checked by the workflows in
-`.github/workflows/`. CI path filters exclude changes confined to the root
-`README.md`; a change to any other file still triggers CI. README-only changes
-may use `[skip ci]`. Do not use skip markers when the push or pull request
-includes code, build configuration, executable documentation or any other file,
-even if its last commit changes only the README. Push CI configuration changes
-separately from a README commit carrying a skip marker. Manual CI dispatch
-remains available through `workflow_dispatch`.
+PRs and pushes to `main` run `.github/workflows/` checks. Only changes confined
+to root `README.md` may skip CI. Never use `[skip ci]` for mixed changes, even
+if the final commit only edits README. Manual dispatch remains available.
+Release gates still require successful push CI on the exact main commit.
 
-The release gate still requires successful main-branch push CI for the exact
-tagged commit. A README-only commit with skipped CI does not meet that gate.
-
-The Python validators run without a Wolfram license. Wolfram runtime and build
-jobs need an appropriate license entitlement configured for this repository.
-The shared license action configures `WOLFRAMINIT` for direct child kernels and
-checks that the entitlement permits a parent and fresh child kernel together.
-
-Repository setup is not evidence that hosted CI has run. Confirm the first
-hosted run after a remote and its secrets are configured. Keep credentials in
-GitHub Actions secrets, not committed files. Never copy another project's
-secret values or use its entitlement without authorization. The workflow files
-are the source of truth for exact variable names and environment gates.
+Python checks need no Wolfram license. Wolfram jobs require this repository's
+entitlement, including simultaneous parent/child kernels. Keep credentials in
+Actions secrets; never borrow another project's secrets or entitlement without
+authorization. Workflow files define exact variables and gates. Repository
+setup alone does not establish a successful hosted run.
 
 ## Releases
 
-Preparing, testing and building artifacts is local work. Publishing a GitHub
-release, pushing a release tag, or deploying to Wolfram Cloud requires a user
-request covering that action. Existing authorization remains valid for the
-requested release; do not ask again for each mechanical step.
+Publication requires a user request. Existing authorization covers necessary
+steps for that release; do not ask again for each step. Follow the
+[release playbook](.agent-skills/deploy-biodatalink/SKILL.md):
 
-Follow [deploy-biodatalink](.agent-skills/deploy-biodatalink/SKILL.md).
-Before an authorized release:
+1. Check existing tags and live version; update PacletInfo, CITATION and CHANGELOG together.
+2. Run `make all`; inspect notebooks and the archive in a fresh kernel.
+3. Require successful main-branch push CI for the exact commit before creating the annotated version tag.
+4. Watch the release and dependent Cloud publication workflows to completion.
+5. Verify version, source commit, installation and rendered documentation.
 
-1. Reconcile the intended version with existing tags and any published version.
-2. Update `BioDataLink/PacletInfo.wl`, `CITATION.cff` and `CHANGELOG.md` together.
-3. Run `make all` and inspect the archive and generated documentation.
-4. Ensure CI passed for the exact main-branch commit to be tagged.
-5. Create the version tag through the documented release workflow.
-
-The tag-driven release workflow requires a successful main-branch push CI run
-for the exact tagged commit and creates the GitHub release from that run's
-validated artifact. Its dependent publication job then calls the reusable
-Wolfram Cloud workflow. Publication independently verifies the released tag
-and the same CI requirement before authenticating to Cloud. A failed CI check
-prevents both release and publication; a failed release job prevents publication.
-
-Use the confirmed manual Publish dispatch only to retry publication of an
-already released tag. It applies the same CI and version gates. The
-`wolfram-cloud` environment can apply additional repository deployment rules.
-Consult the actual workflows before running either path. The publication job
-retains the verified version, source commit and public URLs as its `publication`
-artifact; credentials are never written there.
-
-Verify the resulting release version, source commit, installability and relevant
-rendered documentation after publication. If a publish run is interrupted,
-inspect its stage and remote metadata before retrying a write.
+The release attaches the verified CI artifact. Cloud independently checks the
+released tag and exact-commit CI before publishing. A confirmed manual Publish
+dispatch is only a retry for an already released tag under the same gates.
+Inspect actual workflows and any `wolfram-cloud` environment rules first.
+Retain the `publication` artifact with URLs/version/commit. After interruption,
+inspect stage and live metadata before retrying a write.
 
 ## Reviews and reproduction work
 
-Use the [review playbook](.agent-skills/review-biodata-changes/SKILL.md) for
-code and data-contract review, and the
-[review application playbook](.agent-skills/apply-expert-review/SKILL.md) for
-supplied findings. Keep issue status, current-code verdict, action and evidence
-separate. A rendered defect needs rendered verification; a provider defect
-needs evidence for that provider path.
-
-A published-result reproduction uses the
-[reproduction kit](.agent-skills/reproduce-published-paper/SKILL.md), including
-case, probe and issue-draft templates. Register exact claims and dataset
-revisions before running a probe. Record author code, preprocessing and
-conventions, and distinguish independent checks from agreement using the same
-input construction. Keep downloaded data and author code out of the repository.
-Draft issues locally; post only when the user requests external communication.
-
-The PureMath `develop` playbooks are the preferred source for these conventions.
-BioDataLink retains its current tooling and data-specific contract; a future
-optional-backend setup panel or reproduction showcase is added only when there
-is implemented behavior to demonstrate.
+Use the [review](.agent-skills/review-biodata-changes/SKILL.md),
+[review application](.agent-skills/apply-expert-review/SKILL.md) and
+[reproduction](.agent-skills/reproduce-published-paper/SKILL.md) playbooks.
+Keep source status, current-code verdict, action and evidence separate.
+Rendered defects need rendered checks; provider defects need that provider path.
+Register reproduction claims and exact inputs before probing. Shared data
+construction is not independent validation. Draft issues locally; post only
+when authorized. Keep downloads and author-code caches out of the repository.
 
 ## Source use and provenance
 
-Record dataset source, accession, version, retrieval date, checksum and citation
-where available. Keep unknown fields explicit. Do not commit large downloaded
-datasets or local caches. Synthetic fixtures must be labeled; a derived fixture
-must identify its source and transformation and be suitable for redistribution.
-Keep dataset license information separate from the paclet license.
-
-Use stable official documentation and paper links for source claims. Preserve
-qualifiers and distinguish published findings from examples reproduced here.
-Local documentation links must resolve to repository files; describe ignored
-scratch artifacts as paths rather than durable links.
+Record source, accession, revision, retrieval time, checksum and citation when
+available. Label synthetic fixtures and document derived selections and licenses.
+Keep unknowns explicit and dataset terms separate from MIT. Cite stable official
+sources, preserve qualifiers and distinguish reported findings from reproduced
+results. Local links must resolve; ignored scratch artifacts are not durable links.

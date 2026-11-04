@@ -13,61 +13,44 @@ RelatedTutorials: [AnalyzingSingleCellExpression, ChoosingMeasurementsToDistingu
 
 ## Abstract
 
-BioDataLink helps researchers find data sources across biological domains,
-construct links from identifiers and search public study metadata. Its bundled
-source directory spans biological and other domains and is not exhaustive.
-BioStudies and GEO queries run online; the source directory and Pertpy catalog
-can be searched offline.
+BioDataLink provides source discovery, study search, file downloads and local
+matrix import. It supports the Identifiers.org directory, Pertpy catalog,
+BioStudies and GEO metadata, BioDataLink JSON and selected AnnData H5AD data.
+Results retain identifiers, metadata and provenance.
 
-An explicit HTTPS file download can check an expected byte count and SHA-256
-before creating or replacing a local file. Local readers support BioDataLink
-JSON and selected matrices from supported H5AD files. The optional H5AD reader
-requires an explicitly configured Python interpreter and preserves the selected
-layer, axis positions and metadata.
-
-Transfer integrity and structural checks do not establish biological validity.
-Scientific interpretation depends on the assay, sampling and processing history.
-
-Worked case studies analyze real public data bundled with the paclet:
-single-cell expression in human blood, two conformations of an enzyme, a
-bacterial chromosome, three coronavirus genomes and an hourly liver time
-series. Each records its source, license and checksum.
-
-Finding a catalog record does not mean its data file can already be loaded.
-
-WL marks a built-in Wolfram Language function.
+WL denotes a built-in Wolfram Language function.
 
 ## Functions
 
 ### [Data Sources](paclet:WolframInstitute/BioDataLink/guide/Sources)
 
-- `BioDataSourceInfo` inspect registered identifier conventions and source endpoints
-- `BioDataSourceSearch` find registered sources in the bundled directory
-- `BioDataURL` construct a source resolver link from an identifier
+- `BioDataSourceInfo` inspect source metadata and identifier conventions
+- `BioDataSourceSearch` find registered data sources
+- `BioDataURL` construct a resolver URL from an accession
 
 ### [Online Study Search](paclet:WolframInstitute/BioDataLink/guide/Providers)
 
-- `BioDatasetQuery` search public BioStudies or GEO study metadata online
+- `BioDatasetQuery` search BioStudies or GEO study metadata
 
 ### [Catalog](paclet:WolframInstitute/BioDataLink/guide/Catalog)
 
-- `BioDatasetInfo` inspect a dataset's source and access metadata
-- `BioDatasetSearch` search the bundled catalog
+- `BioDatasetInfo` get a catalog record and its provenance
+- `BioDatasetSearch` search the bundled dataset catalog
 
 ### [Data Access](paclet:WolframInstitute/BioDataLink/guide/DataAccess)
 
-- `BioDatasetLoad` import a supported local expression file
-- `Dataset` (WL) explore cell and gene metadata
-- `SparseArray` (WL) represent sparse expression values
+- `BioDatasetLoad` import a local matrix with aligned metadata
+- `Dataset` (WL) query and display structured metadata
+- `SparseArray` (WL) represent arrays with implicit zero entries
 
 ### [Data File Downloads](paclet:WolframInstitute/BioDataLink/guide/Downloads)
 
-- `BioDatasetDownload` retrieve an explicit HTTPS file with byte limits and optional expected checksum
+- `BioDatasetDownload` download an HTTPS file with integrity checks
 
 ### [Computational Explorations](paclet:WolframInstitute/BioDataLink/guide/ComputationalExplorations)
 
-- `ClusteringComponents` (WL) compare explicit clusterings and their sensitivity
-- `DimensionReduce` (WL) map single cells while keeping their neighbors close
-- `PrincipalComponents` (WL) examine measurement geometry under a chosen scale
-- `Quantile` (WL) turn continuous measurements into recorded finite bins
-- `SequenceAlignment` (WL) compare genes and proteins between organisms
+- `ClusteringComponents` (WL) assign observations to clusters
+- `DimensionReduce` (WL) project measurements into fewer dimensions
+- `PrincipalComponents` (WL) compute principal components of measurements
+- `Quantile` (WL) find cutoffs for rank-based bins
+- `SequenceAlignment` (WL) align two sequences

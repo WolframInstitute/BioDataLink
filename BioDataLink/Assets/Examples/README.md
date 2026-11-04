@@ -1,41 +1,27 @@
 # Example data
 
+Data licenses are separate from the code's MIT license. Cite the original
+sources. Provenance records retain URLs, retrieval times, citations, licenses,
+hashes and transformations. Hashes identify files retrieved on 2026-11-04;
+they were computed locally, not supplied by publishers.
+
 ## Iris
 
-`iris.csv` contains the exact bytes of UCI's `iris.data`, downloaded on
-2026-11-04 from
-<https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data>.
-Only the local filename was changed. No measurements, labels or blank lines
-were altered.
+`iris.csv` preserves the exact bytes of
+[UCI's iris.data](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data),
+renamed without changing values or blank lines. Its 150 records contain sepal
+length, sepal width, petal length and petal width in centimetres, then species.
+There is no header. UCI's documented differences from Fisher's article remain.
 
-Citation: Fisher, R. (1936). Iris [Dataset]. UCI Machine Learning Repository.
-<https://doi.org/10.24432/C56C76>.
+Citation: Fisher, R. (1936). [Iris](https://doi.org/10.24432/C56C76).
+UCI Machine Learning Repository. License: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/),
+as stated by [UCI](https://archive.ics.uci.edu/dataset/53/iris).
 
-The dataset is distributed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/),
-as stated on the [UCI dataset page](https://archive.ics.uci.edu/dataset/53/iris).
-This dataset's license is separate from the paclet code's MIT license.
-
-The source describes 150 plant records, each with sepal length, sepal width,
-petal length and petal width in centimetres, plus a species label. The file has
-no header; the documentation assigns column names from UCI's variable table.
-UCI records differences between this distributed file and Fisher's historical
-article. This copy deliberately retains the source values rather than making
-undocumented corrections.
-
-The file has 4551 bytes and SHA-256
+Size: 4551 bytes. SHA-256:
 `6f608b71a7317216319b4d27b4d9bc84e6abd734eda7872b71a458569e2656c0`.
-This hash was computed from the retrieved file, not supplied by the publisher.
-`iris.provenance.json` retains the retrieval time, source, citation, license
-and column interpretation.
+See `iris.provenance.json` for retrieval and column definitions.
 
 ## Real-data case studies
-
-Five folders hold real public data for the worked case-study tutorials. The
-`provenance.json` files record source URLs, SHA-256 hashes of downloaded bytes,
-retrieval times, citations, license statements and transformations. PBMC3k
-keeps this information in the `Provenance` field of `pbmc3k-subset.json`.
-The hashes were computed from files retrieved on 2026-11-04, not supplied by the
-publishers. Dataset licenses are separate from the paclet code's MIT license.
 
 | Folder | Contents | Source and license | Tutorial |
 | --- | --- | --- | --- |
@@ -45,58 +31,50 @@ publishers. Dataset licenses are separate from the paclet code's MIT license.
 | `Coronaviruses` | Genomes and gene annotations, NC_045512.2, MN996532.2, NC_004718.3 | NCBI RefSeq and GenBank | Comparing Coronavirus Genomes |
 | `LiverCircadian` | Hourly mouse liver expression, 2,046 probes × 48 times | NCBI GEO GSE11923 | Finding Circadian Rhythms in Gene Expression |
 
-NCBI places no restrictions on the use or distribution of GenBank, RefSeq or
-GEO data, although submitters may claim rights in submitted data; see the
-[NCBI policies](https://www.ncbi.nlm.nih.gov/home/about/policies/). Cite the
-original studies listed in each provenance record.
+Each folder has `provenance.json`; PBMC3k instead uses the JSON file's
+`Provenance` field. PDB and sequence files are unchanged gzip-compressed copies;
+recorded hashes apply to the decompressed bytes. Wolfram imports gzip directly.
 
-`AdenylateKinase`, `BorreliaB31` and `Coronaviruses` store each downloaded file
-unchanged, compressed with gzip. Decompressing a file gives the bytes whose
-SHA-256 is recorded. Wolfram Language imports the compressed files directly.
+[NCBI policies](https://www.ncbi.nlm.nih.gov/home/about/policies/) place no
+restrictions on use or distribution of these data; submitters may claim rights.
+Retain the original-study citations in the provenance records.
 
-`PBMC3k/pbmc3k-subset.json` is BioDataLink JSON derived from the Cell Ranger
-1.1.0 filtered gene-barcode matrices of the
-[3k PBMCs from a Healthy Donor](https://www.10xgenomics.com/datasets/3-k-pbm-cs-from-a-healthy-donor-1-standard-1-1-0)
-dataset. It keeps all 2,700 barcodes and unchanged UMI counts for the union of
-four gene sets: the 300 genes with the highest analytic Pearson residual
-variance (overdispersion 100, clipped at the square root of the number of
-cells) over cells with 200 to 2,500 detected genes and under 5% mitochondrial
-counts; 15 marker genes; the 13 `MT-` genes; and 200 genes sampled with seed
-20261104 among genes detected in at least 3 barcodes. Gene metadata flag each
-set and record the source row; cell metadata record totals over all 32,738
-genes. The file's `Provenance` field repeats the source, license and archive
-hash.
+### PBMC3k selection
 
-`LiverCircadian/GSE11923-liver-subset.tsv.gz` keeps every probe annotated to
-19 clock genes in the GPL1261 annotation, plus 2,000 other probes sampled with
-seed 20261104, excluding Affymetrix control probes. The GEO matrix metadata
-identifies the values as MAS5 signals, copied as text; gene symbols come from
-the platform annotation, and a blank symbol means none was annotated.
+The [10x Genomics PBMC3k](https://www.10xgenomics.com/datasets/3-k-pbm-cs-from-a-healthy-donor-1-standard-1-1-0)
+subset preserves Cell Ranger 1.1.0 filtered UMI counts for all 2,700 barcodes
+and the union of:
 
-For the liver series, the paper reports GCRMA expression estimates and MAS5
-present/absent calls. The bundled subset preserves the deposited MAS5 matrix;
-it does not reproduce the paper's preprocessing or rhythm-detection pipeline.
+- 300 genes with highest Pearson-residual variance after filtering cells to
+  200–2,500 detected genes and <5% mitochondrial counts; overdispersion 100,
+  clipping at ±√(retained cells).
+- 15 marker genes and 13 `MT-` genes.
+- 200 genes sampled with seed 20261104 from genes detected in at least three barcodes.
 
-Maintainers can rebuild these folders from the pinned downloads with
-`make example-data`, which needs network access and curl 8.4 or later. Set
-`BIODATALINK_CURL` to choose a curl executable. A changed upstream file fails
-its hash check instead of silently replacing the bundled data.
-Each rebuild records its actual retrieval time. The PBMC integrity test hashes
-compact JSON after removing only `Provenance.RetrievedAt`, so a fresh retrieval
-of identical data passes while counts, axes, selection and fixed provenance
-remain pinned. `BioDatasetLoad` still reports a hash of the actual file bytes.
+Metadata retain selection flags and source positions. Cell totals refer to
+all 32,738 source genes. The source archive hash is retained in `Provenance`.
+
+### Liver selection
+
+`GSE11923-liver-subset.tsv.gz` retains all GPL1261 probes for 19 clock genes
+plus 2,000 other probes sampled with seed 20261104, excluding Affymetrix controls.
+Values are deposited MAS5 signals copied as text; blank symbols mean no
+platform annotation. The paper's GCRMA preprocessing and rhythm-detection
+pipeline are not reproduced.
+
+### Regeneration
+
+Run `make example-data` with internet access and curl 8.4 or later;
+`BIODATALINK_CURL` selects an executable. Pinned hashes reject changed upstream
+files. Rebuilds record a fresh retrieval time. The PBMC content test excludes
+only `Provenance.RetrievedAt`; `BioDatasetLoad` still hashes actual file bytes.
 
 ## Synthetic expression examples
 
-`toy-expression.json` contains invented integer values and cell/gene labels for
-testing the BioDataLink JSON reader. Its condition labels do not describe an
-experiment.
+- `toy-expression.json`: invented counts, cell/gene IDs and condition labels.
+- `toy-anndata.h5ad`: generated with AnnData 0.13.4; three observations, four
+  variables, duplicate IDs, integer CSR `X`, a floating-point CSC `normalized`
+  layer, and a five-variable `raw` matrix. Missing annotations and a nested `ID`
+  test metadata preservation. Layer names make no scientific claims.
 
-`toy-anndata.h5ad` is an invented AnnData file generated with AnnData 0.13.4.
-It has three observations and four variables, deliberately repeated variable
-IDs, integer-valued CSR `X`, a floating-point CSC layer named `normalized`,
-and a five-variable `raw` matrix. Cell annotations include missing values and
-an annotation named `ID` to test preservation of source field names. The
-`normalized` layer name is a test label, not a claim about a scientific
-normalization procedure. The synthetic data have no associated biological
-study; their generator and exact expected values are part of the tests.
+These fixtures describe no biological study; tests specify their expected values.
