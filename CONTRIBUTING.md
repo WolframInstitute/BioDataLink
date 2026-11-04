@@ -114,8 +114,18 @@ contributor's uncommitted work. Follow the user's branch and commit instructions
 
 ## Continuous integration
 
-Pull requests and pushes are checked by the workflows in `.github/workflows/`.
-Ordinary commits run CI; do not add skip markers as a routine convention.
+Pull requests and main-branch pushes are checked by the workflows in
+`.github/workflows/`. CI path filters exclude changes confined to the root
+`README.md`; a change to any other file still triggers CI. README-only changes
+may use `[skip ci]`. Do not use skip markers when the push or pull request
+includes code, build configuration, executable documentation or any other file,
+even if its last commit changes only the README. Push CI configuration changes
+separately from a README commit carrying a skip marker. Manual CI dispatch
+remains available through `workflow_dispatch`.
+
+The release gate still requires successful main-branch push CI for the exact
+tagged commit. A README-only commit with skipped CI does not meet that gate.
+
 The Python validators run without a Wolfram license. Wolfram runtime and build
 jobs need an appropriate license entitlement configured for this repository.
 The shared license action configures `WOLFRAMINIT` for direct child kernels and

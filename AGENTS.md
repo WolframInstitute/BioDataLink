@@ -52,6 +52,10 @@ report cold and repeated-call timings separately, including conversion costs.
 Optimize measured bottlenecks without weakening data validation or provenance.
 
 Use Conventional Commits with a subject of at most 72 characters.
+CI excludes changes confined to the root `README.md`; those changes may use
+`[skip ci]`. Never use a skip marker when the push or pull request also changes
+another file. Code, build configuration, executable documentation and mixed
+changes must retain their CI checks. Manual CI dispatch remains available.
 Release or publication requires a user request; setup work does not publish.
 Follow existing user authorization without repeatedly asking for it.
 
