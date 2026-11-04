@@ -29,12 +29,15 @@ that every dataset shares a single license.
 
 ## Capabilities
 
-Each adapter advertises only implemented operations. Version 0.1 implements
-Catalog for the Pertpy snapshot and Native import for local BioDataLink JSON.
-Download and Remote subset are planned:
+Each adapter advertises only implemented operations. Version 0.2 provides the
+offline Identifiers.org source directory, resolver links, live BioStudies/GEO
+metadata queries, the offline Pertpy catalog, and native import of local
+BioDataLink JSON. Data-file download and remote matrix subsets are planned:
 
 | Capability | Meaning |
 | --- | --- |
+| Source directory | Registered identifier systems and endpoints can be discovered |
+| Identifier link | A resolver URL can be constructed without contacting the source |
 | Catalog | A dataset can be discovered and its metadata inspected |
 | Download | A specified artifact can be retrieved and its result checked |
 | Native import | A documented format can be converted to Wolfram data |
@@ -43,6 +46,28 @@ Download and Remote subset are planned:
 A cell limit applied after downloading a file is not remote subset support.
 Display transfer requirements separately from the amount of data returned to
 the caller. H5AD downloads alone do not establish AnnData conversion support.
+
+## Metadata search and credentials
+
+Source-directory records describe identifier systems; live query results
+describe source studies or other explicitly documented entities. Keep these
+record types distinct. The current GEO query returns Series, while BioStudies
+returns study records. Preserve the provider's complete search hit or summary
+alongside normalized fields, and retain missing values explicitly.
+
+A live query returns one page with retrieval time, source endpoint, query,
+reported total, total exactness and continuation cursor. Use provider-side
+pagination and batch metadata summaries when available. Do not present a page
+size as a byte-transfer limit. An estimated total must not determine whether
+pagination has ended; follow the source's continuation signal. State when
+pages can shift as a live index changes.
+
+Accept credential references, not literal secrets. Resolve references only
+when a request runs, and exclude credentials from records, cursors, provenance
+and failures. Version 0.2 supports optional GEO API-key references for public
+request quotas; it does not implement private-study access. A future private
+provider needs a reviewed authentication flow, explicit access scope, and
+separate tests demonstrating authorized retrieval without disclosure.
 
 ## Artifacts
 

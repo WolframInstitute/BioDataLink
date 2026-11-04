@@ -1,10 +1,10 @@
 WOLFRAMSCRIPT ?= wolframscript
 PYTHON ?= python3
 .DEFAULT_GOAL := help
-.PHONY: help all check test python-tests lint-docs bootstrap notebooks site build check-publish publish hooks catalog-update clean
+.PHONY: help all check test python-tests lint-docs bootstrap notebooks site build check-publish publish hooks catalog-update sources-update clean
 
 help:
-	@printf 'make check | test [FILES="..."] | python-tests | lint-docs\nmake bootstrap | notebooks | site | build | check-publish | all\nmake catalog-update REVISION=<commit> | hooks | publish | clean\n'
+	@printf 'make check | test [FILES="..."] | python-tests | lint-docs\nmake bootstrap | notebooks | site | build | check-publish | all\nmake catalog-update REVISION=<commit> | sources-update | hooks | publish | clean\n'
 
 all: check test python-tests build
 
@@ -40,6 +40,9 @@ publish:
 catalog-update:
 	@test -n "$(REVISION)" || (echo "Set REVISION to a full upstream Git commit" >&2; exit 1)
 	$(PYTHON) scripts/updateCatalog.py "$(REVISION)"
+
+sources-update:
+	$(PYTHON) scripts/updateSources.py
 
 hooks:
 	git config --local core.hooksPath .githooks

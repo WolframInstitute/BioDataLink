@@ -6,6 +6,7 @@ bioFailure[tag_String, message_String, details_Association : <||>] :=
     Failure[tag, Join[<|"MessageTemplate" -> message|>, details]];
 
 $bioCatalogFile = FileNameJoin[{DirectoryName[$InputFileName, 3], "Assets", "Catalog", "pertpy.json"}];
+$bioCatalogCache = <||>;
 
 bioCatalogRecordQ[record_, revision_] := AssociationQ[record] &&
     AllTrue[Lookup[record, {"Provider", "ID", "Title", "Description", "DocumentationURL", "SourceURL"}, None],
@@ -16,7 +17,9 @@ bioCatalogRecordQ[record_, revision_] := AssociationQ[record] &&
     AllTrue[record["DownloadURLs"], StringStartsQ[#, "https://"] &] &&
     MemberQ[{True, False}, Lookup[record, "NativeImportSupported", None]];
 
-bioCatalogRecords[] := Module[{snapshot, revision, records},
+bioCatalogRecords[] := Module[{snapshot, revision, records, cached},
+    cached = Lookup[$bioCatalogCache, $bioCatalogFile, None];
+    If[ListQ[cached], Return[cached]];
     snapshot = Quiet[Check[Import[$bioCatalogFile, "RawJSON"], $Failed], {Import::nffil, Import::jsonhintpos}];
     If[!AssociationQ[snapshot] || Lookup[snapshot, "SchemaVersion", None] =!= 1 ||
             !MatchQ[Lookup[snapshot, "Records", None], {__Association}],
@@ -27,5 +30,7 @@ bioCatalogRecords[] := Module[{snapshot, revision, records},
             !AllTrue[records, bioCatalogRecordQ[#, revision] &] ||
             !DuplicateFreeQ[Lookup[#, {"Provider", "ID"}] & /@ records],
         Return[bioFailure["InvalidCatalog", "The bundled catalog has malformed, duplicate or inconsistent records."]]];
-    records /. Null -> Missing["NotAvailable"]
+    records = records /. Null -> Missing["NotAvailable"];
+    AssociateTo[$bioCatalogCache, $bioCatalogFile -> records];
+    records
 ];

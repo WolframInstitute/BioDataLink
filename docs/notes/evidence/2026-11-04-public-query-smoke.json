@@ -1,0 +1,45 @@
+{
+	"WolframVersion":"15.0.0 for Mac OS X ARM (64-bit) (May 19, 2026)",
+	"Operation":"Public CRISPR metadata, page size2, no credentials; BioStudies one continuation",
+	"Results":[
+		{
+			"Provider":"BioStudies-first",
+			"Seconds":2.761546,
+			"IDs":[
+				"E-ERAD-186",
+				"E-ERAD-298"
+			],
+			"Total":7028,
+			"TotalIsExact":false,
+			"NextCursorType":"String",
+			"NextCursorLength":94,
+			"RetrievedAt":"2026-11-04T09:52:39Z"
+		},
+		{
+			"Provider":"BioStudies-continuation",
+			"Seconds":0.830342,
+			"IDs":[
+				"E-ERAD-335",
+				"E-ERAD-444"
+			],
+			"Total":7026,
+			"TotalIsExact":false,
+			"NextCursorType":"String",
+			"NextCursorLength":94,
+			"RetrievedAt":"2026-11-04T09:52:40Z"
+		},
+		{
+			"Provider":"GEO-first",
+			"Seconds":1.836083,
+			"IDs":[
+				"GSE352671",
+				"GSE350646"
+			],
+			"Total":12618,
+			"TotalIsExact":true,
+			"NextCursorType":"String",
+			"NextCursorLength":70,
+			"RetrievedAt":"2026-11-04T09:52:42Z"
+		}
+	]
+}

@@ -294,6 +294,12 @@ backend and dataset revision when known. The build must not download large
 biological datasets to render a page. Preserve a data example's organism,
 source identifiers, preprocessing, gene selection, sample selection and seed.
 
+For instructions that make live metadata requests, use the converter's
+`#| eval: false` directive inside a `wl` fence. This preserves an ordinary Input
+cell without running it during documentation generation. State that the input
+is online and unevaluated, and do not fabricate a saved result. Test the live
+operation separately and keep ordinary documentation builds offline.
+
 Show an operation's actual return value at least once before a downstream
 reduction. A numeric count or a truth value supports a demonstration but cannot
 replace the dataset, record or matrix being introduced. Keep one observation

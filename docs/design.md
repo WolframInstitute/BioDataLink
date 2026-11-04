@@ -6,9 +6,9 @@ and biodiversity. Discovery should eventually cover public and controlled
 sources, with access requirements stated explicitly. This broad scope is a
 design goal, not a claim of current coverage.
 
-The first implementation searches Pertpy metadata and reads local expression
-matrices. Ruliobiology can consume supported data later for model fitting and
-comparison.
+Version 0.2 adds a source directory, resolver links and public BioStudies/GEO
+metadata queries to the initial Pertpy catalog and local expression reader.
+Ruliobiology can consume supported data later for model fitting and comparison.
 
 This document separates the initial implementation from the extension contract.
 The [build index](build-index.md) records public symbols and implementation
@@ -16,7 +16,7 @@ status. The [roadmap](../ROADMAP.md) records the release gates.
 
 ## Intended researcher workflow
 
-1. Search the bundled catalog without starting Python or downloading matrices.
+1. Find a source in the bundled directory, search a supported public API, or search the offline Pertpy catalog.
 2. Inspect available source descriptions, identifiers, study, organism and assay metadata.
 3. Select a dataset artifact and an explicit download location or cache.
 4. Retrieve the artifact and keep its source identity and integrity evidence.
@@ -28,8 +28,8 @@ produce several datasets, processed versions and data files (called artifacts
 in the retrieval interface). A source identifier may name a study, dataset,
 loader or file; adapters must state which it identifies. A repository accession
 is an identifier assigned by the repository, not an interchangeable name for
-every catalog ID. The current implementation supports steps 1 and 2 using only
-the fields in the bundled catalog, and step 5 for the local JSON format.
+every catalog ID. The current implementation supports steps 1 and 2 through
+source metadata and study queries, and step 5 for the local JSON format.
 
 ## Architecture
 
@@ -52,13 +52,43 @@ planned Python adapter handles AnnData/H5AD and CELLxGENE's data access library.
 Its environment must be explicit and its dependencies versioned. Installing
 the core paclet must not silently install Python packages.
 
-Use a bundled catalog snapshot for reproducible offline discovery. Updates are
-reviewed changes with their own source evidence. Future live search is a
+Use bundled registry and catalog snapshots for reproducible offline discovery.
+Updates are reviewed changes with their own source evidence. Live search is a
 separate operation with a recorded query, provider and retrieval time.
 
-## Initial scope
+## Implemented capabilities
 
-The initial implementation provides search and metadata inspection over 55
+`BioDataSourceSearch`, `BioDataSourceInfo` and `BioDataURL` use a bundled
+Identifiers.org registry containing 867 namespaces and 1,039 endpoint records.
+Of these, 93 namespaces and 35 endpoints are deprecated; source search excludes
+deprecated namespaces by default. The registry includes biological and other
+domains. A namespace is an identifier system, not necessarily a repository,
+and registry inclusion is not proof of open access or an implemented API.
+
+The source-info result preserves complete registry and endpoint records, with
+source retrieval time, raw-byte hash, license and transformation details.
+The registry is distributed under CC BY 4.0 with attribution and modifications
+recorded separately from this paclet's MIT-licensed code.
+
+`BioDataURL` constructs resolver links offline. Ordinary namespaces use compact
+identifier form. Namespaces whose local identifiers embed a prefix use the
+supported namespace/full-identifier URI form, preserving the complete original
+identifier and its case. Bare IDs for these namespaces are rejected rather
+than guessing a prefix. Colons and slashes remain literal because the resolver
+does not interpret encoded forms consistently. Source regexes, accession
+existence, current availability and licenses are not validated by link
+construction. See the [Identifiers.org migration documentation](https://docs.identifiers.org/pages/migration.html)
+for continued support of the URI form.
+
+`BioDatasetQuery` provides one online page of BioStudies study metadata or GEO
+Series metadata. A normalized view retains complete source search hits or
+summaries in `ProviderMetadata`, absent values as `Missing`, and source-provided
+organism strings or lists without inference. Results include the original
+query, source endpoint, retrieval time, reported total, exactness flag and
+continuation cursor. These live accessions are separate from the keys accepted
+by the offline `BioDatasetInfo` function.
+
+The Pertpy catalog provides search and metadata inspection over 55
 loader records extracted from a pinned Pertpy source revision, plus import of
 local BioDataLink JSON version 1 files. The records include example data and
 processed variants; they are not 55 independent studies. Descriptions are
@@ -71,10 +101,37 @@ import of the listed provider artifacts is not yet supported. The snapshot
 records the code revision used for extraction; the listed remote artifacts have
 not been downloaded or independently verified by this implementation.
 
-Remote artifact download, AnnData conversion and CELLxGENE/GEO adapters are
-later milestones. The [interchange format](interchange-format.md) is the current
-local import contract. Catalog coverage is defined by the bundled snapshot, not
-by what a newer upstream version may expose.
+Remote data-file download, AnnData conversion and additional source APIs are
+later milestones. GEO currently supports metadata search, not file retrieval
+or import. The [interchange format](interchange-format.md) is the current local
+import contract. Offline coverage is defined by the bundled copies, not by
+what a newer upstream version may expose.
+
+## Performance and query boundaries
+
+The kernel loads and validates each bundled registry or catalog only on first
+use. Successful results are cached per file path for the rest of the kernel
+session. Prefix indexes and lowercase search text are prepared once. Updating
+a bundled source file is an explicit maintenance operation; restart the kernel
+afterward to use the updated copy. No public cache-management API is required.
+
+Live searches retrieve one page at a time. GEO obtains summaries in one batch
+per page, avoiding one request per record. The public time limit includes
+request pacing. A page-size limit controls the number of returned records,
+not the byte size of scientific data or a promise of constant response time.
+
+Follow continuation cursors until none remains. BioStudies may report an
+estimated total; GEO's exact count applies to its current index and can change
+between requests. These searches are not immutable database releases and may
+include overlapping study records. A timeout or failed source must not be
+reported as a successful empty result.
+
+GEO API keys are optional references to an environment variable or system
+credential, resolved at request time. They increase the public request quota;
+they do not authorize private data access. Literal secrets are rejected, and
+request URLs, credentials and response bodies are omitted from failures.
+Future authenticated providers must define their own authorization, data
+scope and secret handling before advertising private-data access.
 
 ## Common data semantics
 
@@ -135,6 +192,10 @@ independent expected fixture, not only a round trip through its own exporter.
 
 ## Source references
 
+- [Identifiers.org registry API](https://docs.identifiers.org/pages/api.html)
+  documents the source directory, with [CC BY 4.0 terms](https://docs.identifiers.org/pages/terms_of_use.html).
+- [BioStudies](https://www.ebi.ac.uk/biostudies/)
+  supplies public study metadata and links to associated data.
 - [Pertpy dataset catalog](https://pertpy.scverse.org/en/stable/api/datasets_index.html)
   describes the available loaders and their source datasets.
 - [scPerturb](https://projects.sanderlab.org/scperturb/) supplies harmonized

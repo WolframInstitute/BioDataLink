@@ -27,20 +27,39 @@ Documentation source presence alone does not satisfy the notebook review gate.
 A public repository, release tag and cloud publication are separate deployment
 steps.
 
-## Next — Broad source discovery
+## 0.2 — Source discovery and public study queries
 
-Build a source directory spanning sequences, structures, expression, pathways,
-imaging and biodiversity. Use authoritative source registries and retain their
-provenance. Make each source's identifiers, data types, access requirements and
-implemented operations visible. Add tested search APIs incrementally; listing
-a source does not establish a working data connection.
+The local development milestone adds:
 
-Plan explicit credential handling for restricted sources without embedding
-secrets in catalog records, URLs, examples or provenance. Access rights remain
-those of the source and the researcher's account.
+- A bundled Identifiers.org directory with 867 namespaces and 1,039 endpoints,
+  including deprecated records. Default search returns 774 active namespaces.
+- Source descriptions, identifier conventions, complete registry records and
+  source provenance through `BioDataSourceSearch` and `BioDataSourceInfo`.
+- Offline resolver-link construction through `BioDataURL`, preserving complete
+  original identifiers for namespaces with embedded prefixes.
+- Paginated public BioStudies and GEO Series queries through `BioDatasetQuery`,
+  retaining original metadata, missing values and retrieval information.
+- Per-kernel caches and indexed source lookup, plus batched GEO summaries.
+- Optional named GEO API-key references for public request quotas.
 
-Gate: directory records trace back to their source, supported live searches
-return checked small results, and unsupported operations remain clear.
+The directory spans biological and other domains and is nonexhaustive.
+Registry membership does not establish open access or implemented data-file
+retrieval. Live search and representative resolver checks are recorded in
+[the validation note](docs/notes/2026-11-04-source-discovery-validation.md),
+alongside qualified local performance measurements. Version 0.2 is a local
+milestone, not a published release.
+
+## Next — More source APIs and authorized access
+
+Extend tested metadata APIs across biological domains while preserving each
+source's record types and search semantics. Add authenticated access only for
+explicitly supported providers, using credential references and recording the
+permitted scope without exposing secrets. Current GEO key support affects
+public rate limits; it does not grant access to private research data.
+
+Gate: checked small results, explicit access requirements and no credentials in
+records, provenance, cursors or failure reports. A directory entry alone is
+not an implemented connection.
 
 ## Next — Verified remote artifacts
 
@@ -63,14 +82,15 @@ Gate: an independently checked small slice agrees in matrix values, labels,
 normalization state and provenance. Installing or searching the core paclet
 must not implicitly install Python dependencies or download biological matrices.
 
-## Later — CELLxGENE and GEO
+## Later — CELLxGENE subsets and GEO data files
 
 Add CELLxGENE Census queries with pinned releases and cell/gene selection.
 Return source-study citations for selected slices. Distinguish a remote slice
 from filtering a fully downloaded file.
 
-Add GEO discovery and artifact metadata first. Native imports are then enabled
-format by format. Repository breadth does not imply uniform data semantics.
+Extend existing GEO Series discovery with file metadata and retrieval. Native
+imports are enabled format by format. Repository breadth does not imply
+uniform data semantics.
 
 Gate: provider capabilities and unsupported cases are visible, with independent
 fixtures for each advertised import format and opt-in live checks.

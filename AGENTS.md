@@ -44,6 +44,13 @@ contracts, and executable documentation need the corresponding runtime checks.
 Default tests use local fixtures and do not call live data providers. Document
 any external build-tool bootstrap separately from provider access.
 
+Performance is a project requirement. Keep package loading offline, reuse
+validated immutable metadata, index repeated identifier lookups, and batch
+provider requests. Preserve sparse data and avoid unnecessary copies or full
+downloads. Measure representative public operations when changing a hot path;
+report cold and repeated-call timings separately, including conversion costs.
+Optimize measured bottlenecks without weakening data validation or provenance.
+
 Use Conventional Commits with a subject of at most 72 characters.
 Release or publication requires a user request; setup work does not publish.
 Follow existing user authorization without repeatedly asking for it.

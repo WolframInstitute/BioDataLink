@@ -1,0 +1,61 @@
+{
+	"TimestampUTC":"2026-11-04T09:53:46",
+	"WolframVersion":"15.0.0 for Mac OS X ARM (64-bit) (May 19, 2026)",
+	"System":"Mac OS X ARM (64-bit)",
+	"ProcessorType":"ARM64",
+	"ProcessorCount":14,
+	"PackageLoadSeconds":0.213319,
+	"Measurements":[
+		{
+			"Operation":"BioDataSourceSearch[]",
+			"FirstSeconds":0.148549,
+			"WarmMedianSeconds":1.2755000000000002e-3,
+			"WarmMinimumSeconds":1.253e-3,
+			"WarmMaximumSeconds":1.442e-3,
+			"WarmRepetitions":50,
+			"Head":"Dataset",
+			"ResultSummary":774
+		},
+		{
+			"Operation":"BioDataSourceSearch[gene, Limit20]",
+			"FirstSeconds":6.08e-4,
+			"WarmMedianSeconds":4.79e-4,
+			"WarmMinimumSeconds":4.63e-4,
+			"WarmMaximumSeconds":5.62e-4,
+			"WarmRepetitions":50,
+			"Head":"Dataset",
+			"ResultSummary":20
+		},
+		{
+			"Operation":"BioDataSourceInfo[ensembl]",
+			"FirstSeconds":3.4e-5,
+			"WarmMedianSeconds":1.4e-5,
+			"WarmMinimumSeconds":1.3e-5,
+			"WarmMaximumSeconds":2.0e-5,
+			"WarmRepetitions":50,
+			"Head":"Association",
+			"ResultSummary":"ensembl"
+		},
+		{
+			"Operation":"BioDataURL[go, GO:0008150]",
+			"FirstSeconds":3.32e-4,
+			"WarmMedianSeconds":3.1e-5,
+			"WarmMinimumSeconds":2.9e-5,
+			"WarmMaximumSeconds":4.1e-5,
+			"WarmRepetitions":50,
+			"Head":"String",
+			"ResultSummary":"https:\/\/identifiers.org\/go\/GO:0008150"
+		},
+		{
+			"Operation":"BioDatasetSearch[CRISPR, Limit5]",
+			"FirstSeconds":4.7e-3,
+			"WarmMedianSeconds":8.445e-4,
+			"WarmMinimumSeconds":8.26e-4,
+			"WarmMaximumSeconds":8.96e-4,
+			"WarmRepetitions":50,
+			"Head":"Dataset",
+			"ResultSummary":5
+		}
+	],
+	"Scope":"One fresh local kernel. First source lookup imports\/validates\/indexes the registry; subsequent source operations share that cache. Timings exclude CLI\/kernel process startup. No network calls."
+}

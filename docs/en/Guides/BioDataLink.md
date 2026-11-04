@@ -5,26 +5,40 @@ Title: BioDataLink
 Context: WolframInstitute`BioDataLink`
 Paclet: WolframInstitute/BioDataLink
 URI: WolframInstitute/BioDataLink/guide/BioDataLink
-Description: Discover biological datasets and import supported expression data with provenance
+Description: Find biological data sources, search study metadata and load supported local expression data
 Keywords: [biology, datasets, gene expression, provenance]
-RelatedGuides: [Catalog, DataAccess]
-RelatedTutorials: [ExploringBiologicalData]
+RelatedGuides: [Catalog, DataAccess, Providers, Sources]
+RelatedTutorials: [ExploringBiologicalData, FindingDataSources]
 ---
 
 ## Abstract
 
-BioDataLink searches a bundled catalog of Pertpy data sources and loads local
-expression matrices in BioDataLink JSON format. The catalog contains source
-descriptions; a record may refer to one of several files or processed versions
-from a study. Local files connect a cells-by-genes matrix to ordered metadata
-and declared source information. The reader checks file structure and alignment;
-scientific interpretation depends on the assay and processing history.
+BioDataLink helps researchers find data sources across biological domains,
+construct links from identifiers and search public study metadata. Its bundled
+source directory spans biological and other domains and is not exhaustive.
+BioStudies and GEO queries run online; the source directory and Pertpy catalog
+can be searched offline.
+
+The local reader loads expression matrices in BioDataLink JSON format, with
+aligned cell and gene metadata and declared source information. It checks file
+structure and alignment; scientific interpretation depends on the assay and
+processing history.
 
 Finding a catalog record does not mean its data file can already be loaded.
 
 WL marks a built-in Wolfram Language function.
 
 ## Functions
+
+### [Data Sources](paclet:WolframInstitute/BioDataLink/guide/Sources)
+
+- `BioDataSourceInfo` inspect registered identifier conventions and source endpoints
+- `BioDataSourceSearch` find registered sources in the bundled directory
+- `BioDataURL` construct a source resolver link from an identifier
+
+### [Online Study Search](paclet:WolframInstitute/BioDataLink/guide/Providers)
+
+- `BioDatasetQuery` search public BioStudies or GEO study metadata online
 
 ### [Catalog](paclet:WolframInstitute/BioDataLink/guide/Catalog)
 

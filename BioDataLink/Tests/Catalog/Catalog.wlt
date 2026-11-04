@@ -75,3 +75,19 @@ VerificationTest[
     {True, True, True},
     TestID -> "Catalog-RejectMalformedDuplicateAndRevisionMismatch"
 ]
+
+VerificationTest[
+    Module[{file = CreateTemporary[], snapshot, first},
+        snapshot = Import[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["Location"],
+            "Assets", "Catalog", "pertpy.json"}], "RawJSON"];
+        WithCleanup[
+            Export[file, snapshot, "RawJSON"],
+            Block[{WolframInstitute`BioDataLink`Catalog`Helpers`Private`$bioCatalogFile = file,
+                    WolframInstitute`BioDataLink`Catalog`Helpers`Private`$bioCatalogCache = <||>},
+                first = Normal[BioDatasetSearch[]];
+                DeleteFile[file];
+                first === Normal[BioDatasetSearch[]] && Length[first] === 55],
+            If[FileExistsQ[file], DeleteFile[file]]]],
+    True,
+    TestID -> "Catalog-ValidatedSnapshotIsReusedWithoutDiskReads"
+]

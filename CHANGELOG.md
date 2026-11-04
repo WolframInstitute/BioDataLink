@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0 — Broad source discovery
+
+- Add offline source discovery, namespace metadata and identifier resolver URLs
+  from a provenance-bearing Identifiers.org registry snapshot (CC BY 4.0).
+- Add explicit paginated public metadata queries for BioStudies and GEO, with
+  provider-specific records, retrieval time and query-bound continuation cursors.
+- Accept named environment or system-credential references for an optional NCBI
+  API key; keep secret values out of results, URLs, cursors and diagnostics.
+- Cache validated bundled catalogs per kernel. Precompute source search text
+  and a namespace index, and batch GEO summaries per page.
+- Keep source listing, public accessibility, file retrieval and native import
+  capabilities distinct. Add scientist-facing discovery examples and limits.
+
 ## Unreleased — 0.1.0
 
 - Add the initial BioDataLink paclet structure with Catalog and DataAccess areas.
