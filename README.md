@@ -9,7 +9,8 @@ with their identifiers and provenance.
 
 Requires Wolfram Language 15.0 or later.
 
-[Documentation](docs/en/Guides/BioDataLink.md) ·
+[Documentation](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#guide/BioDataLink) ·
+[Wolfram resource](https://www.wolframcloud.com/obj/wolframinstitute/DeployedResources/Paclet/WolframInstitute/BioDataLink/) ·
 [Releases](https://github.com/WolframInstitute/BioDataLink/releases) ·
 [Changelog](CHANGELOG.md)
 
@@ -18,7 +19,7 @@ Requires Wolfram Language 15.0 or later.
 Install from the Wolfram Cloud resource, then load the paclet:
 
 ```wl
-PacletInstall[ResourceObject["https://www.wolframcloud.com/obj/wolframinstitute/DeployedResources/Paclet/WolframInstitute/BioDataLink/"]]
+PacletInstall[ResourceObject["https://wolfr.am/1IzdEvymT"]]
 Needs["WolframInstitute`BioDataLink`"]
 ```
 
@@ -48,7 +49,7 @@ page["Records"][All, {"ID", "Title", "Organism"}]
 
 Results include a continuation cursor and retrieval information. A study
 search returns metadata; downloading its scientific data is a separate step.
-The [source-discovery tutorial](docs/en/Tutorials/FindingDataSources.md)
+The [source-discovery tutorial](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#tutorial/FindingDataSources)
 shows pagination, source records and identifier conventions.
 
 ## Coverage
@@ -91,16 +92,16 @@ The matrix is `{{3, 0}, {0, 5}, {2, 1}}`, with cells in rows and genes in
 columns. Cell and gene metadata preserve that order. This JSON format treats
 omitted entries as numerical zero; it cannot represent missing measurements.
 Structural checks do not establish the biological meaning of the values.
-See the [interchange format](docs/interchange-format.md).
+See the [reader reference and JSON requirements](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#ref/BioDatasetLoad).
 
 Two capabilities have optional dependencies:
 
 - **HTTPS downloads** require curl 8.4 or later. Choose a destination file and,
   when available, an expected size or SHA-256. The
-  [download tutorial](docs/en/Tutorials/DownloadingBiologicalData.md) follows an
+  [download tutorial](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#tutorial/DownloadingBiologicalData) follows an
   attributed UCI Iris file through verification, units and computed figures.
 - **H5AD reading** requires an explicitly configured Python interpreter with
-  h5py and NumPy. The [AnnData tutorial](docs/en/Tutorials/ReadingAnnDataSlices.md)
+  h5py and NumPy. The [AnnData tutorial](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#tutorial/ReadingAnnDataSlices)
   covers setup, selected rows and columns, layers, duplicate labels and missing
   annotations. It reads a supported matrix and aligned metadata, not a complete
   AnnData object. Normalization is not inferred and no full-file hash is computed.
@@ -115,28 +116,28 @@ Explore **eleven worked tutorials**, seven guides and the function reference.
 Each tutorial includes executable Wolfram Language examples; the computational
 explorations use figures to explain the results.
 
-[Function guide](docs/en/Guides/BioDataLink.md) ·
-[Computational Explorations](docs/en/Guides/ComputationalExplorations/ComputationalExplorations.md)
+[Function guide](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#guide/BioDataLink) ·
+[Computational Explorations](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#guide/ComputationalExplorations)
 
 ### 1. Find and load data
 
-- [Explore biological data](docs/en/Tutorials/ExploringBiologicalData.md) — Start with catalog records, measurements and provenance.
-- [Find data sources](docs/en/Tutorials/FindingDataSources.md) — Discover repositories, resolve identifiers and search public studies.
-- [Download biological data](docs/en/Tutorials/DownloadingBiologicalData.md) — Verify a file, inspect its variables and plot measurements.
-- [Read AnnData selections](docs/en/Tutorials/ReadingAnnDataSlices.md) — Select cells, genes and layers while preserving aligned metadata.
+- [Explore biological data](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#tutorial/ExploringBiologicalData) — Start with catalog records, measurements and provenance.
+- [Find data sources](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#tutorial/FindingDataSources) — Discover repositories, resolve identifiers and search public studies.
+- [Download biological data](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#tutorial/DownloadingBiologicalData) — Verify a file, inspect its variables and plot measurements.
+- [Read AnnData selections](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#tutorial/ReadingAnnDataSlices) — Select cells, genes and layers while preserving aligned metadata.
 
 ### 2. Understand the measurements
 
-- [Explore measurement geometry](docs/en/Tutorials/ExploringBiologicalDataGeometry.md) — Compare distances, projections and clusters as measurement scales change.
-- [Understand sparse measurements](docs/en/Tutorials/UnderstandingSparseMeasurements.md) — Distinguish numerical zeros, missing observations and processing scales.
-- [Build finite-state encodings](docs/en/Tutorials/DiscretizingBiologicalMeasurements.md) — Compare thresholds and rank bins, and examine the information lost.
+- [Explore measurement geometry](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#tutorial/ExploringBiologicalDataGeometry) — Compare distances, projections and clusters as measurement scales change.
+- [Understand sparse measurements](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#tutorial/UnderstandingSparseMeasurements) — Distinguish numerical zeros, missing observations and processing scales.
+- [Build finite-state encodings](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#tutorial/DiscretizingBiologicalMeasurements) — Compare thresholds and rank bins, and examine the information lost.
 
 ### 3. Explore rules and choose experiments
 
-- [Compare predictive rules](docs/en/Tutorials/ExploringSimplePredictiveRules.md) — Progress from constants to thresholds and AND/OR combinations; test held-out predictions.
-- [Construct similarity networks](docs/en/Tutorials/ConstructingBiologicalSimilarityNetworks.md) — Build graphs and identify connections that survive changes in analysis choices.
-- [Explore cellular-automaton hypotheses](docs/en/Tutorials/ExploringCellularAutomatonHypotheses.md) — Enumerate rules, enlarge neighborhoods and compare observable predictions.
-- [Choose measurements to distinguish models](docs/en/Tutorials/ChoosingMeasurementsToDistinguishModels.md) — Move from one observable to measurement panels, then vary assumed error bounds.
+- [Compare predictive rules](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#tutorial/ExploringSimplePredictiveRules) — Progress from constants to thresholds and AND/OR combinations; test held-out predictions.
+- [Construct similarity networks](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#tutorial/ConstructingBiologicalSimilarityNetworks) — Build graphs and identify connections that survive changes in analysis choices.
+- [Explore cellular-automaton hypotheses](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#tutorial/ExploringCellularAutomatonHypotheses) — Enumerate rules, enlarge neighborhoods and compare observable predictions.
+- [Choose measurements to distinguish models](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#tutorial/ChoosingMeasurementsToDistinguishModels) — Move from one observable to measurement panels, then vary assumed error bounds.
 
 Examples use attributed Iris measurements or clearly labeled synthetic data.
 The rule explorations increase complexity step by step using built-in Wolfram
