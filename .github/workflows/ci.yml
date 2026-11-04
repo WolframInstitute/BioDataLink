@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  tooling:
+    name: Tooling and whitespace
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Test release validation
+        run: make python-tests
+      - name: Check whitespace
+        run: git diff-tree --check HEAD
+
+  paclet:
+    name: Check, test and build (Wolfram 15.0)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    container:
+      image: wolframresearch/wolframengine:15.0
+      options: --user root
+    env:
+      WOLFRAMSCRIPT_ENTITLEMENTID: ${{ secrets.WOLFRAMSCRIPT_ENTITLEMENTID }}
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - name: Install build tools
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git curl make python3
+          git config --system --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/wolfram-license
+      - name: Acquire documentation tooling
+        run: make bootstrap
+      - name: Check metadata, code and documentation sources
+        run: make check
+      - name: Run offline tests
+        run: make test
+      - name: Build and verify archive without cloud writes
+        run: make check-publish
+      - name: Upload verified paclet
+        uses: actions/upload-artifact@v7
+        with:
+          name: paclet
+          path: BioDataLink/build/*.paclet
+          if-no-files-found: error
+          retention-days: 30

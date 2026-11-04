@@ -1,0 +1,16 @@
+name: Verify Wolfram Engine license
+description: >-
+  Fails fast with an actionable message when the WOLFRAMSCRIPT_ENTITLEMENTID secret is
+  missing, then activates the engine once so that later steps start immediately.
+
+runs:
+  using: composite
+  steps:
+    - name: Check the entitlement and activate
+      shell: bash
+      run: |
+        if [ -z "${WOLFRAMSCRIPT_ENTITLEMENTID:-}" ]; then
+          echo "::error title=Missing Wolfram license::WOLFRAMSCRIPT_ENTITLEMENTID is not set. Add an on-demand license entitlement ID as a repository secret (and as a Dependabot secret, so Dependabot pull requests can run CI); see CONTRIBUTING.md, \"Continuous integration\"."
+          exit 1
+        fi
+        wolframscript -code 'Print["Wolfram Engine ", $Version, " | license type: ", $LicenseType]'

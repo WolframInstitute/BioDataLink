@@ -1,0 +1,10 @@
+# Normalize line endings to LF in the repository; Wolfram Language sources and notebooks are text.
+* text=auto eol=lf
+
+# Binary artifacts
+*.paclet binary
+*.mx binary
+*.png binary
+*.jpg binary
+*.gif binary
+*.pdf binary

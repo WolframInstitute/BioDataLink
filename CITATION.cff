@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: If you use this software, please cite BioDataLink and the original datasets.
+type: software
+title: BioDataLink
+abstract: >-
+  A Wolfram Language paclet for discovering biological datasets, inspecting
+  provider metadata, and importing data with explicit identifiers and provenance.
+authors:
+  - name: Wolfram Institute
+    website: https://wolframinstitute.org
+license: MIT
+version: 0.1.0
+keywords:
+  - biological data
+  - single-cell data
+  - perturbation data
+  - provenance
+  - Wolfram Language

@@ -1,0 +1,13 @@
+name: Provider or feature request
+description: Propose a provider adapter or a public operation.
+body:
+  - type: textarea
+    attributes:
+      label: Research task
+      description: Explain the task and the expected Wolfram result.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Source evidence
+      description: Link the provider's API, schema, data-use terms and a small public example.

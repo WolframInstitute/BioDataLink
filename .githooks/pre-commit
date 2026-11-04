@@ -1,0 +1,4 @@
+#!/bin/sh
+# Fast staged whitespace check. Full project checks use make check and CI.
+set -eu
+git diff --cached --check

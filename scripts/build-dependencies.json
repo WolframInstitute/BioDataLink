@@ -1,0 +1,23 @@
+{
+  "Source": "PureMath develop e2dacfa90c526c3bc9902ef7fa24d29932fb3b22, scripts/fetch_deps.sh",
+  "Dependencies": [
+    {
+      "Name": "PacletPage",
+      "URL": "https://github.com/WolframInstitute/PacletPage",
+      "Commit": "905853cf2047c711795dd1df0897ad62745d8c56",
+      "Release": "v0.3.48",
+      "Paclet": "."
+    },
+    {
+      "Name": "MarkdownToNotebook",
+      "URL": "https://github.com/WolframInstitute/MarkdownToNotebook",
+      "Commit": "61707898a08c7e9bc5a94d51c34ef1b67e24642c"
+    },
+    {
+      "Name": "WolframParser",
+      "URL": "https://github.com/sw1sh/WolframParser",
+      "Commit": "f07af6103138ff01f69de984679066184120828c",
+      "Paclet": "Parser"
+    }
+  ]
+}

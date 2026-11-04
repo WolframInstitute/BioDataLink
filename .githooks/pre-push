@@ -1,0 +1,22 @@
+#!/bin/sh
+# Refuses force pushes to main and deletion of main; pushes to other branches are not affected.
+# Enabled with the other hooks (core.hooksPath = .githooks). Who may update main is managed in
+# the repository settings, not here.
+
+zero="0000000000000000000000000000000000000000"
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+    [ "$remote_ref" = "refs/heads/main" ] || continue
+
+    if [ "$local_sha" = "$zero" ]; then
+        echo "pre-push: refusing to delete main." >&2
+        exit 1
+    fi
+
+    if [ "$remote_sha" != "$zero" ] && ! git merge-base --is-ancestor "$remote_sha" "$local_sha" 2>/dev/null; then
+        echo "pre-push: refusing to force-push main; history on main is never rewritten." >&2
+        exit 1
+    fi
+done
+
+exit 0

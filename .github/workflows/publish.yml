@@ -1,0 +1,64 @@
+name: Publish
+
+# Configure allowed tags/reviewers on the wolfram-cloud environment before use.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing released version tag (vMAJOR.MINOR.PATCH)
+        required: true
+        type: string
+      confirm:
+        description: Publish this release to the configured Wolfram Cloud account
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: publish-biodatalink
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: inputs.confirm
+    name: Publish released paclet and documentation
+    environment: wolfram-cloud
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    container:
+      image: wolframresearch/wolframengine:15.0
+      options: --user root
+    env:
+      WOLFRAMSCRIPT_ENTITLEMENTID: ${{ secrets.WOLFRAMSCRIPT_ENTITLEMENTID }}
+      WOLFRAM_CLOUD_USER: ${{ secrets.WOLFRAM_CLOUD_USER }}
+      WOLFRAM_CLOUD_PASSWORD: ${{ secrets.WOLFRAM_CLOUD_PASSWORD }}
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ inputs.tag }}
+      QT_QPA_PLATFORM: offscreen
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Install tools
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git curl gh make python3
+          git config --system --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag }}
+      - name: Verify released tag and exact main CI commit
+        run: |
+          python3 scripts/validate_release.py "$TAG" --require-ci
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null
+      - uses: ./.github/actions/wolfram-license
+      - name: Acquire documentation tooling
+        run: make bootstrap
+      - name: Recheck source and tests
+        run: make check test python-tests
+      - name: Publish
+        run: make publish

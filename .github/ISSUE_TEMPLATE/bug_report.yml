@@ -1,0 +1,15 @@
+name: Bug report
+description: Report a reproducible data-access or paclet problem.
+body:
+  - type: textarea
+    attributes:
+      label: Reproduction
+      description: Include a small public example, expected result and actual result. Keep credentials and private data out.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Versions and data source
+      description: Wolfram version, BioDataLink version, OS, provider accession and release.
+    validations:
+      required: true

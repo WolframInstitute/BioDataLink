@@ -1,0 +1,834 @@
+{
+  "SchemaVersion": 1,
+  "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+  "SourceURL": "https://raw.githubusercontent.com/scverse/pertpy/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+  "SourceSHA256": "da427d53c40111e685b2090a78dc4c090e0eaeda1938e8963d4a4056be7695e6",
+  "RetrievedAt": "2026-11-04T08:54:55.246213+00:00",
+  "Records": [
+    {
+      "Provider": "Pertpy",
+      "ID": "adamson_2016_pilot",
+      "Title": "6000 chronic myeloid leukemia (K562) cells carrying 8 distinct GBCs.",
+      "Description": "6000 chronic myeloid leukemia (K562) cells carrying 8 distinct GBCs. In a pilot experiment, single-cell RNA-seq was performed on a pool of individually transduced chronic myeloid leukemia cells (K562) carrying 8 distinct guide barcodes, analyzing \u223c6,000 cells total.",
+      "Organism": null,
+      "Citation": "Publication: https://www.sciencedirect.com/science/article/pii/S0092867416316609?via%3Dihub Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.adamson_2016_pilot.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/adamson_2016_pilot.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "adamson_2016_upr_epistasis",
+      "Title": "15000 K562 cells with UPR sensor genes knocked out and treated with thapsigargin.",
+      "Description": "15000 K562 cells with UPR sensor genes knocked out and treated with thapsigargin. In UPR epistasis experiment, Perturb-seq was applied to explore the branches of the mammalian UPR. Using the three-guide Perturb-seq vector, sgRNAs targeting each UPR sensor gene were introduced into K562 cells with dCas9-KRAB. Transduced cells were then pooled, sorted for vector delivery, and after 5 days of total growth, treated with thapsigargin. Control cells were treated with DMSO. Transcriptomes of \u223c15,000 cells were sequenced.",
+      "Organism": null,
+      "Citation": "Publication: https://www.sciencedirect.com/science/article/pii/S0092867416316609?via%3Dihub Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.adamson_2016_upr_epistasis.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/adamson_2016_upr_epistasis.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "adamson_2016_upr_perturb_seq",
+      "Title": "Transcriptomics measurements of 65000 cells that were subject to 91 sgRNAs targeting 82 genes.",
+      "Description": "Transcriptomics measurements of 65000 cells that were subject to 91 sgRNAs targeting 82 genes. In UPR Perturb-seq experiment, Perturb-seq was applied to a small CRISPRi library of 91 sgRNAs targeting 82 genes. sgRNAs were delivered via pooled transduction using a mixture of separately prepared lentiviruses, and \u223c65,000 transcriptomes were collected in one large pooled experiment.",
+      "Organism": null,
+      "Citation": "Publication: https://www.sciencedirect.com/science/article/pii/S0092867416316609?via%3Dihub Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.adamson_2016_upr_perturb_seq.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/adamson_2016_upr_perturb_seq.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "aissa_2021",
+      "Title": "Transcriptomics of 848 P99 cells subject to consecutive erlotinib and 756 control cells.",
+      "Description": "Transcriptomics of 848 P99 cells subject to consecutive erlotinib and 756 control cells. In this study 848 PC9 cells subjected to consecutive erlotinib treatment (for 1, 2, 4, 9, and 11 days) and 756 control cells were analysed using Drop-seq.",
+      "Organism": null,
+      "Citation": "Publication: https://www.nature.com/articles/s41467-021-21884-z Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.aissa_2021.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/aissa_2021.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "bhattacherjee",
+      "Title": "Processed single-cell data PFC adult mice under cocaine self-administration.",
+      "Description": "Processed single-cell data PFC adult mice under cocaine self-administration. Adult mice were subject to cocaine self-administration, samples were collected a three time points: Maintance, 48h after cocaine withdrawal and 15 days after cocaine withdrawal.",
+      "Organism": null,
+      "Citation": "Bhattacherjee A, Djekidel MN, Chen R, Chen W, Tuesta LM, Zhang Y. Cell type-specific transcriptional programs in mouse prefrontal cortex during adolescence and addiction. Nat Commun. 2019 Sep 13;10(1):4169. doi: 10.1038/s41467-019-12054-3. PMID: 31519873; PMCID: PMC6744514.",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.bhattacherjee.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/bhattacher_rna.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "chang_2021",
+      "Title": "Transcriptomics of 5 different cell lines that were induced with a unique TraCe-seq barcode.",
+      "Description": "Transcriptomics of 5 different cell lines that were induced with a unique TraCe-seq barcode. TraCe-seq is a method that captures at clonal resolution the origin, fate and differential early adaptive transcriptional programs of cells in a complex population in response to distinct treatments. Here, a unique TraCe-seq barcode was transduced into five different cell lines (PC9, MCF-10A, MDA-MB-231, NCI-H358 and NCI-H1373). Transduced cells were selected with puromycin only, mixed together and profiled by 10x scRNA-seq.",
+      "Organism": null,
+      "Citation": "https://www.nature.com/articles/s41587-021-01005-3",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.chang_2021.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/chang_2021.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "cinemaot_example",
+      "Title": "Subsampled CINEMA-OT example dataset.",
+      "Description": "Subsampled CINEMA-OT example dataset. Ex vivo stimulation of human peripheral blood mononuclear cells (PBMC) with interferon. This is a subsampled dataset containing 1000 cells, either without stimulation or stimulated with IFNb. The full dataset is available via the cinemaot_full() function.",
+      "Organism": null,
+      "Citation": null,
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.cinemaot_example.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/cinemaot_example.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "combosciplex",
+      "Title": "scRNA-seq subset of the combinatorial experiment of sciplex3.",
+      "Description": "scRNA-seq subset of the combinatorial experiment of sciplex3.",
+      "Organism": null,
+      "Citation": "Srivatsan SR et al., Trapnell C. Massively multiplex chemical transcriptomics at single-cell resolution. Science. 2020 Jan 3;367(6473):45-51. doi: 10.1126/science.aax6234. Epub 2019 Dec 5. PMID: 31806696; PMCID: PMC7289078.",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.combosciplex.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/combosciplex.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "datlinger_2017",
+      "Title": "Transcriptomics measurements of 5905 Jurkat cells induced with anti-CD3 and anti-CD28 antibodies.",
+      "Description": "Transcriptomics measurements of 5905 Jurkat cells induced with anti-CD3 and anti-CD28 antibodies. For CROP-seq, Jurkat cells were transduced with a gRNA library targeting high-level regulators of T cell receptor signaling and a set of transcription factors. After 10 days of antibiotic selection and expansion, cells were stimulated with anti-CD3 and anti-CD28 antibodies or left untreated. Both conditions were analyzed using CROP-seq, measuring TCR activation for each gene knockout. The dataset comprises 5,905 high-quality single-cell transcriptomes with uniquely assigned gRNAs.",
+      "Organism": null,
+      "Citation": "Publication: https://www.nature.com/articles/nmeth.4177 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.datlinger_2017.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/datlinger_2017.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "datlinger_2021",
+      "Title": "Transcriptomics measurements of 151788 nuclei of four cell lines.",
+      "Description": "Transcriptomics measurements of 151788 nuclei of four cell lines. A large-scale scifi-RNA-seq experiment was performed with 383,000 nuclei loaded into a single microfluidic channel of the Chromium system. Four human cell lines (HEK293T, Jurkat, K562 and NALM-6) were combined in an equal mixture, and technical replicates of each cell line with different preindexing (round1) barcodes were marked. This experiment resulted in 151,788 single-cell transcriptomes passing quality control. Source paper: Publication: https://doi.org/10.1038/s41592-021-01153-z Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "Organism": null,
+      "Citation": null,
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.datlinger_2021.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/datlinger_2021.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "dialogue_example",
+      "Title": "Example dataset used in DIALOGUE vignettes.",
+      "Description": "Example dataset used in DIALOGUE vignettes.",
+      "Organism": null,
+      "Citation": "https://github.com/livnatje/DIALOGUE/wiki/Example",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.dialogue_example.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/dialogue_example.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "distance_example",
+      "Title": "Example dataset used to feature distances and distance_tests.",
+      "Description": "Example dataset used to feature distances and distance_tests. Processed and subsetted version of original Perturb-seq dataset by Dixit et al.",
+      "Organism": null,
+      "Citation": null,
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.distance_example.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/distances_example_data.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "dixit_2016",
+      "Title": "Perturb-seq: scRNA-seq with pooled CRISPR-KO perturbations.",
+      "Description": "Perturb-seq: scRNA-seq with pooled CRISPR-KO perturbations. scRNA-seq with pooled CRISPR-KO perturbations in 200,000 cells across six screens unstimulated BMDC, BMDC stimulated at 3hr, TFs in K562 at 7 and 13 days post transduction, and 13 days at a higher MOI of perturbations.",
+      "Organism": null,
+      "Citation": "Dixit A, Parnas O, Li B, Chen J et al. Perturb-Seq: Dissecting Molecular Circuits with Scalable Single-Cell RNA Profiling of Pooled Genetic Screens. Cell 2016 Dec 15;167(7):1853-1866.e17. DOI:https://doi.org/10.1016/j.cell.2016.11.038",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.dixit_2016.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/dixit_2016.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "dixit_2016_raw",
+      "Title": "Perturb-seq: scRNA-seq with pooled CRISPR-KO perturbations.",
+      "Description": "Perturb-seq: scRNA-seq with pooled CRISPR-KO perturbations. scRNA-seq with pooled CRISPR-KO perturbations in 200,000 cells across six screens unstimulated BMDC, BMDC stimulated at 3hr, TFs in K562 at 7 and 13 days post transduction, and 13 days at a higher MOI of perturbations.",
+      "Organism": null,
+      "Citation": "Dixit A, Parnas O, Li B, Chen J et al. Perturb-Seq: Dissecting Molecular Circuits with Scalable Single-Cell RNA Profiling of Pooled Genetic Screens. Cell 2016 Dec 15;167(7):1853-1866.e17. DOI:https://doi.org/10.1016/j.cell.2016.11.038",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.dixit_2016_raw.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/dixit_2016_raw.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "dong_2023",
+      "Title": "Complete CINEMA-OT dataset.",
+      "Description": "Complete CINEMA-OT dataset. Ex vivo stimulation of human peripheral blood mononuclear cells (PBMC) with interferon. This is the full dataset containing 9209 cells that were stimulated with IFNb, IFNg, IFNb+IFNg, or left unstimulated. A subsampled version of the dataset is available via cinemaot_example().",
+      "Organism": null,
+      "Citation": "Preprint: https://doi.org/10.1101/2022.07.31.502173 Dataset available here: https://datadryad.org/stash/dataset/doi:10.5061/dryad.4xgxd25g1",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.dong_2023.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/dong_2023.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "frangieh_2021",
+      "Title": "Processed perturb-CITE-seq data with multi-modal RNA and protein single-cell profiling.",
+      "Description": "Processed perturb-CITE-seq data with multi-modal RNA and protein single-cell profiling. We profiled RNA and 20 surface proteins in over 218,000 cells under ~750 perturbations, chosen by their membership in an immune evasion program that is associated with immunotherapy resistance in patients.",
+      "Organism": null,
+      "Citation": "Frangieh, C.J., Melms, J.C., Thakore, P.I. et al. Multimodal pooled Perturb-CITE-seq screens in patient models define mechanisms of cancer immune evasion. Nat Genet 53, 332\u2013341 (2021). https://doi.org/10.1038/s41588-021-00779-1",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.frangieh_2021.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/frangieh_2021.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "frangieh_2021_protein",
+      "Title": "CITE-seq data of 218000 cells under 750 perturbations (only the surface protein data).",
+      "Description": "CITE-seq data of 218000 cells under 750 perturbations (only the surface protein data). Perturb-CITE-seq was developed for pooled CRISPR perturbation screens with multi-modal RNA and protein single-cell profiling readout and applied to screen patient-derived autologous melanoma and tumor infiltrating lymphocyte (TIL) co-cultures. RNA and 20 surface proteins were profiled in over 218,000 cells under ~750 perturbations, chosen by their membership in an immune evasion program that is associated with immunotherapy resistance in patients.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1038/s41588-021-00779-1 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.frangieh_2021_protein.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/frangieh_2021_protein.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "frangieh_2021_raw",
+      "Title": "Raw Perturb-CITE-seq data with multi-modal RNA and protein single-cell profiling readout.",
+      "Description": "Raw Perturb-CITE-seq data with multi-modal RNA and protein single-cell profiling readout. We profiled RNA and 20 surface proteins in over 218,000 cells under ~750 perturbations, chosen by their membership in an immune evasion program that is associated with immunotherapy resistance in patients.",
+      "Organism": null,
+      "Citation": "Frangieh, C.J., Melms, J.C., Thakore, P.I. et al. Multimodal pooled Perturb-CITE-seq screens in patient models define mechanisms of cancer immune evasion. Nat Genet 53, 332\u2013341 (2021). https://doi.org/10.1038/s41588-021-00779-1",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.frangieh_2021_raw.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/frangieh_2021_raw.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "frangieh_2021_rna",
+      "Title": "CITE-seq data of 218000 cells under 750 perturbations (only the transcriptomics data).",
+      "Description": "CITE-seq data of 218000 cells under 750 perturbations (only the transcriptomics data). Perturb-CITE-seq was developed for pooled CRISPR perturbation screens with multi-modal RNA and protein single-cell profiling readout and applied to screen patient-derived autologous melanoma and tumor infiltrating lymphocyte (TIL) co-cultures. RNA and 20 surface proteins were profiled in over 218,000 cells under ~750 perturbations, chosen by their membership in an immune evasion program that is associated with immunotherapy resistance in patients. Source paper: Publication: https://doi.org/10.1038/s41588-021-00779-1 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "Organism": null,
+      "Citation": null,
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.frangieh_2021_rna.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/frangieh_2021_rna.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "gasperini_2019_atscale",
+      "Title": "Transcriptomics of 254974 cells of chronic K562 cells with CRISPRi perturbations.",
+      "Description": "Transcriptomics of 254974 cells of chronic K562 cells with CRISPRi perturbations. Across two experiments, the authors used dCas9-KRAB to perturb 5,920 candidate enhancers with no strong a priori hypothesis as to their target gene(s) in 254,974 cells of chronic myelogenous leukemia cell line K562, with CRISPRi as the mode of perturbation.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1016/j.cell.2018.11.029 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.gasperini_2019_atscale.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/gasperini_2019_atscale.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "gasperini_2019_highmoi",
+      "Title": "K562 perturbed cells with 1119 candidate enhancers (only the high MOI part).",
+      "Description": "K562 perturbed cells with 1119 candidate enhancers (only the high MOI part). The authors used dCas9-KRAB to perturb 1,119 candidate enhancers with no strong a priori hypothesis as to their target gene(s) in the chronic myelogenous leukemia cell line K562, with CRISPRi as the mode of perturbation, where K562 cells were transduced at a high MOI (pilot library MOI = \u223c15).",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1016/j.cell.2018.11.029 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.gasperini_2019_highmoi.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/gasperini_2019_highmoi.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "gasperini_2019_lowmoi",
+      "Title": "K562 perturbed cells with 1119 candidate enhancers (only the low MOI part).",
+      "Description": "K562 perturbed cells with 1119 candidate enhancers (only the low MOI part). The authors used dCas9-KRAB to perturb 1,119 candidate enhancers with no strong a priori hypothesis as to their target gene(s) in chronic myelogenous leukemia cell line K562, with CRISPRi as the mode of perturbation, where K562 cells were transduced at a low MOI (pilot library MOI = \u223c1).",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1016/j.cell.2018.11.029 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.gasperini_2019_lowmoi.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/gasperini_2019_lowmoi.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "gehring_2019",
+      "Title": "96-plex perturbation experiment on live mouse neural stem cells.",
+      "Description": "96-plex perturbation experiment on live mouse neural stem cells. In this study, a 96-plex perturbation experiment was conducted on live mouse neural stem cells (NSCs), consisting of a pair of drug-triples with 4 drugs in total at 3 or 4 different concentractions.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1038/s41587-019-0372-z Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.gehring_2019.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/gehring_2019.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "haber_2017_regions",
+      "Title": "Raw single-cell, pooled CRISPR screening.",
+      "Description": "Raw single-cell, pooled CRISPR screening. Epithelial cells from the small intestine and organoids of mice. Some of the cells were also subject to Salmonella or Heligmosomoides polygyrus infection (day 3 and day 10).",
+      "Organism": null,
+      "Citation": "Haber, Adam L. et al. \"A single-cell survey of the small intestinal epithelium\" Nature vol. 551 (2017): 333-339 doi:10.1038/nature24489",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.haber_2017_regions.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/haber_2017_regions.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "hagai_2018",
+      "Title": "Cross-species analysis of primary dermal fibroblasts and bone marrow-derived phagocytes, stimulated with dsRNA and IFNB.",
+      "Description": "Cross-species analysis of primary dermal fibroblasts and bone marrow-derived phagocytes, stimulated with dsRNA and IFNB. The study explores immune response variations across humans, macaques, mice, and rats. Referenences: Hagai, T., Chen, X., Miragaia, R.J. et al. Gene expression variability across cells and species shapes innate immunity. Nature 563, 197\u2013202 (2018). https://doi.org/10.1038/s41586-018-0657-2",
+      "Organism": null,
+      "Citation": null,
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.hagai_2018.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/hagai_2018.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "kang_2018",
+      "Title": "Processed multiplexing droplet-based single cell RNA-sequencing using genetic barcodes.",
+      "Description": "Processed multiplexing droplet-based single cell RNA-sequencing using genetic barcodes. HiSeq 2500 data for sequencing of PBMCs from SLE patients and 2 controls. We collected 1M cells each from frozen PBMC samples that were Ficoll isolated and prepared using the 10x Single Cell instrument according to standard protocol. Samples A, B, and C were prepared on the instrument directly following thaw, while samples 2.1 and 2.2 were cultured for 6 hours with (B) or without (A) IFN-beta stimulation prior to loading on the 10x Single Cell instrument.",
+      "Organism": null,
+      "Citation": "Kang, H., Subramaniam, M., Targ, S. et al. Multiplexed droplet single-cell RNA-sequencing using natural genetic variation. Nat Biotechnol 36, 89\u201394 (2018). https://doi.org/10.1038/nbt.4042",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.kang_2018.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/kang_2018.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "mcfarland_2020",
+      "Title": "Response of various cell lines to a range of different drugs and CRISPRi perturbations.",
+      "Description": "Response of various cell lines to a range of different drugs and CRISPRi perturbations. Here, the authors developed MIX-Seq, a method for multiplexed transcriptional profiling of post-perturbation responses across many cell contexts, using scRNA-seq applied to co-treated pools of cancer cell lines. The responses of pools of 24\u201399 cell lines to a range of different drugs were profiled, as well as to CRISPR perturbations.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1038/s41467-020-17440-w Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.mcfarland_2020.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/mcfarland_2020.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "norman_2019",
+      "Title": "Processed single-cell, pooled CRISPR screening.",
+      "Description": "Processed single-cell, pooled CRISPR screening. Single-cell, pooled CRISPR screening experiment comparing the transcriptional effects of overexpressing genes alone or in combination",
+      "Organism": null,
+      "Citation": "Norman, Thomas M et al. \"Exploring genetic interaction manifolds constructed from rich single-cell phenotypes.\" Science (New York, N.Y.) vol. 365,6455 (2019): 786-793. doi:10.1126/science.aax4438",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.norman_2019.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/norman_2019.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "norman_2019_raw",
+      "Title": "Raw single-cell, pooled CRISPR screening.",
+      "Description": "Raw single-cell, pooled CRISPR screening. Single-cell, pooled CRISPR screening experiment comparing the transcriptional effects of overexpressing genes alone or in combination",
+      "Organism": null,
+      "Citation": "Norman, Thomas M et al. \"Exploring genetic interaction manifolds constructed from rich single-cell phenotypes.\" Science (New York, N.Y.) vol. 365,6455 (2019): 786-793. doi:10.1126/science.aax4438",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.norman_2019_raw.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/norman_2019_raw.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "papalexi_2021",
+      "Title": "ECCITE-seq dataset of 11 gRNAs generated from stimulated THP-1 cell line.",
+      "Description": "ECCITE-seq dataset of 11 gRNAs generated from stimulated THP-1 cell line.",
+      "Organism": null,
+      "Citation": "Papalexi, E., Mimitou, E.P., Butler, A.W. et al. Characterizing the molecular regulation of inhibitory immune checkpoints with multimodal single-cell screens. Nat Genet 53, 322\u2013331 (2021). https://doi.org/10.1038/s41588-021-00778-2",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.papalexi_2021.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/papalexi_2021.h5mu"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "replogle_2022_k562_essential",
+      "Title": "K562 cells transduced with CRISPRi (day 7 after transduction).",
+      "Description": "K562 cells transduced with CRISPRi (day 7 after transduction). For day 6 essential-scale experiment in chronic myeloid leukemia (CML) (K562) cell lines, library lentivirus was packaged into lentivirus in 293T cells and empirically measured in K562 cells to obtain viral titers. CRISPRi K562 cells were transduced and 20Q1 Cancer Dependency Map common essential genes were targeted at day 7 after transduction.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1016/j.cell.2022.05.013 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.replogle_2022_k562_essential.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/replogle_2022_k562_essential.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "replogle_2022_k562_gwps",
+      "Title": "K562 cells transduced with CRISPRi (day 8 after transduction).",
+      "Description": "K562 cells transduced with CRISPRi (day 8 after transduction). Here, the authors used a compact, multiplexed CRISPR interference (CRISPRi) library to assay thousands of loss-of-function genetic perturbations with single-cell RNA sequencing in chronic myeloid leukemia (CML) (K562) cell lines. For the K562 day 8 genome-scale Perturb-seq experiment, library lentivirus was packaged into lentivirus in 293T cells and empirically measured in K562 cells to obtain viral titers. CRISPRi K562 cells were transduced and all expressed genes were targeted at day 8 after transduction",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1016/j.cell.2022.05.013 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.replogle_2022_k562_gwps.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/replogle_2022_k562_gwps.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "replogle_2022_rpe1",
+      "Title": "RPE1 cells transduced with CRISPRi (day 7 after transduction).",
+      "Description": "RPE1 cells transduced with CRISPRi (day 7 after transduction). For day 7 essential-scale Perturb-seq experiment in retinal pigment epithelial (RPE1) cell lines, library lentivirus was packaged into lentivirus in 293T cells and empirically measured in RPE1 cells to obtain viral titers. CRISPRi RPE1 cells expressing ZIM3 KRAB-dCas9-P2A-BFP were transduced. 20Q1 Cancer Dependency Map common essential genes were targeted at day 7 after transduction.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1016/j.cell.2022.05.013 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.replogle_2022_rpe1.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/replogle_2022_rpe1.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "sc_sim_augur",
+      "Title": "Simulated test dataset used in Augur example vignettes.",
+      "Description": "Simulated test dataset used in Augur example vignettes.",
+      "Organism": null,
+      "Citation": "Obtained from https://github.com/neurorestore/Augur",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.sc_sim_augur.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/sc_sim_augur.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "schiebinger_2019_16day",
+      "Title": "Transcriptomes of 65781 iPSC cells collected over 10 time points in 2i or serum conditions (16-day time course).",
+      "Description": "Transcriptomes of 65781 iPSC cells collected over 10 time points in 2i or serum conditions (16-day time course). Samples were collected from established iPSC lines reprogrammed from the reprogramming mouse embryonic fibroblasts (MEFs), maintained in either 2i or serum conditions, at 10 time points across 16 days. Overall, 68,339 cells were profiled to an average depth of 38,462 reads per cell. After discarding cells with less than 1,000 genes detected, 65,781 cells were obtained, with a median of 2,398 genes and 7,387 unique transcripts per cell.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1016/j.cell.2019.01.006 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.schiebinger_2019_16day.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/schiebinger_2019_16day.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "schiebinger_2019_18day",
+      "Title": "Transcriptomes of 259155 iPSC cells collected over 39 time points in 2i or serum conditions (18-day time course).",
+      "Description": "Transcriptomes of 259155 iPSC cells collected over 39 time points in 2i or serum conditions (18-day time course). Samples were collected from established iPSC lines reprogrammed from the reprogramming mouse embryonic fibroblasts (MEFs), maintained in either 2i or serum conditions, over 39 time points separated by \u223c12 hours across an 18-day time course (and every 6 hours between days 8 and 9). Overall, 259,155 cells were profiled.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1016/j.cell.2019.01.006 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.schiebinger_2019_18day.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/Schiebinger_2019_18day.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "schraivogel_2020_tap_screen_chr11",
+      "Title": "TAP-seq applied to K562 cells (only chromosome 11).",
+      "Description": "TAP-seq applied to K562 cells (only chromosome 11). TAP-seq was applied to generate perturbation-based enhancer\u2013target gene maps in K562 cells. They perturbed all 1,778 putatively active enhancers predicted on the basis of ENCODE data in two regions on chromosome 8 and 11, and identified effects on expressed protein-coding genes within the same regions. Thus, in each cell, 68 (chromosome 8) or 79 (chromosome 11) target genes were measured.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1038/s41592-020-0837-5 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.schraivogel_2020_tap_screen_chr11.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/schraivogel_2020_tap_screen_chr11.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "schraivogel_2020_tap_screen_chr8",
+      "Title": "TAP-seq applied to K562 cells (only chromosome 8).",
+      "Description": "TAP-seq applied to K562 cells (only chromosome 8). TAP-seq was applied to generate perturbation-based enhancer\u2013target gene maps in K562 cells. They perturbed all 1,778 putatively active enhancers predicted on the basis of ENCODE data in two regions on chromosome 8 and 11, and identified effects on expressed protein-coding genes within the same regions. Thus, in each cell, 68 (chromosome 8) or 79 (chromosome 11) target genes were measured.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1038/s41592-020-0837-5 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.schraivogel_2020_tap_screen_chr8.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/schraivogel_2020_tap_screen_chr8.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "sciplex3_raw",
+      "Title": "Raw sciplex3 perturbation dataset curated for perturbation modeling.",
+      "Description": "Raw sciplex3 perturbation dataset curated for perturbation modeling.",
+      "Organism": null,
+      "Citation": "Srivatsan SR et al., Trapnell C. Massively multiplex chemical transcriptomics at single-cell resolution. Science. 2020 Jan 3;367(6473):45-51. doi: 10.1126/science.aax6234. Epub 2019 Dec 5. PMID: 31806696; PMCID: PMC7289078.",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.sciplex3_raw.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/sciplex3.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "sciplex_gxe1",
+      "Title": "sci-Plex-GxE profiling of A172 dCas9-KRAB (HPRT1 or MMR knockout) with 6-TG/TMZ and A172 dCas9-SunTag (HPRT1 knockout) with 6-TG.",
+      "Description": "sci-Plex-GxE profiling of A172 dCas9-KRAB (HPRT1 or MMR knockout) with 6-TG/TMZ and A172 dCas9-SunTag (HPRT1 knockout) with 6-TG.",
+      "Organism": null,
+      "Citation": "McFaline-Figueroa JL et al., Trapnell C. Multiplex single-cell chemical genomics reveals the kinase dependence of the response to targeted therapy. Cell Genomics. 2024 Volume 4, Issue 2. doi: 10.1016/j.xgen.2023.100487",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.sciplex_gxe1.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/sciPlexGxE_1_GSM7056148.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "shifrut_2018",
+      "Title": "CD8 T-cells from two donors for two conditions (SLICE and CROP-seq).",
+      "Description": "CD8 T-cells from two donors for two conditions (SLICE and CROP-seq). The authors developed a new method, single guide RNA (sgRNA) lentiviral infection with Cas9 protein electroporation (SLICE), and adapted it to allow for CROP-Seq in primary human T cells. They used a library of 48 sgRNA, derived from GW screens, to explore transcriptional changes downstream of CRISPR-KO. Dataset includes CD8 T cells from two donors, for two conditions: with TCR stimulation or No stimulation.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1016/j.cell.2018.10.024 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.shifrut_2018.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/shifrut_2018.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "smillie_2019",
+      "Title": "scRNA-seq data of the small intestine of mice under Ulcerative Colitis.",
+      "Description": "scRNA-seq data of the small intestine of mice under Ulcerative Colitis. The resulting AnnData when preparing this dataset for processing with tascCODA is available via tasccoda_example().",
+      "Organism": null,
+      "Citation": "Smillie, Christopher S et al. \"Intra- and Inter-cellular Rewiring of the Human Colon during Ulcerative Colitis.\" Cell vol. 178,3 (2019): 714-730.e22. doi:10.1016/j.cell.2019.06.029",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.smillie_2019.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/smillie_2019.h5ad.zip"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "srivatsan_2020_sciplex2",
+      "Title": "A549 cells exposed to four compounds.",
+      "Description": "A549 cells exposed to four compounds. A549, a human lung adenocarcinoma cell line, was exposed to one of four compounds: dexamethasone (a corticosteroid agonist), nutlin-3a (a p53-Mdm2 antagonist), BMS-345541 (an inhibitor of nuclear factor \u03baB\u2013dependent transcription), or vorinostat [suberoylanilide hydroxamic acid (SAHA), an HDAC inhibitor], for 24 hours across seven doses in triplicate for a total of 84 drug\u2013dose\u2013replicate combinations and additional vehicle controls. Nuclei from each well were labelled and subjected to sci-RNA-seq.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1126/science.aax6234 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.srivatsan_2020_sciplex2.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/srivatsan_2020_sciplex2.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "srivatsan_2020_sciplex3",
+      "Title": "Transcriptomes of 650000 A549, K562, and mCF7 cells exposed to 188 compounds.",
+      "Description": "Transcriptomes of 650000 A549, K562, and mCF7 cells exposed to 188 compounds. sci-Plex was used to screen three well-characterized human cancer cell lines, A549 (lung adenocarcinoma), K562 (chronic myelogenous leukemia), and MCF7 (mammary adenocarcinoma)exposed to 188 compounds, profiling ~650,000 single-cell transcriptomes across ~5000 independent samples in one experiment.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1126/science.aax6234 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.srivatsan_2020_sciplex3.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/srivatsan_2020_sciplex3.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "srivatsan_2020_sciplex4",
+      "Title": "A549 and MCF7 cells treated with pracinostat.",
+      "Description": "A549 and MCF7 cells treated with pracinostat. A549 and MCF7 cells were treated with pracinostat in the presence and absence of acetyl-CoA precursors (acetate, pyruvate, or citrate) or inhibitors of enzymes (ACLY, ACSS2, or PDH) involved in replenishing acetyl-CoA pools. After treatment, cells were harvested and processed using sci-Plex and trajectories constructed for each cell line. In both A549 and MCF7 cells, acetate, pyruvate, and citrate supplementation was capable of blocking pracinostat-treated cells from reaching the end of the HDAC inhibitor trajectory.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1126/science.aax6234 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.srivatsan_2020_sciplex4.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/srivatsan_2020_sciplex4.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "stephenson_2021_subsampled",
+      "Title": "Processed 10X 5' scRNA-seq data from PBMC of COVID-19 patients and healthy donors.",
+      "Description": "Processed 10X 5' scRNA-seq data from PBMC of COVID-19 patients and healthy donors. The study profiled peripheral blood mononuclear cells from 90 COVID-19 patients with different disease severity and 23 healthy control donors. Here the dataset was downsampled to approx. 500 cells per donor and cells were mapped to a reference atlas of healthy PBMCs from 12 studies with scArches.",
+      "Organism": null,
+      "Citation": "Stephenson, E., Reynolds, G., Botting, R. A., et al. (2021). Single-cell multi-omics analysis of the immune response in COVID-19. Nature Medicine, 27(5). https://doi.org/10.1038/s41591-021-01329-2",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.stephenson_2021_subsampled.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/stephenson_2021_subsampled.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "tasccoda_example",
+      "Title": "Example for the coda part of a mudata object.",
+      "Description": "Example for the coda part of a mudata object. Resulting AnnData object (mudata['coda']) when preparing a dataset for processing with tascCODA. Created using the smillie dataset, which comprises scRNA-seq data of the small intestine of mice under Ulcerative Colitis. The full dataset containing the actual count data can be obtained via smillie_2019().",
+      "Organism": null,
+      "Citation": "Smillie, Christopher S et al. \"Intra- and Inter-cellular Rewiring of the Human Colon during Ulcerative Colitis.\" Cell vol. 178,3 (2019): 714-730.e22. doi:10.1016/j.cell.2019.06.029",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.tasccoda_example.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/tasccoda_smillie.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "tian_2019_day7neuron",
+      "Title": "Transcriptomes of 20000 day 7 neurons targeted by 58 gRNAs.",
+      "Description": "Transcriptomes of 20000 day 7 neurons targeted by 58 gRNAs. The authors performed single-cell RNA sequencing of \u223c20,000 day 7 neurons via 10x Genomics platform. Transcripts containing sgRNA sequences were further amplified to facilitate sgRNA identity assignment among a pool of 58 sgRNAs (two sgRNAs targeting 27 selected gene and four non-targeting control sgRNAs). Following sequencing, transcriptomes and sgRNA identities were mapped to individual cells. High data quality for neurons was evident from \u223c91,000 mean reads per cell, the median number of \u223c4,600 genes detected per cell and \u223c8,400 cells to which a unique sgRNA could be assigned after quality control.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1016/j.neuron.2019.07.014 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.tian_2019_day7neuron.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/tian_2019_day7neuron.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "tian_2019_ipsc",
+      "Title": "Transcriptomics of 20000 iPSCs targeted by 58 sgRNAs.",
+      "Description": "Transcriptomics of 20000 iPSCs targeted by 58 sgRNAs. The authors performed single-cell RNA sequencing of \u223c20,000 iPSCs via 10x Genomics platform. Transcripts containing sgRNA sequences were further amplified to facilitate sgRNA identity assignment among a pool of 58 sgRNAs (two sgRNAs targeting 27 selected gene and four non-targeting control sgRNAs). Following sequencing, transcriptomes and sgRNA identities were mapped to individual cells. High data quality for iPSCs was evident from \u223c84,000 mean reads per cell, the median number of \u223c5,000 genes detected per cell and \u223c15,000 cells to which a unique sgRNA could be assigned after quality control.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1016/j.neuron.2019.07.014 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.tian_2019_ipsc.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/tian_2019_iPad.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "tian_2021_crispra",
+      "Title": "CROP-seq of 50000 neurons treated with 374 gRNAs (CRISPRa only).",
+      "Description": "CROP-seq of 50000 neurons treated with 374 gRNAs (CRISPRa only). For CRISPRa, 100 genes were inclued in the CROP-seq experiments. The CROP-seq libraries included 2 sgRNAs per gene plus 6 non-targeting control sgRNAs for a total of 206 sgRNAs. On Day 10 after CRISPRa neurons were infected by the CROP-seq sgRNA library, approximately 50,000 CRISPRi neurons were loaded into 10X chips with about 25,000 input cells per lane.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1038/s41593-021-00862-0 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.tian_2021_crispra.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/tian_2021_crispra.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "tian_2021_crispri",
+      "Title": "CROP-seq of 98000 neurons treated with 374 gRNAs (CRISPRi only).",
+      "Description": "CROP-seq of 98000 neurons treated with 374 gRNAs (CRISPRi only). For CRISPRi, 184 genes were inclued in the CROP-seq experiments. The CROP-seq libraries included 2 sgRNAs per gene plus 6 non-targeting control sgRNAs for a total of 374 sgRNAs. On Day 10 after CRISPRi neurons were infected by the CROP-seq sgRNA library, approximately 98,000 CRISPRi neurons were loaded into 10X chips with about 25,000 input cells per lane.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1038/s41593-021-00862-0 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.tian_2021_crispri.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/tian_2021_crispri.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "weinreb_2020",
+      "Title": "Mouse embryonic stem cells under different cytokines across time.",
+      "Description": "Mouse embryonic stem cells under different cytokines across time. The authors developed a tool called LARRY (lineage and RNA recovery) and applied it to mouse embryonic stem cells under different cytokine conditions across time.",
+      "Organism": null,
+      "Citation": "Publication: https://www.science.org/doi/10.1126/science.aaw3381 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.weinreb_2020.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/weinreb_2020.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "xie_2017",
+      "Title": "Single-cell transcriptomics of 51448 cells generated with Mosaic-seq.",
+      "Description": "Single-cell transcriptomics of 51448 cells generated with Mosaic-seq. Mosaic-seq was applied to 71 constituent enhancers from 15 super-enhancers, this analysis of 51,448 sgRNA-induced transcriptomes finds that only a small number of constituents are major effectors of target gene expression.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1016/j.molcel.2017.03.007 Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.xie_2017.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/xie_2017.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "zhang_2021",
+      "Title": "Single-cell RNA-seq of TNBC patients' immune cells exposed to paclitaxel alone or combined with the anti-PD-L1 atezolizumab.",
+      "Description": "Single-cell RNA-seq of TNBC patients' immune cells exposed to paclitaxel alone or combined with the anti-PD-L1 atezolizumab. This analysis, involving 22 patients, identifies immune subtypes predictive of therapeutic responses and underscores potential limitations of combining paclitaxel with atezolizumab in treatment protocols. The script that generated this specific AnnData object: https://github.com/tessadgreen/ThesisCode/blob/main/Chapter3/drug_response/import_zhang_data.ipynb This dataset does not contain the single-cell ATAC-seq data that was also measured for the paper.",
+      "Organism": null,
+      "Citation": "Zhang Y et al., Liu Z. Single-cell analyses reveal key immune cell subsets associated with response to PD-L1 blockade in triple-negative breast cancer. Cancer Cell. 2021 Volume 39, Issue 12. doi: https://doi.org/10.1016/j.ccell.2021.09.010",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.zhang_2021.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/zhang_2021.h5ad"
+      ],
+      "NativeImportSupported": false
+    },
+    {
+      "Provider": "Pertpy",
+      "ID": "zhao_2021",
+      "Title": "Multiplexed drug perturbation from freshly resected tumors.",
+      "Description": "Multiplexed drug perturbation from freshly resected tumors. This study combines multiplexed drug perturbation in acute slice culture from freshly resected tumors with scRNA-seq to profile transcriptome-wide drug responses in individual patients. They applied this approach to drug perturbations on slices derived from six glioblastoma (GBM) resections to identify conserved drug responses and to one additional GBM resection to identify patient-specific responses.",
+      "Organism": null,
+      "Citation": "Publication: https://doi.org/10.1186/s13073-021-00894-y Obtained from scperturb: http://projects.sanderlab.org/scperturb/",
+      "DocumentationURL": "https://pertpy.scverse.org/en/stable/api/data/pertpy.data.zhao_2021.html",
+      "SourceURL": "https://github.com/scverse/pertpy/blob/40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82/src/pertpy/data/_datasets.py",
+      "SourceRevision": "40dfeb6a5a50ef557d0d57baaea4aa33e6cbcf82",
+      "DownloadURLs": [
+        "https://exampledata.scverse.org/pertpy/zhaoSims2021.h5ad"
+      ],
+      "NativeImportSupported": false
+    }
+  ]
+}
