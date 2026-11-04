@@ -118,6 +118,8 @@ Pull requests and pushes are checked by the workflows in `.github/workflows/`.
 Ordinary commits run CI; do not add skip markers as a routine convention.
 The Python validators run without a Wolfram license. Wolfram runtime and build
 jobs need an appropriate license entitlement configured for this repository.
+The shared license action configures `WOLFRAMINIT` for direct child kernels and
+checks that the entitlement permits a parent and fresh child kernel together.
 
 Repository setup is not evidence that hosted CI has run. Confirm the first
 hosted run after a remote and its secrets are configured. Keep credentials in
