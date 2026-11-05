@@ -55,6 +55,9 @@ CheckAbort[
     Scan[restoreGuideImages, converted["Notebooks"]];
     If[StringQ[converted["Definition"]],
         restoreResourceDescription[converted["Definition"], FileNameJoin[{root, "docs", "ResourceDefinition.md"}]]];
+    descriptionHTML = UsingFrontEnd[resourceDescriptionHTML[FileNameJoin[{root, "docs", "ResourceDefinition.md"}]]];
+    If[!StringQ[descriptionHTML], fail["resource description did not render"]];
+    Export[FileNameJoin[{root, "build", "resource-description.html"}], descriptionHTML, "Text"];
     Print["Documentation pages: ", Length[converted["Notebooks"]]];
     If[command === "notebooks", Exit[0]];
     built = require[WolframInstitute`PacletPage`DeployPacletResource[pacletDirectory,
@@ -69,9 +72,10 @@ CheckAbort[
         If[Lookup[site, "Failed", {"missing result"}] =!= {}, fail[site]]
     ];
     If[command === "publish",
-        published = require[WolframInstitute`PacletPage`PublishPacletPage[pacletDirectory, "BioDataLink",
+        published = require[withResourceDescription[FileNameJoin[{root, "docs", "ResourceDefinition.md"}],
+            WolframInstitute`PacletPage`PublishPacletPage[pacletDirectory, "BioDataLink",
             "Account" -> $WolframID, "Build" -> False, "Monitor" -> True,
-            "ResourceOptions" -> {"Build" -> False, "Exclude" -> archiveExclusions, "HeroImage" -> heroFile}], "publication"];
+            "ResourceOptions" -> {"Build" -> False, "Exclude" -> archiveExclusions, "HeroImage" -> heroFile}]], "publication"];
         If[!AllTrue[Lookup[published, {"Resource", "Site", "Check"}, None], AssociationQ],
             fail["publication returned incomplete resource, site or verification records"]];
         publicationRecord = Join[KeyTake[published["Resource"], {"Resource", "Version", "Commit"}],

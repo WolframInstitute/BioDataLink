@@ -43,17 +43,63 @@ restoreGuideImages[file_String] := Module[{plan, notebook, abstracts},
     Put[notebook, file]
 ];
 
-(* Basic Description paragraphs become Text cells, level-3 headings Subsubsection cells and list
-   items Item cells, which the resource page renders as paragraphs, small headings and items. The
-   definition notebook's hints suggest at most 10 cells in the section. *)
-descriptionCells[markdown_String] := Module[{blocks = BioDataLinkDocs`litParse[Import[markdown, "Text"]]["Blocks"], start},
+(* Keep description headings and lists as ordinary text cells: the front end groups section
+   styles, and the resource page turns those groups into accordions. Each list occupies one cell. *)
+descriptionBlocks[markdown_String] := Module[{blocks = BioDataLinkDocs`litParse[Import[markdown, "Text"]]["Blocks"], start, selected},
     start = FirstPosition[blocks, KeyValuePattern[{"Type" -> "Heading", "Level" -> 2, "Text" -> "Basic Description"}], None, {1}];
     If[start === None, fail["no Basic Description in " <> markdown]];
-    Catenate[Replace[TakeWhile[Drop[blocks, First[start]], !(#["Type"] === "Heading" && #["Level"] <= 2) &], {
-        block : KeyValuePattern["Type" -> "Prose"] :> {Cell[TextData[BioDataLinkDocs`inlineTextData[block["Text"]]], "Text"]},
-        block : KeyValuePattern[{"Type" -> "Heading", "Level" -> 3}] :> {Cell[block["Text"], "Subsubsection"]},
-        block : KeyValuePattern["Type" -> "List"] :> (Cell[TextData[BioDataLinkDocs`inlineTextData[#]], "Item"] & /@ block["Items"]),
-        block_ :> fail["the Basic Description supports paragraphs, level-3 headings and lists, not " <> block["Type"]]}, {1}]]
+    selected = TakeWhile[Drop[blocks, First[start]], !(#["Type"] === "Heading" && #["Level"] <= 2) &];
+    If[!AllTrue[selected, MemberQ[{"Prose", "List"}, #["Type"]] || (#["Type"] === "Heading" && #["Level"] === 3) &],
+        fail["the Basic Description supports paragraphs, level-3 headings and lists"]];
+    selected
+];
+descriptionCells[markdown_String] := Map[Switch[#["Type"],
+    "Prose", Cell[TextData[BioDataLinkDocs`inlineTextData[#["Text"]]], "Text"],
+    "Heading", Cell[TextData[{StyleBox[ToUpperCase[#["Text"]], FontWeight -> "Bold"]}], "Text"],
+    "List", Cell[TextData[Flatten[Riffle[BioDataLinkDocs`inlineTextData /@ #["Items"], "\n"]]], "Text", LineSpacing -> {1.4, 0}]
+] &, descriptionBlocks[markdown]];
+
+(* The native web exporter discards row styling. Render only this description as semantic HTML;
+   the surrounding resource page, hero and documentation keep their standard publisher layout. *)
+$resourceDescriptionCSS = Import[FileNameJoin[{DirectoryName[$InputFileName], "resource-description.css"}], "Text"];
+descriptionInline[""] := {};
+descriptionInline[text_String] := Module[{xml, paragraphs},
+    xml = DeployedResourceShingle`Private`resourceSystemTransmogrify["Paclet", "WolframInstitute/BioDataLink",
+        Notebook[{Cell[TextData[BioDataLinkDocs`inlineTextData[text]], "Text"]}]];
+    paragraphs = Cases[xml, XMLElement["p", _, contents_List] :> contents, Infinity];
+    If[Length[paragraphs] =!= 1, fail["could not render description text: " <> text]];
+    First[paragraphs]
+];
+descriptionRow[text_String] := Module[{rowSeparator = StringPosition[text, ": ", 1], rowLabel, rowDetail},
+    If[rowSeparator === {}, fail["description list items must use Label: detail"]];
+    {rowLabel, rowDetail} = {StringTake[text, rowSeparator[[1, 1]] - 1], StringDrop[text, rowSeparator[[1, 2]]]};
+    If[StringTrim[rowLabel] === "" || StringTrim[rowDetail] === "", fail["description rows need a label and detail"]];
+    XMLElement["div", {"class" -> "biodatalink-description-row"}, {
+        XMLElement["dt", {}, descriptionInline[rowLabel]], XMLElement["dd", {}, descriptionInline[rowDetail]]}]
+];
+resourceDescriptionHTML[markdown_String] := Module[{elements},
+    Needs["PacletResource`"];
+    Needs["ResourceSystemClient`"];
+    ResourceSystemClient`Private`loadDeployResourceShingle[];
+    If[!StringQ[$resourceDescriptionCSS], fail["missing resource-description.css"]];
+    elements = Map[Switch[#["Type"],
+        "Prose", XMLElement["p", {"class" -> "biodatalink-description-intro"}, descriptionInline[#["Text"]]],
+        "Heading", XMLElement["h3", {"class" -> "biodatalink-description-heading"}, descriptionInline[#["Text"]]],
+        "List", XMLElement["dl", {}, descriptionRow /@ #["Items"]]
+    ] &, descriptionBlocks[markdown]];
+    ExportString[XMLElement["div", {"class" -> "biodatalink-description"},
+        Prepend[elements, XMLElement["style", {}, {$resourceDescriptionCSS}]]],
+        "XML", "Annotations" -> {}, "AttributeQuoting" -> "\"", "ElementFormatting" -> None]
+];
+SetAttributes[withResourceDescription, HoldRest];
+withResourceDescription[markdown_String, expression_] := With[{html = resourceDescriptionHTML[markdown]},
+    If[DownValues[PacletResource`Private`moreDescriptionHTML] === {}, fail["resource description renderer unavailable"]];
+    Internal`InheritedBlock[{PacletResource`Private`moreDescriptionHTML},
+        PrependTo[DownValues[PacletResource`Private`moreDescriptionHTML],
+            HoldPattern[PacletResource`Private`moreDescriptionHTML[
+                as_?(AssociationQ[#] && Lookup[#, "Name", None] === "WolframInstitute/BioDataLink" &), cells_]] :> html];
+        expression
+    ]
 ];
 $descriptionHead = Cell[_, "Subsection", ___, CellTags -> {___, "LongDescription", ___}, ___];
 restoreResourceDescription[notebook_String, markdown_String] := Module[{cells = descriptionCells[markdown], definition},

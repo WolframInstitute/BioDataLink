@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.6 — 2026-11-05
+
+- Keep both resource-page lists visible. Replace accordion headings with static
+  labels and align the rows with muted detail text and thin separators.
+- Give bacterial and coronavirus genomes separate rows. Keep the description
+  within the resource's cell limit by storing each list in one text cell.
+- Check the description after front-end grouping and verify that the published
+  HTML cannot become an accordion. Scope the layout to BioDataLink's description.
+
 ## 0.3.5 — 2026-11-05
 
 - Show searchable sources and the tutorials' real datasets beside the resource

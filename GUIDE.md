@@ -266,8 +266,12 @@ the image summarizes them.
 The pinned converter drops guide images and keeps only the prose of the
 resource definition's Basic Description. The documentation build restores both
 and renames staged images by content, so a changed image reaches cached pages.
-The Basic Description may hold paragraphs, level-3 headings and lists, up to 10
-cells in all; the resource page shows them beside `docs/Hero.png`.
+The Basic Description may hold paragraphs, level-3 headings and lists. Write
+each list item as `Label: detail`. The build keeps headings and lists in plain
+text cells and publishes static headings with aligned rows beside `docs/Hero.png`.
+Each list occupies one notebook cell, within the resource's 10-cell hint.
+Check the complete page in a browser: the publisher groups section-style cells,
+and its script turns those groups into accordions with only the first open.
 
 ### Documentation verification
 

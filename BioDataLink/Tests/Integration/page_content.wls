@@ -54,7 +54,7 @@ fourth = runBuild[];
 definitionSource = FileNameJoin[{root, "docs", "ResourceDefinition.md"}];
 Export[definitionSource, "---\nTemplate: Paclet\nResourceType: Paclet\nName: WolframInstitute/BioDataLink\nContext: WolframInstitute`BioDataLink`\n" <>
     "Paclet: WolframInstitute/BioDataLink\nDescription: Probe\n---\n\n## Basic Description\n\nA *probe* paragraph.\n\n### Probe heading\n\n" <>
-    "- First item\n- Second item\n\n## Details & Options\n\n- A detail\n", "Text"];
+    "- First item: <tag> & detail\n- Second item: Another detail\n\n## Details & Options\n\n- A detail\n", "Text"];
 definition = FileNameJoin[{root, "ResourceDefinition.nb"}];
 Put[UsingFrontEnd[BioDataLinkDocs`MarkdownToNotebook[definitionSource]], definition];
 descriptionCellsIn[nb_] := First[Cases[nb, Cell[CellGroupData[{$descriptionHead, rest___}, _], ___] :> {rest}, Infinity]];
@@ -66,7 +66,12 @@ twice = Get[definition];
 Needs["PacletResource`"];
 Needs["ResourceSystemClient`"];
 Quiet[Get["ResourceSystemClient`WebpageDeployment`DeployedResourceShingle`"]];
-html = UsingFrontEnd[PacletResource`Private`moreDescriptionHTML[<|"Name" -> "WolframInstitute/BioDataLink"|>, descriptionCellsIn[once]]];
+opened = UsingFrontEnd[Module[{notebook = NotebookOpen[definition, Visible -> False]},
+    WithCleanup[NotebookGet[notebook], NotebookClose[notebook]]]];
+rendererBefore = DownValues[PacletResource`Private`moreDescriptionHTML];
+html = UsingFrontEnd[withResourceDescription[definitionSource,
+    PacletResource`Private`moreDescriptionHTML[<|"Name" -> "WolframInstitute/BioDataLink"|>, descriptionCellsIn[opened]]]];
+rendererRestored = DownValues[PacletResource`Private`moreDescriptionHTML] === rendererBefore;
 report = TestReport[{
     VerificationTest[abstractStyles[first["Guide"]], {"GuideAbstract", "ExampleImage", "GuideAbstract"}, TestID -> "PageImages-GuideImageBetweenAbstractParagraphs"],
     VerificationTest[{imageSizes[first["Guide"]], imageSizes[first["Tutorial"]]}, {{{20, 12}}, {{20, 12}}}, TestID -> "PageImages-ImageReachesGuideAndTutorial"],
@@ -79,12 +84,17 @@ report = TestReport[{
     VerificationTest[{imageSizes[fourth["Guide"]], imageSizes[fourth["Tutorial"]]}, {{}, {}}, TestID -> "PageImages-RemovedImagesStayRemoved"],
     VerificationTest[Count[{first, second, third, fourth}, Cell[_, "Message", ___], Infinity], 0, TestID -> "PageImages-NoSavedMessages"],
     VerificationTest[converterStyles, {"Text"}, TestID -> "ResourceDescription-ConverterKeepsOnlyProse"],
-    VerificationTest[descriptionCellsIn[once][[All, 2]], {"Text", "Subsubsection", "Item", "Item"}, TestID -> "ResourceDescription-SectionRebuilt"],
+    VerificationTest[descriptionCellsIn[once][[All, 2]], {"Text", "Text", "Text"}, TestID -> "ResourceDescription-SectionRebuilt"],
     VerificationTest[once === twice, True, TestID -> "ResourceDescription-RestoreIsRepeatable"],
-    VerificationTest[{StringContainsQ[html, "<h4>Probe heading</h4>"], StringCount[html, "notes item"], StringContainsQ[html, "<i class=\"ti\">probe</i>"]},
-        {True, 2, True}, TestID -> "ResourceDescription-RendersAsResourcePageHTML"]
+    VerificationTest[{StringContainsQ[html, "<h3 class=\"biodatalink-description-heading\">Probe heading</h3>"],
+        StringCount[html, "class=\"biodatalink-description-row\""], StringContainsQ[html, "<i class=\"ti\">probe</i>"]},
+        {True, 2, True}, TestID -> "ResourceDescription-RendersAsResourcePageHTML"],
+    VerificationTest[{FreeQ[descriptionCellsIn[opened], _CellGroupData], StringFreeQ[html, {"cell-group", "nb-collapse"}]},
+        {True, True}, TestID -> "ResourceDescription-NoAccordionAfterFrontEndGrouping"],
+    VerificationTest[rendererRestored, True, TestID -> "ResourceDescription-RendererOverrideIsScoped"],
+    VerificationTest[StringContainsQ[html, "&lt;tag&gt; &amp; detail"], True, TestID -> "ResourceDescription-EscapesLiteralText"]
 }];
 If[report["TestsFailedCount"] > 0, Print[report]; Print[{abstractStyles /@ {first["Guide"], third["Guide"]}, imageSizes /@ {third["Guide"], third["Tutorial"]},
     Keys[third["Build"]]}]];
 Print["Page content checks: ", report["TestsSucceededCount"], " passed; ", report["TestsFailedCount"], " failed."];
-Exit[If[report["TestsFailedCount"] === 0 && report["TestsSucceededCount"] === 13, 0, 1]];
+Exit[If[report["TestsFailedCount"] === 0 && report["TestsSucceededCount"] === 16, 0, 1]];

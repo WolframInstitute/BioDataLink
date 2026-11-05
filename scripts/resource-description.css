@@ -1,0 +1,35 @@
+.biodatalink-description {
+  color: #243038;
+  line-height: 1.55;
+}
+.biodatalink-description .biodatalink-description-intro {
+  margin: .75em 0 1.5em;
+  line-height: 1.6;
+}
+.biodatalink-description .biodatalink-description-heading {
+  margin: 1.7em 0 .65em;
+  color: #65737b;
+  font-size: .78em;
+  font-weight: 600;
+  letter-spacing: .08em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+.biodatalink-description dl {
+  margin: 0 0 1.5em;
+}
+.biodatalink-description .biodatalink-description-row {
+  padding: .55em 0;
+  border-bottom: 1px solid #dfe6ea;
+}
+.biodatalink-description dt,
+.biodatalink-description dd {
+  display: inline;
+  margin: 0;
+  font-size: 1em;
+  font-weight: 400;
+}
+.biodatalink-description dd {
+  margin-left: .4em;
+  color: #65737b;
+}
