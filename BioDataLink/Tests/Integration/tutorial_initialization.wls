@@ -1,7 +1,7 @@
 #!/usr/bin/env wolframscript
 (* Local converter regression; requires make bootstrap and a licensed front end. *)
 repositoryRoot = DirectoryName[$InputFileName, 4];
-fail[text_] := (Print["ERROR: ", text]; Exit[1]);
+fail[text_] := (Print["ERROR: ", text]; Developer`UninstallFrontEnd[]; Exit[1]);
 Scan[PacletDirectoryLoad, {FileNameJoin[{repositoryRoot, "BioDataLink"}],
     FileNameJoin[{repositoryRoot, ".deps", "PacletPage"}],
     FileNameJoin[{repositoryRoot, ".deps", "WolframParser", "Parser"}]}];
@@ -86,4 +86,6 @@ report = TestReport[{
 }];
 If[report["TestsFailedCount"] > 0, Print[report]];
 Print["Initialization checks: ", report["TestsSucceededCount"], " passed; ", report["TestsFailedCount"], " failed."];
+(* NotebookEvaluate leaves a server front-end link open; close this script's link before exiting. *)
+Developer`UninstallFrontEnd[];
 Exit[If[report["TestsFailedCount"] === 0 && report["TestsSucceededCount"] === 17, 0, 1]];

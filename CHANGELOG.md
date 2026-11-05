@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.5 — 2026-11-05
+
+- Show searchable sources and the tutorials' real datasets beside the resource
+  page hero. Preserve headings and lists when converting the description.
+- Add computed opening images to two guides and five real-data tutorials.
+  `make images` rebuilds all eight documentation images offline; `make hero`
+  rebuilds only the resource-page hero.
+- Invalidate cached pages when an image changes and preserve image removal
+  across repeated builds. Check placement, caching and resource-page HTML.
+- Close the initialization test's front-end connection before exiting so
+  piped test runs finish without leaving a kernel running.
+
 ## 0.3.4 — 2026-11-05
 
 - Add a resource-page hero showing prefixes from the bundled Identifiers.org

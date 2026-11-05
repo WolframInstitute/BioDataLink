@@ -4,12 +4,13 @@
 root = DirectoryName[$InputFileName, 2];
 pacletDirectory = FileNameJoin[{root, "BioDataLink"}];
 archiveExclusions = {"__pycache__", "*/__pycache__", "*.pyc"};
-heroFile = FileNameJoin[{root, "docs", "Hero.png"}]; (* the resource page image; make hero rebuilds it *)
+heroFile = FileNameJoin[{root, "docs", "Hero.png"}]; (* the resource page image; make images rebuilds it *)
 command = If[Length[$ScriptCommandLine] > 1, $ScriptCommandLine[[2]], "build"];
 fail[text_] := (Print["ERROR: ", text]; Exit[1]);
 require[result_, label_] := If[AssociationQ[result], result, fail[{label, result}]];
 
 Get[FileNameJoin[{root, "scripts", "tutorial-initialization.wl"}]];
+Get[FileNameJoin[{root, "scripts", "page-content.wl"}]];
 If[!MemberQ[{"build", "notebooks", "site", "publish"}, command], fail["expected build, notebooks, site or publish"]];
 CheckAbort[
     manifest = Import[FileNameJoin[{root, "scripts", "build-dependencies.json"}], "RawJSON"];
@@ -33,6 +34,7 @@ CheckAbort[
     Block[{$Context = "BioDataLinkDocs`", $ContextPath = {"System`"}},
         Get[FileNameJoin[{root, ".deps", "MarkdownToNotebook", "MarkdownToNotebook.wl"}]]];
     documentationSource = stageDocumentation[];
+    stagePageImages[documentationSource];
     If[command === "publish",
         user = Environment["WOLFRAM_CLOUD_USER"];
         If[!StringQ[user] || user === "", fail["set WOLFRAM_CLOUD_USER to the publishing account"]];
@@ -50,13 +52,16 @@ CheckAbort[
     If[Lookup[converted, "Failed", {"missing result"}] =!= {} ||
             Lookup[converted, "Unevaluated", <||>] =!= <||>, fail[converted]];
     Scan[restoreTutorialInitialization, converted["Notebooks"]];
+    Scan[restoreGuideImages, converted["Notebooks"]];
+    If[StringQ[converted["Definition"]],
+        restoreResourceDescription[converted["Definition"], FileNameJoin[{root, "docs", "ResourceDefinition.md"}]]];
     Print["Documentation pages: ", Length[converted["Notebooks"]]];
     If[command === "notebooks", Exit[0]];
     built = require[WolframInstitute`PacletPage`DeployPacletResource[pacletDirectory,
         "DryRun" -> True, "TimeConstraint" -> 300, "MaxFailures" -> 0,
         "Exclude" -> archiveExclusions, "HeroImage" -> heroFile, "Monitor" -> True], "archive build"];
     If[!StringQ[built["Archive"]] || !FileExistsQ[built["Archive"]], fail["archive missing"]];
-    If[!TrueQ[built["HeroImage"]], fail["resource page image missing or unreadable; run make hero"]];
+    If[!TrueQ[built["HeroImage"]], fail["resource page image missing or unreadable; run make images"]];
     Print["Archive: ", built["Archive"]];
     If[command === "site",
         site = require[WolframInstitute`PacletPage`BuildPacletPageSite[pacletDirectory,

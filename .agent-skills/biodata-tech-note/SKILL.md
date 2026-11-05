@@ -32,8 +32,9 @@ Make each figure a single copyable input, using `With` for short figure-only
 setup. Keep shared data and scientific selections as explicit prerequisites;
 do not repeat the full workflow in every plot.
 
-Use computed plots for patterns and compact tables for exact metadata. Include
-axes and scales that preserve the data's meaning, and choose plot types and
+Use computed plots for patterns and compact tables for exact metadata. An
+opening image follows [Page images](../../GUIDE.md#page-images-and-the-resource-description).
+Include axes and scales that preserve the data's meaning, and choose plot types and
 color maps by the [Figures](../../GUIDE.md#figures) rules. Follow
 [Reproducible examples](../../GUIDE.md#reproducible-examples) and run independent
 inputs as well as the whole page. A plot from synthetic data demonstrates the

@@ -16,6 +16,10 @@ MN996532.2 ([Zhou et al. 2020](https://doi.org/10.1038/s41586-020-2012-7));
 and SARS-CoV Tor2, NC_004718.3
 ([Marra et al. 2003](https://doi.org/10.1126/science.1085953)).
 
+The examples below compare shared sequence words and dinucleotide composition:
+
+![Shared 12-letter word fractions along SARS-CoV-2 and dinucleotide relative abundance in three genomes](../Images/ComparingCoronavirusGenomes.png "ExampleImage")
+
 These are descriptive sequence comparisons. They do not measure infectivity,
 host range or functional effects. Evaluate **Initialization**, then run the examples in order.
 

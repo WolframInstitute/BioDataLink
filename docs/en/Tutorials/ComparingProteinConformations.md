@@ -14,6 +14,10 @@ Compare two *E. coli* adenylate kinase structures:
 [1AKE](https://www.rcsb.org/structure/1AKE) (closed, bound to the inhibitor Ap5A).
 The bundled PDB files are unmodified, compressed copies distributed under CC0.
 
+The examples below superpose the two structures and map how Cα distances change:
+
+![Open and closed adenylate kinase superposed by region, and the closed-minus-open distance map](../Images/ComparingProteinConformations.png "ExampleImage")
+
 The goal is to locate structural differences and candidate bending regions.
 Two crystal structures do not reveal a motion pathway or populations in solution.
 Evaluate **Initialization**, then run the examples in order.

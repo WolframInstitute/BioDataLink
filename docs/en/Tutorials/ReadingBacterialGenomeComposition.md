@@ -14,6 +14,10 @@ Examine strand composition and gene orientation in the linear chromosome of
 NC_001318.1 contains 910,724 bases and gene annotations
 ([Fraser et al. 1997](https://doi.org/10.1038/37551)); plasmids are excluded.
 
+The examples below locate where strand composition reverses and count sequence words:
+
+![GC skew changing sign at the origin, with the bases there drawn as a helix, and eight-base word frequencies](../Images/ReadingBacterialGenomeComposition.png "ExampleImage")
+
 Evaluate **Initialization**, then run the examples in order.
 
 ## Load the sequence

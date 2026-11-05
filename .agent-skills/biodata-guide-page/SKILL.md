@@ -42,7 +42,8 @@ documentation links, following [page roles](../../GUIDE.md#page-roles-and-naviga
 If a guide includes a figure, keep its short plotting setup and call in one
 copyable input; use `With` for local values and state any data prerequisites.
 Put extended workflows and helpers in a linked tutorial, whose final
-Initialization group remains closed by default.
+Initialization group remains closed by default. An opening image follows
+[Page images](../../GUIDE.md#page-images-and-the-resource-description).
 
 Check that the hub reaches the guide, related pages exist, and filename,
 metadata and URI agree. Use destination titles for related-page links and one

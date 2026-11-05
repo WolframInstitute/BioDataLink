@@ -16,6 +16,10 @@ Male C57BL/6J mice were sampled hourly in constant darkness, from circadian
 time (CT) 18 to 65. CT 0 starts the subjective day. Each array pools 3–5 mice;
 there is one array per time point.
 
+The examples below fit a 24-hour rhythm to each probe set and order the strongest by peak time:
+
+![Fitted 24-hour rhythms of five clock genes and a heat map of strongly rhythmic probe sets by peak time](../Images/FindingCircadianRhythms.png "ExampleImage")
+
 The subset contains probes for 19 clock genes plus 2,000 randomly selected
 probe sets. It preserves deposited MAS5 signals. The paper used GCRMA estimates
 and MAS5 presence calls; this tutorial does not reproduce that preprocessing.

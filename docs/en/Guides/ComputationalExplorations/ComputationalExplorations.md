@@ -18,6 +18,8 @@ circadian rhythms using bundled public data. Further examples explore
 measurement scales, similarity, prediction and model comparison using Iris
 measurements or labeled synthetic data.
 
+![One labeled view from each real-data tutorial](../../Images/ComputationalExplorations.png "ExampleImage")
+
 WL denotes a built-in Wolfram Language function.
 
 ## Functions

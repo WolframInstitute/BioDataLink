@@ -18,6 +18,8 @@ matrix import. It supports the Identifiers.org directory, Pertpy catalog,
 BioStudies and GEO metadata, BioDataLink JSON and selected AnnData H5AD data.
 Results retain identifiers, metadata and provenance.
 
+![Views of the bundled real data, linked to the BioDataLink mark](../Images/BioDataLink.png "ExampleImage")
+
 WL denotes a built-in Wolfram Language function.
 
 ## Functions

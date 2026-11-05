@@ -251,6 +251,24 @@ Choose color by value type
 Label groups and reuse their colors. UMAP can distort global distances,
 densities and group sizes; check conclusions in the analysis space.
 
+### Page images and the resource description
+
+A guide or tutorial may open with one image that `make images` builds from
+bundled data. A tutorial image runs that tutorial's code, so it shows the page's
+own results; rebuild images after changing a tutorial, the bundled data or the
+source directory. Store page images in `docs/en/Images`, named after the page.
+Place a guide image after an Abstract paragraph, and a tutorial image after the
+introduction with a short lead-in ending in a colon. Give it the title
+`"ExampleImage"`, as in `![text](../Images/Page.png "ExampleImage")`, so pages
+show a figure without an output label. The page still computes its figures;
+the image summarizes them.
+
+The pinned converter drops guide images and keeps only the prose of the
+resource definition's Basic Description. The documentation build restores both
+and renames staged images by content, so a changed image reaches cached pages.
+The Basic Description may hold paragraphs, level-3 headings and lists, up to 10
+cells in all; the resource page shows them beside `docs/Hero.png`.
+
 ### Documentation verification
 
 Run examples in a fresh checkout kernel, build with `make notebooks`, inspect

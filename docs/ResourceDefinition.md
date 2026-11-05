@@ -19,6 +19,19 @@ Links: ["[Source repository](https://github.com/WolframInstitute/BioDataLink)", 
 Find biological datasets, download a chosen file and read local measurements
 in Wolfram Language. Results retain identifiers, metadata and provenance.
 
+### Search
+
+- Identifiers.org directory: 774 namespaces, offline
+- Pertpy dataset catalog: 55 loader records, offline
+- BioStudies studies and GEO Series: online
+
+### Real data in the tutorials
+
+- Single-cell expression: 10x Genomics PBMC3k
+- Protein structures: PDB 4AKE and 1AKE
+- Genomes: *Borrelia burgdorferi* B31; SARS-CoV-2, RaTG13 and SARS-CoV
+- Circadian expression: mouse liver, GEO GSE11923
+
 ## Details & Options
 
 - Search the bundled Identifiers.org directory and 55 Pertpy loader records

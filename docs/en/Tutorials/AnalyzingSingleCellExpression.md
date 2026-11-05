@@ -15,6 +15,10 @@ Identify provisional blood-cell types from the
 from one donor. UMI counts estimate captured RNA molecules after deduplication;
 zeros can reflect sampling loss.
 
+The examples below end with these cell groups and the marker genes behind their labels:
+
+![UMAP of blood cells colored by marker-based label, and a marker-gene dot plot](../Images/AnalyzingSingleCellExpression.png "ExampleImage")
+
 Evaluate **Initialization**, then run the examples in order.
 
 ## Load the counts
