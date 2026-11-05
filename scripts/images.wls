@@ -85,19 +85,10 @@ cellMap[size_, labeled_ : False] := Module[{groups = cellGroups[], colors = cell
 ];
 (* rows follow the marker sets and columns their genes: dot area is the fraction of a group's cells
    with counts; color is the mean log-scaled expression relative to the other groups *)
-markerDots[size_, labeled_ : False] := Module[{sets = singleCell["markerSets"], gene = singleCell["gene"],
-        x = singleCell["logExpression"], types = singleCell["cellType"], rows, genes, fraction, level, dy = If[labeled, 1.5, 1]},
-    rows = Keys[sets]; genes = DeleteDuplicates[Catenate[Values[sets]]];
-    {fraction, level} = Transpose[Table[With[{v = Normal[x[[Flatten[Position[types, t]], gene /@ genes]]]},
-        {Mean[Unitize[v]], Mean[v]}], {t, rows}], {2, 1, 3}];
-    level = Transpose[Rescale /@ Transpose[level]];
-    Graphics[{
-        Table[{ColorData["BlueGreenYellow"][level[[i, j]]], Disk[{j, -dy i}, 0.46 Sqrt[fraction[[i, j]]]]}, {i, Length[rows]}, {j, Length[genes]}],
-        If[labeled, {
-            MapIndexed[{cellColor[][#1], Disk[{0.25, -dy First[#2]}, 0.16], Text[styled[#1, 8], {0, -dy First[#2]}, {1, 0}]} &, rows],
-            MapIndexed[Text[styled[#1, 8], {First[#2], 0.3}, {-1, 0}, {0, 1}] &, genes]}, {}]},
-        PlotRange -> If[labeled, {{-5.6, Length[genes] + 0.6}, {-dy Length[rows] - 0.7, 2.9}}, All],
-        PlotRangePadding -> If[labeled, 0, 0.7], ImageSize -> size]
+markerDots[size_, labeled_ : False] := With[{genes = DeleteDuplicates[Catenate[Values[singleCell["markerSets"]]]]},
+    BioExpressionDotPlot[singleCell["logExpression"][[All, singleCell["gene"] /@ genes]], singleCell["cellType"], genes,
+        "ColorScaling" -> "PerFeature", Frame -> labeled, FrameTicks -> If[labeled, Automatic, None],
+        PlotLegends -> None, BaseStyle -> {FontFamily -> font, FontSize -> 8}, ImageSize -> size]
 ];
 
 images["AnalyzingSingleCellExpression"] := board[{
@@ -167,7 +158,7 @@ originView[size_] := Module[{sequence = genome["genome"], origin = genome["origi
         PlotRangeClipping -> False, ImageSize -> size]
 ];
 wordFrequencies[size_, labeled_ : False] := Show[
-    ArrayPlot[Log[1. + genome["wordGrid"][genome["genome"], 256]], DataReversed -> True, ColorFunction -> "SunsetColors", Frame -> False, PlotRangePadding -> 0],
+    BioSequenceCompositionPlot[genome["genome"], 8, PlotLegends -> None, Frame -> False, PlotRangePadding -> 0],
     If[labeled, Graphics[MapThread[Text[styled[#1, 9, ink, Bold], #2] &, {{"A", "C", "T", "G"}, {{-8, -8}, {-8, 264}, {264, -8}, {264, 264}}}]], Graphics[{}]],
     PlotRange -> If[labeled, {{-16, 272}, {-16, 272}}, {{0, 256}, {0, 256}}], ImageSize -> size];
 

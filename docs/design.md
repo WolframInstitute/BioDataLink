@@ -42,6 +42,7 @@ paclet installs no optional backend. Package loading stays offline.
 | Live metadata | BioStudies studies and GEO Series, one page per call | No study-to-file retrieval; indexes can change |
 | Offline catalog | 55 pinned Pertpy loader records | Not 55 independent studies; import flags remain false |
 | Download | Explicit HTTPS URL, size limit, optional expected size/hash, validated placement | Requires curl 8.4+; no cache, retry, resume or extraction |
+| Visualization | ID-aligned embeddings, group-expression summaries, DNA composition and residue-trace comparisons | Requires explicit measurement semantics; no normalization, correspondence inference or data retrieval |
 | Local import | BioDataLink JSON and selected supported dense/CSR/CSC H5AD matrices | H5AD is a selection, not a full AnnData conversion |
 
 The source registry retains complete records and CC BY 4.0 attribution. Pertpy
@@ -99,3 +100,5 @@ integrity and failures; an exporter/reader round trip alone is insufficient.
 - [Pertpy catalog](https://pertpy.scverse.org/en/stable/api/datasets_index.html) and [scPerturb](https://projects.sanderlab.org/scperturb/)
 - [CELLxGENE Census](https://chanzuckerberg.github.io/cellxgene-census/) for planned versioned subsets
 - [DISCOSingleCellAtlas (WFR)](https://resources.wolframcloud.com/FunctionRepository/resources/DISCOSingleCellAtlas/) for an existing tissue-level interface
+
+See the [visualization contracts](notes/2026-11-05-visualizations.md) for input alignment, summary denominators and plotting conventions.

@@ -106,7 +106,7 @@ bases. A 256 × 256 grid counts 8-base words; brighter cells mean more frequent
 words. A/T-rich words occupy the lower region:
 
 ```wl
-ArrayPlot[Log[1. + wordGrid[genome, 256]], DataReversed -> True, ColorFunction -> "SunsetColors",
+BioSequenceCompositionPlot[genome, 8,
     FrameTicks -> {{{{1, "A"}, {256, "C"}}, None}, {{{1, "A"}, {256, "T"}}, None}}]
 ```
 
@@ -127,6 +127,86 @@ extends the single-base asymmetry to short sequence words.
 These patterns describe one chromosome. Local selection, recombination and
 horizontal transfer can alter composition; similar plots need not identify
 replication origins accurately in other genomes.
+
+## Compare resolutions without changing the sequence
+
+Plot complete windows of 2,000, 10,000 and 40,000 bases with the same vertical
+range. Smaller windows expose local variation; larger windows average it away.
+
+```wl
+GraphicsRow[Table[BioSequenceSkewPlot[genome, window, PlotRange -> {-0.3, 0.3},
+    PlotLabel -> Row[{window, " bases"}]], {window, {2000, 10000, 40000}}], ImageSize -> Large]
+```
+
+Window size and discarded terminal bases belong in the analysis record.
+Different resolutions can support a broad compositional pattern while disagreeing
+about local fluctuations. This display alone does not measure a replication
+process.
+
+## Separate global composition from sequential arrangement
+
+Shuffle the characters of the sequence. This preserves the total count of every
+base and ambiguity symbol but removes their order. Compare the original and
+shuffled four-base-word maps on a common log-count color range:
+
+```wl
+shuffledGenome = BlockRandom[SeedRandom[20261106]; StringJoin[RandomSample[Characters[genome]]]];
+wordCountRange = {0, Max[Log[1. + wordGrid[#, 16]] & /@ {genome, shuffledGenome}]};
+GraphicsRow[MapThread[BioSequenceCompositionPlot[#1, 4, PlotRange -> wordCountRange,
+    ColorFunction -> (ColorData["BlueGreenYellow"][Rescale[#, wordCountRange]] &), ColorFunctionScaling -> False,
+    PlotLegends -> None, PlotLabel -> #2] &, {{genome, shuffledGenome}, {"observed order", "shuffled order"}}], ImageSize -> Large]
+```
+
+Shared broad patterns can arise from base frequencies alone. Differences from
+the shuffle reflect ordering beyond those frequencies; they do not identify
+which evolutionary or molecular process generated it.
+
+Compare the distributions of complete-word counts, including words absent
+from a sequence:
+
+```wl
+Histogram[Log[1. + Flatten[wordGrid[#, 64]]] & /@ {genome, shuffledGenome}, Automatic, "Probability",
+    ChartLegends -> {"observed order", "shuffled order"}, Frame -> True,
+    FrameLabel -> {"log(1 + six-base-word count)", "fraction of possible words"}]
+```
+
+The grid and histogram summarize the same counts in different ways. The grid
+preserves sequence-word relationships; the histogram makes their spread easier
+to compare.
+
+## Keep denominators explicit as word length increases
+
+Longer words create exponentially more possible categories. Count distinct
+observed words and the fraction of the possible vocabulary represented in the
+sequence:
+
+```wl
+wordLengths = Range[1, 8];
+occupiedWords = Count[Flatten[wordGrid[genome, 2^#]], _?Positive] & /@ wordLengths;
+Grid[{{
+    ListLogPlot[{4^wordLengths, occupiedWords}, Joined -> True, PlotLegends -> {"possible words", "observed words"},
+        Frame -> True, FrameLabel -> {"word length", "number of words"}, ImageSize -> 300],
+    ListPlot[N[occupiedWords/4^wordLengths], Joined -> True, PlotRange -> {0, 1},
+        Frame -> True, FrameLabel -> {"word length", "fraction of vocabulary observed"}, ImageSize -> 300]}}]
+```
+
+An absent long word can be a consequence of limited sequence length.
+Comparisons across word lengths need the possible vocabulary and number of
+complete windows, not just the number of nonzero grid cells.
+
+## Test ambiguity handling on an inspectable control
+
+Use short synthetic strings to see exactly what happens at an unknown base.
+A word may not cross `N`; deleting `N` would invent an adjacency:
+
+```wl
+GraphicsRow[MapThread[BioSequenceCompositionPlot[#1, 2, "CountScaling" -> "Linear",
+    PlotLegends -> None, PlotLabel -> #2] &, {{"AACNCTT", "AACCTT"}, {"unknown position retained", "unknown position incorrectly deleted"}}]]
+```
+
+This control illustrates a representation decision, not a biological difference.
+Keep ambiguity positions when counting exact words and record any masking or
+selection separately from the source sequence.
 
 ## Initialization
 

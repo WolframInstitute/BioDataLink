@@ -144,6 +144,92 @@ Retain row IDs, scaling, distance, edge rule, neighborhood size and seed.
 Before using this graph as an interaction network, compare it with independent
 interaction measurements.
 
+## Inspect how neighborhood size changes the graph
+
+Sweep the requested neighbors from one through fifteen. Record connected
+components and the degree distribution, which counts neighbors in the final
+undirected graph rather than the directed search result.
+
+```wl
+networkSweep = Table[Graph[sourceRows, edgeSet[neighbors, k, False]], {k, 15}];
+GraphicsRow[{
+    ListLinePlot[Length[ConnectedComponents[#]] & /@ networkSweep, Frame -> True,
+        FrameLabel -> {"requested neighbors", "connected components"}],
+    BoxWhiskerChart[VertexDegree /@ networkSweep, ChartLabels -> Range[15],
+        FrameLabel -> {"requested neighbors", "undirected degree"}]}]
+```
+
+Union edges can give a vertex many more than k neighbors. Connectivity is a
+property of the graph construction, not evidence that the observations form
+one interacting biological system.
+
+## Compare local mixing with a label-permutation control
+
+Measure the fraction of graph edges joining different source species. Species
+labels enter only this descriptive check, after graph construction.
+
+```wl
+edgePairs = List @@@ unionEdges;
+observedMixing = Mean[Boole[Unequal @@ species[[#]]] & /@ edgePairs];
+permutedMixing = BlockRandom[SeedRandom[20261106]; Table[With[{labels = RandomSample[species]},
+    Mean[Boole[Unequal @@ labels[[#]]] & /@ edgePairs]], {100}]];
+Histogram[N[permutedMixing], Automatic, "Probability", GridLines -> {{N[observedMixing]}, None},
+    Frame -> True, FrameLabel -> {"fraction of cross-species edges", "fraction of permutations"}]
+```
+
+The control preserves graph topology and label counts. Separation from this
+null demonstrates association between graph neighbors and labels in this file;
+it does not establish generalization to new populations.
+
+Map each vertex's fraction of differently labeled neighbors on the fixed PCA
+coordinates. Vertices with no neighbors would need a missing result.
+
+```wl
+mixingByVertex = Table[With[{adjacent = AdjacencyList[Graph[sourceRows, unionEdges], i]},
+    N[Mean[Boole[species[[#]] =!= species[[i]]] & /@ adjacent]]], {i, sourceRows}];
+BioEmbeddingPlot[AssociationThread[sourceRows, PrincipalComponents[standardized][[All, ;; 2]]],
+    AssociationThread[sourceRows, mixingByVertex], "ColorMode" -> "Continuous", "ColorRange" -> {0, 1},
+    FrameLabel -> {"PC 1", "PC 2"}]
+```
+
+A boundary vertex is a prompt to inspect its measurements and neighbors.
+It is not automatically mislabeled or a transitional biological state.
+
+## Locate fragile edges rather than averaging them away
+
+For the 0.05-standard-deviation perturbations above, estimate how often each
+original edge survives. Keep the original vertex coordinates fixed and draw
+fragile edges more prominently:
+
+```wl
+edgeSurvival = AssociationThread[unionEdges,
+    Table[N[Count[MemberQ[#, edge] & /@ perturbationEdges[[2]], True]/repetitions], {edge, unionEdges}]];
+Graph[EdgeAdd[baseNetwork, unionEdges], EdgeStyle -> KeyValueMap[#1 -> Directive[
+    ColorData["BlueGreenYellow"][#2], AbsoluteThickness[If[#2 < 0.5, 1.8, 0.5]]] &, edgeSurvival],
+    PlotLabel -> "original edges under repeated perturbations", ImageSize -> Large]
+```
+
+An average Jaccard overlap can hide a small unstable region. These survival
+frequencies are conditional on the chosen perturbation model and are not
+confidence probabilities for biological interactions.
+
+## Separate layout variation from network variation
+
+Display the same graph with fixed measurement coordinates and with a spring
+layout. Its adjacency matrix is identical in both panels:
+
+```wl
+With[{g = Graph[sourceRows, unionEdges, VertexStyle -> Thread[sourceRows -> Lookup[colorBySpecies, species]]]},
+    GraphicsRow[{Graph[g, VertexCoordinates -> PrincipalComponents[standardized][[All, ;; 2]],
+            AspectRatio -> 1, ImageSize -> 300, PlotLabel -> "measurement projection"],
+        Graph[g, GraphLayout -> "SpringElectricalEmbedding", AspectRatio -> 1, ImageSize -> 300,
+            PlotLabel -> "graph layout"]}, ImageSize -> Large]]
+```
+
+Spatial separation in a graph layout is a drawing choice. Interpret it through
+explicit edges, path lengths or measurement distances, with the corresponding
+construction recorded.
+
 ## Initialization
 
 Helpers reuse a nearest-neighbor index, construct union or mutual edges and

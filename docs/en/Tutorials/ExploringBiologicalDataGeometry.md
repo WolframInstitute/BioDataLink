@@ -90,9 +90,9 @@ seeds = Range[20];
 clusterRuns = Table[ClusteringComponents[data, 3, 1, Method -> "KMeans",
     DistanceFunction -> EuclideanDistance, RandomSeeding -> seed],
     {data, {measurements, standardized}}, {seed, seeds}];
-GraphicsRow[MapThread[MatrixPlot[Mean[coassignment /@ #1], PlotRange -> {0, 1}, PlotLegends -> Automatic,
-    FrameLabel -> {"source row", "source row"}, PlotLabel -> #2] &,
-    {clusterRuns, {"centimetre variables", "standardized variables"}}]]
+Grid[{MapThread[MatrixPlot[Mean[coassignment /@ #1], PlotRange -> {0, 1}, PlotLegends -> Automatic,
+    FrameLabel -> {"source row", "source row"}, PlotLabel -> #2, ImageSize -> 300] &,
+    {clusterRuns, {"centimetre variables", "standardized variables"}}]}]
 ```
 
 Comparing pair membership avoids arbitrary cluster numbers. Measure changes
@@ -122,6 +122,86 @@ states, continue with
 [Discretizing Biological Measurements](paclet:WolframInstitute/BioDataLink/tutorial/DiscretizingBiologicalMeasurements);
 for held-out evaluation, use
 [Exploring Simple Predictive Rules](paclet:WolframInstitute/BioDataLink/tutorial/ExploringSimplePredictiveRules).
+
+## Identify which measurements define the geometry
+
+A correlation matrix shows which variables carry related information. It is
+unchanged by converting centimetres to millimetres, but the raw Euclidean
+distances are not.
+
+```wl
+MatrixPlot[Correlation[measurements], ColorFunction -> (ColorData["ThermometerColors"][Rescale[#, {-1, 1}]] &),
+    ColorFunctionScaling -> False, PlotRange -> {-1, 1}, PlotLegends -> BarLegend[{"ThermometerColors", {-1, 1}}],
+    FrameTicks -> {{Transpose[{Range[4], variableNames}], None}, {Transpose[{Range[4], Rotate[#, Pi/2] & /@ variableNames}], None}}]
+```
+
+Correlated measurements can count a common direction more than once. Whether
+that is desirable depends on the scientific question.
+
+Correlate each measurement with the first two standardized PCs:
+
+```wl
+With[{loadings = Correlation[standardized, scaledScores[[All, ;; 2]]]},
+    ListPlot[MapThread[Callout, {loadings, variableNames}], PlotRange -> {{-1, 1}, {-1, 1}}, AspectRatio -> 1,
+        Frame -> True, FrameLabel -> {"correlation with PC 1", "correlation with PC 2"}]]
+```
+
+The arrows usually shown on a PCA plot summarize variable relationships, not
+forces or developmental directions. These correlations help explain why a
+projection separates particular records.
+
+## Measure the information lost by projection
+
+Compare distances in four standardized variables with distances in one, two
+and three PCs. Use every unordered record pair, including pairs that overlap
+in the two-dimensional picture.
+
+```wl
+fullDistances = EuclideanDistance @@ standardized[[#]] & /@ recordPairs;
+projectionDistances = Table[EuclideanDistance @@ scaledScores[[#, ;; d]] & /@ recordPairs, {d, 3}];
+GraphicsRow[Table[ListPlot[Transpose[{fullDistances, projectionDistances[[d]]}],
+    Frame -> True, FrameLabel -> {"four-variable distance", Row[{d, "-PC distance"}]}, PlotRange -> All,
+    Prolog -> {Gray, Line[{{0, 0}, {Max[fullDistances], Max[fullDistances]}}]}], {d, 3}], ImageSize -> Large]
+```
+
+The diagonal is perfect distance preservation. A high fraction of explained
+variance can coexist with distortion for individual pairs.
+
+## Remove one measurement at a time
+
+Refit the projection after omitting each standardized variable. Use the same
+source IDs and full species annotations to preserve colors across panels.
+
+```wl
+observationIDs = Range[Length[species]];
+speciesAnnotations = AssociationThread[observationIDs, species];
+GraphicsGrid[Partition[Table[BioEmbeddingPlot[
+    AssociationThread[observationIDs, PrincipalComponents[standardized[[All, Complement[Range[4], {j}]]]][[All, ;; 2]]],
+    speciesAnnotations, PlotLegends -> None, PlotLabel -> "without " <> variableNames[[j]],
+    FrameLabel -> {"PC 1", "PC 2"}], {j, 4}], 2], ImageSize -> Large]
+```
+
+Axes are refitted in every panel, so their signs and rotations need not agree.
+Compare neighborhoods or pair distances, not the apparent direction of motion
+between panels.
+
+## Use a control that destroys dependence between variables
+
+Independently permute each measurement column. This preserves every marginal
+distribution while removing correspondence between measurements from the same
+plant. Compare standardized PCA variance fractions with the observed data:
+
+```wl
+permutedVariance = BlockRandom[SeedRandom[20261106]; Table[
+    Normalize[Variance[PrincipalComponents[Transpose[RandomSample /@ Transpose[standardized]]]], Total], {40}]];
+BoxWhiskerChart[Transpose[permutedVariance], ChartLabels -> {"PC 1", "PC 2", "PC 3", "PC 4"},
+    Epilog -> {Red, PointSize[Medium], Point[Transpose[{Range[4], Normalize[Variance[scaledScores], Total]}]]},
+    FrameLabel -> {"component", "variance fraction"}]
+```
+
+Red points are the observed fractions. Differences from this control reflect
+joint structure beyond the four marginal distributions. They do not identify
+its biological cause or validate species as a clustering target.
 
 ## Initialization
 

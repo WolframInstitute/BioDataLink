@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.4.0 — 2026-11-05
+
+- Add five native visualization functions for ID-aligned embeddings, grouped
+  expression dots, DNA word composition, windowed base skew and aligned
+  structure traces. Keep sparse aggregation, measurement denominators,
+  coordinate units and alignment choices explicit.
+- Develop eleven tutorials into visual computational essays with repeated
+  experiments, negative controls, parameter comparisons and short
+  interpretations. Add an essay on sampling and uncertainty using Iris data.
+  Cover expression, structures, sequence composition, rhythms, geometry,
+  networks, discretization, missingness, prediction and model discrimination.
+- Add a visualization guide and five symbol references. Reuse the plotting
+  functions in tutorials and computed page images; retain offline execution
+  and the original datasets' provenance.
+- Test plot contracts with independent small fixtures, including sparse group
+  summaries, color legends, ambiguous bases, window coordinates and rigid
+  alignment without reflection. Reject reference heading structures that the
+  documentation converter would silently omit.
+
 ## 0.3.7 — 2026-11-05
 
 - Apply the aligned resource description after the publisher separates the

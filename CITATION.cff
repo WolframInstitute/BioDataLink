@@ -5,12 +5,13 @@ title: BioDataLink
 abstract: >-
   A Wolfram Language paclet for discovering biological data sources, searching
   public study metadata, verifying file downloads and reading supported local
-  measurements with explicit identifiers and provenance.
+  measurements with explicit identifiers and provenance. Includes reusable
+  visualizations and computational essays with reproducible experiments.
 authors:
   - name: Wolfram Institute
     website: https://wolframinstitute.org
 license: MIT
-version: 0.3.7
+version: 0.4.0
 date-released: 2026-11-05
 repository-code: https://github.com/WolframInstitute/BioDataLink
 url: https://github.com/WolframInstitute/BioDataLink

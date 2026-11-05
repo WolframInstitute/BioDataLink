@@ -164,8 +164,10 @@ uncovered; timeouts or ambiguity are inconclusive. Do not count skips as passes.
 Write for scientists who know biology but not BioDataLink. Lead with the task,
 then the minimum workflow and its interpretation. Define unfamiliar terms once.
 Keep selection, units, scale, provenance and material limitations; remove repeated
-warnings, extended theory and secondary analyses. Link to a canonical page
-instead of repeating setup or contracts. Keep tutorials focused on one question.
+warnings and repeated setup or contracts. Keep tutorials focused on one question.
+Computational essays can be long: develop that question through several linked
+experiments, controls, alternative models and sensitivity checks. Prefer many
+informative computed figures with short interpretations over long prose.
 
 Guides organize tasks; references define APIs; tutorials show a complete workflow.
 README covers installation, quickstart and top links. Put implementation decisions
@@ -190,6 +192,8 @@ code formatting for literal syntax; omit generic `opts`.
 Start Basic Examples with a small useful result. Use short captions ending in
 a colon, followed by input and evaluated output. Each example demonstrates one
 operation; related inputs can share visible setup within the same group.
+Write `## Basic Examples`, `## Scope` and `## Options` at level two. The pinned
+converter drops example sections nested beneath a `## Examples` wrapper.
 Use Scope, Options, Applications, Properties & Relations and Possible Issues
 only for distinct content. Separate independent examples with `---`; each group
 must run after context loading. Keep longer workflows in tutorials.

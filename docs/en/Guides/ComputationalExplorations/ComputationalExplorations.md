@@ -7,8 +7,8 @@ Paclet: WolframInstitute/BioDataLink
 URI: WolframInstitute/BioDataLink/guide/ComputationalExplorations
 Description: Compare measurements, representations and simple computational hypotheses with explicit evidence
 Keywords: [biology, computation, visualization, single cell, protein structure, genomes, time series, geometry, rules, observation models]
-RelatedGuides: [BioDataLink, DataAccess, Downloads]
-RelatedTutorials: [AnalyzingSingleCellExpression, ChoosingMeasurementsToDistinguishModels, ComparingCoronavirusGenomes, ComparingProteinConformations, ConstructingBiologicalSimilarityNetworks, DiscretizingBiologicalMeasurements, ExploringBiologicalDataGeometry, ExploringCellularAutomatonHypotheses, ExploringSimplePredictiveRules, FindingCircadianRhythms, ReadingBacterialGenomeComposition, UnderstandingSparseMeasurements]
+RelatedGuides: [BioDataLink, DataAccess, Downloads, Visualizations]
+RelatedTutorials: [AnalyzingSingleCellExpression, ChoosingMeasurementsToDistinguishModels, ComparingCoronavirusGenomes, ComparingProteinConformations, ConstructingBiologicalSimilarityNetworks, DiscretizingBiologicalMeasurements, ExploringBiologicalDataGeometry, ExploringCellularAutomatonHypotheses, ExploringSamplingAndUncertainty, ExploringSimplePredictiveRules, FindingCircadianRhythms, ReadingBacterialGenomeComposition, UnderstandingSparseMeasurements]
 ---
 
 ## Abstract
@@ -56,6 +56,14 @@ WL denotes a built-in Wolfram Language function.
 - `Outer` (WL) evaluate all combinations of inputs
 - `Subsets` (WL) enumerate candidate measurement panels
 - `VertexCoordinates` (WL) specify fixed graph positions
+
+### [Visualizing Biological Data](paclet:WolframInstitute/BioDataLink/guide/Visualizations)
+
+- `BioEmbeddingPlot` align coordinates and annotations by observation ID
+- `BioExpressionDotPlot` compare mean expression and detection fractions
+- `BioSequenceCompositionPlot` show overlapping DNA-word counts
+- `BioSequenceSkewPlot` plot composition in complete DNA windows
+- `BioStructureComparisonPlot` align and compare residue-keyed traces
 
 ## References
 

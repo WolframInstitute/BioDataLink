@@ -7,8 +7,8 @@ Paclet: WolframInstitute/BioDataLink
 URI: WolframInstitute/BioDataLink/guide/BioDataLink
 Description: Find biological data sources, retrieve verified files and read supported local measurements
 Keywords: [biology, datasets, gene expression, provenance]
-RelatedGuides: [Catalog, ComputationalExplorations, DataAccess, Downloads, Providers, Sources]
-RelatedTutorials: [AnalyzingSingleCellExpression, ChoosingMeasurementsToDistinguishModels, ComparingCoronavirusGenomes, ComparingProteinConformations, ConstructingBiologicalSimilarityNetworks, DiscretizingBiologicalMeasurements, DownloadingBiologicalData, ExploringBiologicalData, ExploringBiologicalDataGeometry, ExploringCellularAutomatonHypotheses, ExploringSimplePredictiveRules, FindingCircadianRhythms, FindingDataSources, ReadingAnnDataSlices, ReadingBacterialGenomeComposition, UnderstandingSparseMeasurements]
+RelatedGuides: [Catalog, ComputationalExplorations, DataAccess, Downloads, Providers, Sources, Visualizations]
+RelatedTutorials: [AnalyzingSingleCellExpression, ChoosingMeasurementsToDistinguishModels, ComparingCoronavirusGenomes, ComparingProteinConformations, ConstructingBiologicalSimilarityNetworks, DiscretizingBiologicalMeasurements, DownloadingBiologicalData, ExploringBiologicalData, ExploringBiologicalDataGeometry, ExploringCellularAutomatonHypotheses, ExploringSamplingAndUncertainty, ExploringSimplePredictiveRules, FindingCircadianRhythms, FindingDataSources, ReadingAnnDataSlices, ReadingBacterialGenomeComposition, UnderstandingSparseMeasurements]
 ---
 
 ## Abstract
@@ -56,3 +56,11 @@ WL denotes a built-in Wolfram Language function.
 - `PrincipalComponents` (WL) compute principal components of measurements
 - `Quantile` (WL) find cutoffs for rank-based bins
 - `SequenceAlignment` (WL) align two sequences
+
+### [Visualizing Biological Data](paclet:WolframInstitute/BioDataLink/guide/Visualizations)
+
+- `BioEmbeddingPlot` align coordinates and annotations by observation ID
+- `BioExpressionDotPlot` compare mean expression and detection fractions
+- `BioSequenceCompositionPlot` show overlapping DNA-word counts
+- `BioSequenceSkewPlot` plot composition in complete DNA windows
+- `BioStructureComparisonPlot` align and compare residue-keyed traces

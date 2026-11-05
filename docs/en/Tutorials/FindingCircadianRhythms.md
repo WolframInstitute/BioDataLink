@@ -136,6 +136,141 @@ ListPolarPlot[Callout[{Pi/2 - 2 Pi rhythm["Peak"][[#]]/24, rhythm["Amplitude"][[
 and `Per2` near CT 14. Phase differences alone do not establish regulatory
 connections.
 
+## Separate a rhythmic pattern from a good-looking fit
+
+First inspect residuals. A fixed 24-hour sinusoid can miss asymmetric peaks,
+trends, outliers, and shorter oscillations. None of those failures is visible
+from a fitted curve alone.
+
+```wl
+clockResiduals = AssociationMap[Function[gene, With[{i = probeFor[gene]},
+    expressed[[i]] - (fitted[i, #] & /@ times)]], {"Arntl", "Nr1d1", "Dbp", "Per2", "Cry1"}];
+GraphicsGrid[Partition[KeyValueMap[ListPlot[Transpose[{times, #2}], Filling -> Axis, PlotLabel -> #1,
+    Frame -> True, FrameLabel -> {"CT (hours)", "residual (log2)"}, PlotRange -> All] &, clockResiduals], UpTo[3]], ImageSize -> Large]
+```
+
+Compare residual autocorrelation over lags of one to twelve hours. Positive
+correlation suggests that the independent-error F-test may be optimistic.
+
+```wl
+ListLinePlot[Table[Correlation[Drop[values, lag], Drop[values, -lag]], {values, Values[clockResiduals]}, {lag, 12}],
+    PlotRange -> {-1, 1}, PlotLegends -> Keys[clockResiduals], PlotStyle -> okabeIto[[{1, 2, 3, 5, 6}]], Frame -> True,
+    FrameLabel -> {"lag (hours)", "residual correlation"}]
+```
+
+Only 48 points support each estimate. Shared sampling and processing can
+produce dependence even though different mice contribute at different times.
+
+## Compare competing periods
+
+A large 24-hour component is not evidence that 24 hours is the unique period.
+For each clock gene, fit periods from 16 to 32 hours using the same three
+coefficients and plot residual sums of squares relative to the best period.
+
+```wl
+periods = Range[16, 32, 1/2];
+periodLosses = Table[With[{y = expressed[[probeFor[gene]]]},
+    Table[With[{design = harmonicDesign[times, period]}, Total[(y - design . LeastSquares[design, y])^2]], {period, periods}]],
+    {gene, Keys[clockResiduals]}];
+ListLinePlot[Map[Transpose[{periods, # - Min[#]}] &, periodLosses], PlotLegends -> Keys[clockResiduals],
+    GridLines -> {{24}, None}, Frame -> True, FrameLabel -> {"assumed period (hours)", "excess residual sum of squares"}]
+```
+
+Broad minima show limited period resolution over two days. This scan is
+exploratory model comparison, not a confidence interval or an independent
+hypothesis test at every candidate period.
+
+Add a 12-hour harmonic to the 24-hour model and compare fits on the first day
+with predictions on the second day. All coefficients are estimated from the
+first 24 observations.
+
+```wl
+trainTimes = Take[times, 24];
+testTimes = Drop[times, 24];
+validationErrors = Table[With[{y = expressed[[probeFor[gene]]]},
+    Table[With[{trainDesign = harmonicDesign[trainTimes, 24, harmonics], testDesign = harmonicDesign[testTimes, 24, harmonics]},
+        {RootMeanSquare[Take[y, 24] - trainDesign . LeastSquares[trainDesign, Take[y, 24]]],
+         RootMeanSquare[Drop[y, 24] - testDesign . LeastSquares[trainDesign, Take[y, 24]]]}], {harmonics, {1, 2}}]],
+    {gene, Keys[clockResiduals]}];
+Legended[GraphicsRow[Table[BarChart[validationErrors[[All, model]], ChartLabels -> {Keys[clockResiduals], None},
+    ChartStyle -> okabeIto[[{1, 5}]], Frame -> True, PlotRange -> {0, Max[validationErrors]},
+    FrameLabel -> {"clock gene", "RMSE (log2)"}, PlotLabel -> Row[{model, " harmonic(s)"}]], {model, 2}], ImageSize -> Large],
+    Placed[SwatchLegend[okabeIto[[{1, 5}]], {"first day fit", "second day prediction"}], Below]]
+```
+
+An extra harmonic always has more fitting freedom. Its value depends on
+prediction beyond the fitting interval, not the reduction of training error.
+These are temporal predictions within one study, not validation in new animals
+or a new laboratory.
+
+## Challenge the temporal ordering
+
+Shuffle the 48 time labels for each of five clock-gene profiles and refit a
+24-hour sinusoid. This null preserves each profile's values but destroys its
+ordered time structure.
+
+```wl
+nullAmplitudes = BlockRandom[SeedRandom[20261106];
+    Table[Table[With[{b = LeastSquares[harmonicDesign[times, 24], RandomSample[expressed[[probeFor[gene]]]]]},
+        Norm[b[[2 ;; 3]]]], {80}], {gene, Keys[clockResiduals]}]];
+BoxWhiskerChart[nullAmplitudes, ChartLabels -> Keys[clockResiduals],
+    Epilog -> {Red, PointSize[Medium], Point[Transpose[{Range[5], rhythm["Amplitude"][[probeFor /@ Keys[clockResiduals]]]}]]},
+    FrameLabel -> {"clock gene", "fitted amplitude (log2)"}, ImageSize -> Large]
+```
+
+Red points are the observed amplitudes. This is a visual null-model check.
+Arbitrary shuffling is not an exact significance test when errors are
+serially dependent; a valid null must preserve the dependence relevant to the
+scientific question.
+
+## Test the effect of sampling frequency
+
+Refit a representative clock gene using all hourly observations, every third
+hour, and every sixth hour. Repeat each sampling schedule at all possible
+starting offsets.
+
+```wl
+samplingFits = Flatten[Table[With[{indices = Range[1 + offset, Length[times], spacing]},
+    With[{b = LeastSquares[harmonicDesign[times[[indices]], 24], expressed[[probeFor["Dbp"], indices]]]},
+        <|"Spacing" -> spacing, "Offset" -> offset, "Amplitude" -> Norm[b[[2 ;; 3]]],
+            "Peak" -> Mod[24 ArcTan[b[[2]], b[[3]]]/(2 Pi), 24]|>]],
+    {spacing, {1, 3, 6}}, {offset, 0, spacing - 1}]];
+GraphicsRow[{
+    ListPlot[Lookup[samplingFits, {"Spacing", "Amplitude"}], Frame -> True, FrameLabel -> {"sampling interval (hours)", "Dbp amplitude (log2)"}],
+    ListPlot[Lookup[samplingFits, {"Spacing", "Peak"}], Frame -> True, FrameLabel -> {"sampling interval (hours)", "Dbp peak (CT)"}, PlotRange -> {0, 24}]}]
+```
+
+Variation across offsets exposes sensitivity to which hours were observed.
+It does not measure between-animal uncertainty. Missing peaks can change an
+estimate even when the fitted period is fixed correctly.
+
+## Inspect how the screening choices interact
+
+Keep the multiple-testing adjustment fixed across all retained probes. Count
+selected probes over several q-value and peak-to-trough thresholds:
+
+```wl
+qCutoffs = {0.001, 0.01, 0.05, 0.1};
+foldCutoffs = {1.2, 1.5, 2., 3.};
+selectionCounts = Table[Count[MapThread[#1 < qLimit && 2 #2 >= Log2[fold] &, {q, rhythm["Amplitude"]}], True],
+    {fold, foldCutoffs}, {qLimit, qCutoffs}];
+MatrixPlot[selectionCounts, PlotLegends -> Automatic, FrameLabel -> {"peak-to-trough ratio", "q cutoff"},
+    FrameTicks -> {{Transpose[{Range[4], foldCutoffs}], None}, {Transpose[{Range[4], qCutoffs}], None}}]
+```
+
+An abrupt change is a reason to inspect borderline probes, not to choose the
+threshold yielding the largest list. Amplitude, residual shape, temporal
+validation, and study design remain separate pieces of evidence.
+
+Save the experiment specification alongside the figures:
+
+```wl
+<|"Accession" -> "GSE11923", "Measurement" -> "log2 deposited MAS5 signal", "IntensityCutoff" -> 7,
+    "FixedPeriodHours" -> 24, "MultipleTestingFamily" -> Length[q],
+    "PredictionSplit" -> {Take[times, 24], Drop[times, 24]}, "NullSeed" -> 20261106,
+    "PeriodScanHours" -> periods, "IndependentAnimalReplicatesAvailable" -> False|>
+```
+
 ## Interpretation
 
 This is a fixed-period screen of two days of pooled samples. It cannot
@@ -172,4 +307,9 @@ rhythmPlot[gene_] := With[{i = probeFor[gene]},
     Show[ListPlot[Transpose[{times, expressed[[i]]}], PlotStyle -> okabeIto[[5]], Prolog -> subjectiveNight, Frame -> True, PlotLabel -> gene,
             FrameLabel -> {"CT (hours)", "log2 signal"}],
         Plot[fitted[i, t], {t, 18, 65}, PlotStyle -> okabeIto[[6]]]]];
+```
+
+```wl
+harmonicDesign[t_, period_, harmonics_ : 1] := N[Transpose[Join[{ConstantArray[1, Length[t]]},
+    Flatten[Table[{Cos[2 Pi h t/period], Sin[2 Pi h t/period]}, {h, harmonics}], 1]]]];
 ```

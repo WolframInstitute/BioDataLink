@@ -37,6 +37,10 @@ CheckAbort[
         cells = StringCases[text, RegularExpression["(?s)```(?:wl|wolfram|mathematica)\\s*\\n(.*?)```"] -> "$1"];
         If[!AllTrue[cells, SyntaxQ], problem[{file, "Wolfram example does not parse"}]];
         prose = StringReplace[text, RegularExpression["(?s)```.*?```"] -> ""];
+        If[StringContainsQ[prose, RegularExpression["(?m)^Template: Symbol$"]] &&
+                (!StringContainsQ[prose, RegularExpression["(?m)^## Basic Examples$"]] ||
+                 StringContainsQ[prose, RegularExpression["(?m)^## Examples$"]]),
+            problem[{file, "symbol examples need level-2 Basic Examples, Scope and Options headings; an Examples wrapper is not converted"}]];
         links = StringCases[prose, RegularExpression["\\]\\(<?([^\\s)>]+)>?\\)"] -> "$1"];
         Do[If[!StringStartsQ[target, {"http:", "https:", "mailto:", "paclet:", "#"}],
             destination = First[StringSplit[target, "#"]];

@@ -111,6 +111,73 @@ identify an update rule; that requires justified temporal or lineage data.
 For static prediction, continue with
 [Exploring Simple Predictive Rules](paclet:WolframInstitute/BioDataLink/tutorial/ExploringSimplePredictiveRules).
 
+## Inspect where the state boundaries lie
+
+Draw petal length and width, colored by their two-bit state. The vertical and
+horizontal lines are the chosen medians; small movements near these lines can
+change state without a large change in measurement.
+
+```wl
+BioEmbeddingPlot[AssociationThread[Range[Length[measurements]], measurements[[All, {3, 4}]]],
+    AssociationThread[Range[Length[measurements]], StringJoin[ToString /@ #] & /@ binaryStates[[All, {3, 4}]]],
+    FrameLabel -> {"petal length (cm)", "petal width (cm)"}, FrameTicks -> Automatic,
+    GridLines -> {{thresholds[[3]]}, {thresholds[[4]]}}]
+```
+
+The axis labels retain physical units. Binary distance is a new representation,
+not a change of units in the original measurement space.
+
+## Test dependence between the encoded variables
+
+Shuffle each bit column independently. This preserves each bit's frequency but
+destroys which bits co-occur in a plant. Compare occupied joint states with
+those in the observed encoding:
+
+```wl
+shuffledStates = BlockRandom[SeedRandom[20261106]; Table[Transpose[RandomSample /@ Transpose[binaryStates]], {100}]];
+Histogram[Length[DeleteDuplicates[#]] & /@ shuffledStates, {0.5, 16.5, 1}, "Probability",
+    GridLines -> {{Length[DeleteDuplicates[binaryStates]]}, None}, Frame -> True,
+    FrameLabel -> {"occupied joint states", "fraction of permutations"}]
+```
+
+Fewer occupied states than this null suggests dependence among encoded traits.
+It does not identify which biological constraints generated that dependence.
+
+## Compare reconstruction for every measured variable
+
+For two, four and eight bins, reconstruct each measurement from its bin's mean.
+Inspect predicted versus observed values instead of relying on one aggregate
+error score:
+
+```wl
+GraphicsGrid[Table[With[{labels = binnedStates[[First[FirstPosition[requestedBins, q]]]][[All, j]], original = measurements[[All, j]]},
+    ListPlot[Transpose[{original, reconstruct[labels, original]}], Frame -> True,
+        FrameLabel -> {"observed (cm)", "bin mean (cm)"}, PlotLabel -> Row[{variableNames[[j]], ": ", q, " bins"}],
+    Prolog -> {Gray, Line[Transpose[{MinMax[original], MinMax[original]}]]}]], {j, 4}, {q, {2, 4, 8}}], ImageSize -> Large]
+```
+
+Horizontal bands show the precision discarded by quantization. The bin means
+were estimated from the same records; this remains a reconstruction experiment,
+not an out-of-sample prediction result.
+
+## Measure boundary sensitivity under a stated error model
+
+Add independent Gaussian noise of 0.02, 0.05 and 0.1 cm to each measurement.
+Keep the original median thresholds fixed, and repeat each scenario 40 times:
+
+```wl
+noiseLevels = {0.02, 0.05, 0.1};
+stateChanges = BlockRandom[SeedRandom[20261106]; Table[Table[
+    With[{states = encodeBinary[#, thresholds] & /@ (measurements + RandomVariate[NormalDistribution[0, sd], Dimensions[measurements]])},
+        N[Mean[Boole[MapThread[UnsameQ, {states, binaryStates}]]]]], {40}], {sd, noiseLevels}]];
+BoxWhiskerChart[stateChanges, ChartLabels -> noiseLevels, PlotRange -> {0, 1},
+    FrameLabel -> {"assumed error SD (cm)", "fraction of records changing state"}]
+```
+
+These noise levels are scenarios, not measured instrument uncertainties.
+Stable conclusions should survive plausible changes in thresholds, resolution
+and measurement error; each addresses a different assumption.
+
 ## Initialization
 
 Helpers encode thresholds and quantiles, measure sensitivity and reconstruct

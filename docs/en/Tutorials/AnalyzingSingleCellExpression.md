@@ -189,6 +189,159 @@ BarChart[KeySort[Counts[cellType]], ChartStyle -> tolMuted, ChartLabels -> Autom
 These proportions describe captured cells passing the filters, not blood
 composition. Capture efficiency and RNA content differ by cell type.
 
+## How much does preprocessing change the picture?
+
+Treat preprocessing as an experiment. Compare three representations of the
+same cells and genes: raw counts, library-scaled log counts, and Pearson
+residuals. These transformations answer different questions about abundance.
+
+```wl
+representationPCs = {PrincipalComponents[N[Normal[kept[[All, variable]]]], Method -> "Covariance"],
+    PrincipalComponents[Normal[logExpression[[All, variable]]], Method -> "Covariance"], pcs};
+cellIDs = Normal[pbmc["CellMetadata"][All, "ID"]][[keep]];
+cellAnnotations = AssociationThread[cellIDs, cellType];
+GraphicsRow[MapThread[BioEmbeddingPlot[AssociationThread[cellIDs, #1[[All, ;; 2]]], cellAnnotations,
+    PlotLegends -> None, FrameLabel -> {"PC 1", "PC 2"}, PlotLabel -> #2] &,
+    {representationPCs, {"raw counts", "scaled log counts", "Pearson residuals"}}], ImageSize -> Large]
+```
+
+All panels use the same cells and category colors. Axis units differ. Look for
+populations whose apparent separation depends on the representation.
+
+Measure how strongly the first ten components track library size:
+
+```wl
+ListLinePlot[Function[scores, Abs[(Correlation[Log[N[totals[[keep]]]], #] &) /@ Transpose[scores[[All, ;; 10]]]]] /@ representationPCs,
+    Frame -> True, PlotRange -> {0, 1}, FrameLabel -> {"principal component", "absolute correlation with log library size"},
+    PlotLegends -> {"raw counts", "scaled log counts", "Pearson residuals"}]
+```
+
+A reduced association with depth is useful evidence about a technical effect.
+It does not prove that every removed direction was technical: cell types also
+differ in RNA content.
+
+## Read the evidence behind the labels
+
+A large dot means that many cells have nonzero expression. Color reports mean
+log expression, rescaled separately for each gene. Compare groups within a
+column; colors across columns are not absolute abundance comparisons.
+
+```wl
+markerGenes = DeleteDuplicates[Catenate[Values[markerSets]]];
+BioExpressionDotPlot[logExpression[[All, gene /@ markerGenes]], cellType, markerGenes,
+    "ColorScaling" -> "PerFeature", ImageSize -> Large]
+```
+
+A high average can come from a few bright cells. Inspect the distribution and
+fraction detected for `MS4A1`, which contributes to the B-cell label:
+
+```wl
+With[{groups = Values[KeySort[PositionIndex[cellType]]], labels = Keys[KeySort[PositionIndex[cellType]]]},
+    BoxWhiskerChart[Normal[logExpression[[#, gene["MS4A1"]]]] & /@ groups,
+        ChartLabels -> Placed[labels, Below], PlotRange -> All,
+        FrameLabel -> {"provisional type", "MS4A1 log-scaled counts"}, ImageSize -> Large]]
+```
+
+These are descriptive marker checks on the same data used to assign labels.
+They are not independent validation of those labels.
+
+Compare mere detection with a higher display threshold. The denominator still
+includes every cell in each group; the color scale still uses the mean of all
+values, including zeros:
+
+```wl
+GraphicsRow[Table[BioExpressionDotPlot[logExpression[[All, gene /@ {"MS4A1", "CD14", "NKG7", "PPBP"}]],
+    cellType, {"MS4A1", "CD14", "NKG7", "PPBP"}, "DetectionThreshold" -> t,
+    "ColorScaling" -> "PerFeature", PlotLegends -> None, PlotLabel -> Row[{"threshold = ", t}]],
+    {t, {0, Log[2.]}}], ImageSize -> Large]
+```
+
+## Test a label without one of its markers
+
+Remove each gene from the NK marker set, one at a time, and recompute all
+community labels. Keep the graph fixed so this experiment isolates marker
+choice rather than clustering randomness.
+
+```wl
+nkLabelRuns = Table[With[{sets = ReplacePart[markerSets, "NK" -> remaining]},
+    With[{labels = Keys[sets][[Flatten[Ordering[#, -1] & /@ markerScores[logExpression, clusters, Map[gene, sets, {2}]]]]]}, labels[[clusters]]]],
+    {remaining, {{"GNLY"}, {"NKG7"}}}];
+GraphicsRow[MapThread[BioEmbeddingPlot[AssociationThread[cellIDs, umap], AssociationThread[cellIDs, #1],
+    "CategoryColors" -> AssociationThread[Sort[Keys[markerSets]], Take[tolMuted, Length[markerSets]]],
+    PlotLegends -> None, PlotLabel -> #2] &, {nkLabelRuns, {"NK: GNLY alone", "NK: NKG7 alone"}}], ImageSize -> Large]
+```
+
+Count changed labels by the original provisional type:
+
+```wl
+Dataset[AssociationMap[Function[type, With[{indices = Flatten[Position[cellType, type]]},
+    AssociationThread[{"GNLY alone", "NKG7 alone"},
+        N[Mean[Boole[MapThread[UnsameQ, {cellType[[indices]], #[[indices]]}]]]] & /@ nkLabelRuns]]], Sort[Keys[markerSets]]]]
+```
+
+Stability to this deletion supports redundancy within the chosen marker panel.
+Instability identifies labels worth checking with an external reference.
+
+## Quantify what the embedding preserves
+
+UMAP is a display of local relationships, not the space in which the graph was
+constructed. Compare each cell's ten nearest neighbors in the first 20 PCs
+with its ten nearest neighbors in each two-dimensional representation:
+
+```wl
+pcNeighbors = localNeighbors[pcs[[All, ;; 20]], 10];
+embeddingNeighbors = localNeighbors[#, 10] & /@ {pcs[[All, ;; 2]], umap};
+neighborRetention = Map[MapThread[N[Length[Intersection[#1, #2]]/10] &, {pcNeighbors, #}] &, embeddingNeighbors];
+Histogram[neighborRetention, {0, 1.1, 0.1}, "Probability", ChartLegends -> {"first two PCs", "UMAP"},
+    Frame -> True, FrameLabel -> {"fraction of PC-space neighbors retained", "fraction of cells"}]
+```
+
+This score measures agreement with the selected PC representation. It cannot
+establish that this representation is biologically correct.
+
+Run UMAP with a second seed while keeping the analysis and labels fixed:
+
+```wl
+umapSecond = DimensionReduce[pcs[[All, ;; 20]], 2, Method -> "UMAP", RandomSeeding -> 2];
+GraphicsRow[MapThread[BioEmbeddingPlot[AssociationThread[cellIDs, #1], cellAnnotations,
+    PlotLegends -> None, PlotLabel -> #2] &, {{umap, umapSecond}, {"UMAP seed 1", "UMAP seed 2"}}], ImageSize -> Large]
+```
+
+Rotations and rearrangements of islands do not by themselves mean that local
+relationships changed. Use neighborhood retention rather than comparing
+screen positions or island areas.
+
+## Ask how many cells a rare group needs
+
+Subsampling can erase a small captured population. Under independent sampling
+from the observed type proportions, the probability of retaining at least one
+cell of a type with fraction p is 1 − (1 − p)^n:
+
+```wl
+sampleSizes = {25, 50, 100, 250, 500, 1000};
+typeFractions = N[KeySort[Counts[cellType]]/Length[cellType]];
+ListLinePlot[Table[Transpose[{sampleSizes, 1 - (1 - p)^sampleSizes}], {p, Values[typeFractions]}],
+    ScalingFunctions -> {"Log", None}, PlotRange -> {0, 1}, PlotStyle -> Take[tolMuted, Length[typeFractions]], PlotLegends -> Keys[typeFractions],
+    Frame -> True, FrameLabel -> {"cells sampled", "probability of retaining at least one"}]
+```
+
+This is a sampling calculation conditional on captured-cell frequencies.
+It does not estimate prevalence in blood, and one observed cell is insufficient
+to establish a reproducible population.
+
+Vary quality-control cutoffs without assigning labels to rejected cells:
+
+```wl
+qcCounts = Table[Count[MapThread[200 <= #1 <= upper && #2 < mt &, {detected, mitoFraction}], True],
+    {upper, {1500, 2000, 2500, 3000}}, {mt, {0.03, 0.05, 0.08, 0.1}}];
+MatrixPlot[qcCounts, PlotLegends -> Automatic, FrameLabel -> {"maximum detected genes", "mitochondrial fraction cutoff"},
+    FrameTicks -> {{Transpose[{Range[4], {1500, 2000, 2500, 3000}}], None}, {Transpose[{Range[4], {0.03, 0.05, 0.08, 0.1}}], None}}]
+```
+
+The map shows retention, not an optimal threshold. A useful setting also needs
+assay knowledge, inspection of the excluded cells, and sensitivity of the
+conclusions to those exclusions.
+
 ## Check sensitivity and interpretation
 
 Compare 5, 12 and 40 neighbors with the same UMAP coordinates:
@@ -241,4 +394,9 @@ featurePlot[xy_, values_, label_] := With[{x = Normal[values], order = Ordering[
         PlotLabel -> label, Frame -> True, FrameTicks -> None, AspectRatio -> 1]];
 markerScores[expression_, labels_, sets_] := Transpose[Table[
     Mean /@ Standardize[Table[Mean[Normal[expression[[Flatten[Position[labels, c]], set]]]], {c, Max[labels]}]], {set, Values[sets]}]];
+```
+
+```wl
+localNeighbors[x_, k_] := With[{index = Nearest[x -> "Index"]},
+    Table[Take[DeleteCases[index[x[[i]], k + 1], i], k], {i, Length[x]}]];
 ```

@@ -41,8 +41,10 @@ Read the bundled counts for 2,700 human blood cells and 513 selected genes:
 BioDatasetLoad[File[FileNameJoin[{PacletObject["WolframInstitute/BioDataLink"]["AssetLocation", "Examples"], "PBMC3k", "pbmc3k-subset.json"}]]]["ExpressionMatrix"]
 ```
 
-The [applications](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#guide/ComputationalExplorations)
-cover single-cell expression, protein structures, genomes and time series.
+The [computational essays](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#guide/ComputationalExplorations)
+explore expression, structures, genomes, rhythms and measurement uncertainty.
+Use the [visualization functions](https://www.wolframcloud.com/obj/wolframinstitute/BioDataLink/#guide/Visualizations)
+with your own measurements.
 
 ## Development
 

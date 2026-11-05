@@ -143,6 +143,76 @@ Keep the grammar and penalty fixed before testing. Choosing them after seeing
 test results leaks evaluation data into model selection
 ([Cawley and Talbot 2010](https://www.jmlr.org/papers/v11/cawley10a.html)).
 
+## Inspect nearby models before opening the test set
+
+Vary the penalty while keeping all training errors fixed. This traces the
+tradeoff between fit and complexity without using any held-out labels:
+
+```wl
+penalties = Range[0, 8, 1/2];
+penaltySelections = Table[First[SortBy[scoredPrograms,
+    {#["TrainErrors"] + lambda #["Comparisons"] &, #["Comparisons"] &, #["ID"] &}]], {lambda, penalties}];
+GraphicsRow[{
+    ListStepPlot[Transpose[{penalties, Lookup[penaltySelections, "Comparisons"]}], Frame -> True,
+        FrameLabel -> {"penalty per comparison", "selected comparisons"}],
+    ListLinePlot[Transpose[{penalties, Lookup[penaltySelections, "TrainErrors"]}], Frame -> True,
+        FrameLabel -> {"penalty per comparison", "training errors"}]}]
+```
+
+The declared analysis still uses penalty 2. This curve is a sensitivity
+experiment, not permission to choose a penalty after inspecting test outcomes.
+
+Select rules within two objective units of the chosen rule. Show the fraction
+predicting virginica over the measurement plane:
+
+```wl
+nearbyRules = Select[scoredPrograms, #["Objective"] <= chosen["Objective"] + 2 &];
+DensityPlot[Evaluate[Mean[Boole[ruleCondition[#, length, width]] & /@ nearbyRules]],
+    {length, 1, 7}, {width, 0, 2.7}, PlotRange -> {0, 1}, PlotLegends -> Automatic,
+    FrameLabel -> {"petal length (cm)", "petal width (cm)"}, ColorFunction -> "BlueGreenYellow"]
+```
+
+Intermediate values mark disagreement within this selected rule family.
+They are not calibrated class probabilities and do not include uncertainty
+from unconsidered model forms.
+
+## Compare selection with shuffled training labels
+
+Randomly permute the training labels while preserving their counts. Repeat the
+complete search for the smallest training error using the same cutoff grid.
+The test labels remain unopened.
+
+```wl
+nullBestErrors = BlockRandom[SeedRandom[20261106]; Table[bestTrainingError[RandomSample[trainY]], {40}]];
+Histogram[nullBestErrors, Automatic, "Probability", GridLines -> {{Min[Lookup[programs, "TrainErrors"]]}, None},
+    Frame -> True, FrameLabel -> {"smallest training error after rule search", "fraction of shuffled-label runs"}]
+```
+
+The line is the best observed training error in this family. Repeating selection
+inside each shuffled run accounts for the search performed here. This remains
+an exploratory null comparison, not an estimate of performance on new plants.
+
+## Test measurement sensitivity of the frozen rule
+
+Add independent Gaussian noise to training predictors while keeping the chosen
+rule fixed. Report the fraction whose prediction changes at each assumed
+measurement-error scale:
+
+```wl
+trainingPredictions = Boole[ruleCondition[chosen, #[[1]], #[[2]]]] & /@ trainX;
+measurementNoise = {0.01, 0.03, 0.05, 0.1};
+predictionChanges = BlockRandom[SeedRandom[20261107]; Table[Table[
+    With[{perturbed = trainX + RandomVariate[NormalDistribution[0, sd], Dimensions[trainX]]},
+        Mean[Abs[(Boole[ruleCondition[chosen, #[[1]], #[[2]]]] & /@ perturbed) - trainingPredictions]]],
+    {40}], {sd, measurementNoise}]];
+BoxWhiskerChart[N[predictionChanges], ChartLabels -> measurementNoise, PlotRange -> {0, 1},
+    FrameLabel -> {"assumed measurement SD (cm)", "fraction of predictions changed"}]
+```
+
+These are explicit noise scenarios rather than measured instrument errors.
+Prediction stability, training fit and held-out accuracy address different
+questions. Freeze the analysis before the evaluation below.
+
 ## Evaluate once and retain the record
 
 Apply only the frozen rule to held-out measurements:
@@ -215,4 +285,11 @@ candidatePrograms[y_, lengths_, widths_, lengthLosses_, widthLosses_, andLosses_
     Flatten[Table[<|"Kind" -> form[[1]], "LengthCm" -> lengths[[i]], "WidthCm" -> widths[[j]], "Comparisons" -> 2,
             "TrainErrors" -> form[[2, i, j]]|>,
         {form, {{"AND", andLosses}, {"OR", orLosses}}}, {i, Length[lengths]}, {j, Length[widths]}]]];
+```
+
+```wl
+bestTrainingError[y_] := With[{le = Total[Abs[# - y]] & /@ lengthPass,
+    we = Total[Abs[# - y]] & /@ widthPass,
+    ae = Outer[Total[Abs[#1 #2 - y]] &, lengthPass, widthPass, 1]},
+    Min[Join[{Total[y], Length[y] - Total[y]}, le, we, Flatten[ae], Flatten[Outer[Plus, le, we] - ae]]]];
 ```

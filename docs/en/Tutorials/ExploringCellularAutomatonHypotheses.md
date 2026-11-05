@@ -153,6 +153,73 @@ information discarded by the observation map. Continue with
 [Choosing Measurements to Distinguish Models](paclet:WolframInstitute/BioDataLink/tutorial/ChoosingMeasurementsToDistinguishModels)
 for finite measurement budgets and error bounds.
 
+## Inspect the trajectories hidden by the summary statistic
+
+Show the full space-time histories of the selected compatible rules. Rows are
+model steps, columns are sites, and all panels start from the same state:
+
+```wl
+GraphicsGrid[Partition[Table[ArrayPlot[traces[[rule + 1]], ColorRules -> {0 -> White, 1 -> Black},
+    Frame -> True, FrameLabel -> {"model step", "site"}, PlotLabel -> Row[{"rule ", rule}]],
+    {rule, selectedRules}], UpTo[3]], ImageSize -> Large]
+```
+
+Matching an endpoint fraction can conceal copying, translation, periodicity
+or substantial rearrangement. None of these site-resolved patterns was measured
+in the Iris records.
+
+## Look across the complete finite rule family
+
+Plot occupied fraction at every step for all 256 rules. Keep rule order numeric
+rather than arranging rows to make clusters look stronger:
+
+```wl
+MatrixPlot[N[fractions], PlotLegends -> Automatic,
+    FrameTicks -> {{Table[{r + 1, r}, {r, {0, 64, 128, 192, 255}}], None},
+        {Table[{t + 1, t}, {t, {0, 8, 16, 24, 32}}], None}},
+    FrameLabel -> {"rule number", "model step"}, PlotRange -> {0, 1}, AspectRatio -> 1, ImageSize -> Large]
+```
+
+A row is one deterministic simulation under one initial condition. Neighboring
+rule numbers need not represent similar dynamics or a meaningful biological
+parameter distance.
+
+## Change the observation map while keeping the simulations fixed
+
+For every pair of compatible rules, compare the number of disagreements under
+three observations: final occupied count, the full sequence of occupied counts,
+and the final site-resolved state.
+
+```wl
+compatibleTraces = traces[[compatibleRules + 1]];
+observationVectors = {List /@ (Total[Last[#]] & /@ compatibleTraces),
+    (Total /@ #) & /@ compatibleTraces, Last /@ compatibleTraces};
+GraphicsRow[MapThread[MatrixPlot[Outer[Boole[#1 === #2] &, #1, #1, 1],
+    ColorRules -> {0 -> White, 1 -> Black}, FrameLabel -> {"compatible rule", "compatible rule"},
+    PlotLabel -> #2] &, {observationVectors, {"endpoint count", "count trajectory", "final site state"}}], ImageSize -> Large]
+```
+
+Black off-diagonal entries are unresolved pairs under that observation map.
+A finer observation can distinguish rules without adding candidates or changing
+the fitting criterion.
+
+## Ask which observation times are informative
+
+At each time, count distinct occupied totals among the compatible rules.
+Compare with the number of distinct complete states:
+
+```wl
+ListLinePlot[{Table[Length[DeleteDuplicates[Total /@ compatibleTraces[[All, t]]]], {t, steps + 1}],
+    Table[Length[DeleteDuplicates[compatibleTraces[[All, t]]]], {t, steps + 1}]},
+    DataRange -> {0, steps}, Frame -> True, FrameLabel -> {"observation step", "distinct predictions"},
+    PlotLegends -> {"occupied total", "full site state"}, PlotRange -> All]
+```
+
+Information is not necessarily monotone in time. Converging trajectories can
+make a later observation less informative than an earlier one. Designing a
+biological measurement requires a justified mapping from these model outputs
+to an actual observable; this demonstration supplies no such mapping.
+
 ## Initialization
 
 Measure adjacent-state disagreement on the ring:

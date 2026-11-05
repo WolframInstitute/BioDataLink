@@ -133,7 +133,7 @@ fractions = N[#/Total[#] & /@ panelA];
 Compare distances before and after scaling:
 
 ```wl
-GraphicsRow[{distancePlot[DistanceMatrix[N[panelA]], "counts"], distancePlot[DistanceMatrix[fractions], "fractions"]}]
+Grid[{{distancePlot[DistanceMatrix[N[panelA]], "counts"], distancePlot[DistanceMatrix[fractions], "fractions"]}}]
 ```
 
 Profiles A1 and A2 now coincide because their original counts differ only by
@@ -167,6 +167,78 @@ Measured-only error favors A; zero padding incorrectly favors B. Neither score
 tests predictions at unmeasured positions. Real model comparisons also need an
 observation mapping, stated preprocessing and independent evaluation units.
 
+## Let the missing-data fraction change
+
+Keep both candidates fixed and increase the number of unmeasured columns whose
+stored placeholder is zero. A zero-padded loss can become dominated by values
+that were never observed:
+
+```wl
+missingColumns = Range[0, 12];
+lossByMissingness = Table[With[{observed = Normal[values], mask = Normal[available]},
+    With[{a = Join[observed + 20 (1 - mask), ConstantArray[20, {Length[observed], extra}], 2],
+        target = Join[observed, ConstantArray[0, {Length[observed], extra}], 2]},
+        {Mean[Flatten[(a - target)^2]], Mean[Flatten[target^2]]}]], {extra, missingColumns}];
+ListLinePlot[Transpose[lossByMissingness], DataRange -> MinMax[missingColumns],
+    Frame -> True, FrameLabel -> {"additional unmeasured columns", "incorrect zero-padded MSE"},
+    PlotLegends -> {"candidate A", "all-zero candidate B"}]
+```
+
+The measured-only comparison stays unchanged. If a ranking changes solely
+because unmeasured columns were added, it is evaluating a storage convention
+rather than new evidence.
+
+## Compare distances on shared measurements
+
+Only C and D are observed in every profile. Compare distances using all
+zero-padded columns with distances on those two common measurements:
+
+```wl
+Grid[{{
+    MatrixPlot[DistanceMatrix[N[Normal[values]]], PlotLegends -> Automatic, ImageSize -> 300, PlotLabel -> "zero-padded union",
+        FrameTicks -> matrixTicks[panelObservations, panelObservations]],
+    MatrixPlot[DistanceMatrix[N[Normal[values[[All, {3, 4}]]]]], PlotLegends -> Automatic, ImageSize -> 300, PlotLabel -> "shared variables C and D",
+        FrameTicks -> matrixTicks[panelObservations, panelObservations]]}}]
+```
+
+The panels answer different questions and have separate scales. Restricting to
+common measurements avoids invented zeros but discards genuine information
+about variables observed in only one panel.
+
+## Distinguish technical sampling zeros from missing measurements
+
+Simulate counts from fixed Poisson means at several sequencing-depth factors.
+All positions are measured in this synthetic experiment; a zero is a sampling
+outcome, not an unavailable assay entry.
+
+```wl
+depthFactors = {0.25, 0.5, 1, 2, 4};
+latentMeans = {0.1, 0.5, 1., 2., 5.};
+sampledDetection = BlockRandom[SeedRandom[20261106]; Table[
+    Mean[Unitize[RandomVariate[PoissonDistribution[depth mean], 1000]]], {mean, latentMeans}, {depth, depthFactors}]];
+ListLinePlot[Transpose[{depthFactors, #}] & /@ sampledDetection, PlotRange -> {0, 1},
+    PlotLegends -> latentMeans, Frame -> True, FrameLabel -> {"relative sampling depth", "fraction with a positive count"}]
+```
+
+Greater sampling depth reduces zeros even though the latent means are fixed.
+This simple independent Poisson model omits biological variability and technical
+overdispersion; it demonstrates why detection is not the same as presence.
+
+## Preserve detection denominators when summarizing groups
+
+Plot the two complete assay panels separately. Each mean and detection fraction
+then uses observations that actually measured that feature:
+
+```wl
+Grid[{{
+    BioExpressionDotPlot[panelA, ConstantArray["panel A", 4], panelVariables[[;; 4]], ImageSize -> 300, PlotLabel -> "complete panel A"],
+    BioExpressionDotPlot[panelB, ConstantArray["panel B", 4], panelVariables[[3 ;;]], ImageSize -> 300, PlotLabel -> "complete panel B"]}}]
+```
+
+The mean scales differ between panels. The plotting function rejects missing
+values but cannot detect an incorrectly zero-filled input, so the measurement
+mask and selection record remain the analyst's responsibility.
+
 ## Record the construction
 
 ```wl
@@ -196,7 +268,7 @@ alignmentPlot[matrix_, rows_, columns_, label_] := MatrixPlot[matrix,
     PlotRange -> {0, Max[panelA]}, PlotLabel -> label];
 distancePlot[matrix_, label_] := MatrixPlot[matrix,
     FrameTicks -> matrixTicks[Take[panelObservations, 4], Take[panelObservations, 4]],
-    PlotLegends -> Automatic, PlotLabel -> label];
+    PlotLegends -> Automatic, PlotLabel -> label, ImageSize -> 300];
 maskedMSE[prediction_] := Mean[Pick[Flatten[(Normal[values] - prediction)^2], Flatten[Normal[available]], 1]];
 paddedMSE[prediction_] := Mean[Flatten[(Normal[values] - prediction)^2]];
 ```

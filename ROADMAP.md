@@ -12,6 +12,7 @@ access rights, file retrieval and scientific interpretation are separate.
 | 0.2 (local milestone) | Identifiers.org directory and resolver links, paginated BioStudies/GEO metadata, cached indexes, batched GEO summaries and named API-key references |
 | 0.3 | Bounded HTTPS downloads, selected H5AD reading with explicit Python, preserved labels/missing annotations, Iris and synthetic fixtures, computational tutorials |
 | 0.3.2 | Five real-data case studies: PBMC expression, protein conformations, bacterial composition, coronavirus genomes and liver rhythms |
+| 0.4 | Five reusable visualization functions, eleven expanded computational essays and a new sampling and uncertainty essay |
 
 Current H5AD support is a selected matrix read, not complete AnnData conversion.
 Downloads have no automatic cache, retry or resume. Generic format support

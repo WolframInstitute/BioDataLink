@@ -1,11 +1,11 @@
 PacletObject[
     <|
         "Name" -> "WolframInstitute/BioDataLink",
-        "Description" -> "Discover biological data, verify artifact downloads and import selected expression data",
+        "Description" -> "Find biological data, read measurements and explore them with reproducible visualizations",
         "Creator" -> "Wolfram Institute",
         "License" -> "MIT",
         "PublisherID" -> "WolframInstitute",
-    "Version" -> "0.3.7",
+        "Version" -> "0.4.0",
         "WolframVersion" -> "15.0+",
         "PrimaryContext" -> "WolframInstitute`BioDataLink`",
         "Keywords" -> {"biology", "datasets", "gene expression", "single cell", "perturbations"},
@@ -20,7 +20,12 @@ PacletObject[
                     "WolframInstitute`BioDataLink`BioDatasetInfo",
                     "WolframInstitute`BioDataLink`BioDatasetLoad",
                     "WolframInstitute`BioDataLink`BioDatasetQuery",
-                    "WolframInstitute`BioDataLink`BioDatasetSearch"
+                    "WolframInstitute`BioDataLink`BioDatasetSearch",
+                    "WolframInstitute`BioDataLink`BioEmbeddingPlot",
+                    "WolframInstitute`BioDataLink`BioExpressionDotPlot",
+                    "WolframInstitute`BioDataLink`BioSequenceCompositionPlot",
+                    "WolframInstitute`BioDataLink`BioSequenceSkewPlot",
+                    "WolframInstitute`BioDataLink`BioStructureComparisonPlot"
                 }},
             {"Documentation", "Root" -> "Documentation", "Language" -> "English"},
             {"Tests", "Root" -> "Tests", "Method" -> "Experimental-v1"},
