@@ -97,9 +97,19 @@ withResourceDescription[markdown_String, expression_] := With[{html = resourceDe
     Internal`InheritedBlock[{PacletResource`Private`moreDescriptionHTML},
         PrependTo[DownValues[PacletResource`Private`moreDescriptionHTML],
             HoldPattern[PacletResource`Private`moreDescriptionHTML[
-                as_?(AssociationQ[#] && Lookup[#, "Name", None] === "WolframInstitute/BioDataLink" &), cells_]] :> html];
+                as_?(AssociationQ[#] && Lookup[#, "PacletName", Lookup[#, "Name", None]] === "WolframInstitute/BioDataLink" &), cells_]] :> html];
         expression
     ]
+];
+(* prepareShingleInfo splits the publisher from Name and retains the full name in PacletName.
+   Check the public fragment too: a successful archive upload does not establish its layout. *)
+resourceDescriptionPresentQ[body_, expected_String] := StringQ[body] && StringContainsQ[body, expected];
+verifyPublishedDescription[url_String, expected_String] := Module[{response},
+    response = URLRead[StringTrim[url, "/"] <> "/", TimeConstraint -> 60];
+    If[!MatchQ[response, _HTTPResponse] || response["StatusCode"] =!= 200 ||
+            !resourceDescriptionPresentQ[response["Body"], expected],
+        fail["the published resource page is missing the expected description layout"]];
+    True
 ];
 $descriptionHead = Cell[_, "Subsection", ___, CellTags -> {___, "LongDescription", ___}, ___];
 restoreResourceDescription[notebook_String, markdown_String] := Module[{cells = descriptionCells[markdown], definition},

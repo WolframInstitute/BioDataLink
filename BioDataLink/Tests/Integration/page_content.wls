@@ -69,8 +69,17 @@ Quiet[Get["ResourceSystemClient`WebpageDeployment`DeployedResourceShingle`"]];
 opened = UsingFrontEnd[Module[{notebook = NotebookOpen[definition, Visible -> False]},
     WithCleanup[NotebookGet[notebook], NotebookClose[notebook]]]];
 rendererBefore = DownValues[PacletResource`Private`moreDescriptionHTML];
-html = UsingFrontEnd[withResourceDescription[definitionSource,
-    PacletResource`Private`moreDescriptionHTML[<|"Name" -> "WolframInstitute/BioDataLink"|>, descriptionCellsIn[opened]]]];
+(* Exercise the publisher entry point, including its Name/PacletName split. Only the publisher
+   slug lookup is local: the test must not require a cloud account or a metadata download. *)
+prepared = UsingFrontEnd[Internal`InheritedBlock[{PacletResource`Private`getPublisherSlug},
+    PacletResource`Private`getPublisherSlug["WolframInstitute"] = "wolframinstitute";
+    withResourceDescription[definitionSource,
+        PacletResource`Private`prepareShingleInfo[<|"Name" -> "WolframInstitute/BioDataLink",
+            "LongDescription" -> descriptionCellsIn[opened]|>]]]];
+html = prepared["MoreDescription"];
+otherHTML = UsingFrontEnd[withResourceDescription[definitionSource,
+    PacletResource`Private`moreDescriptionHTML[<|"Name" -> "BioDataLink", "PacletName" -> "Other/BioDataLink"|>,
+        {Cell["Other description", "Text"]}]]];
 rendererRestored = DownValues[PacletResource`Private`moreDescriptionHTML] === rendererBefore;
 report = TestReport[{
     VerificationTest[abstractStyles[first["Guide"]], {"GuideAbstract", "ExampleImage", "GuideAbstract"}, TestID -> "PageImages-GuideImageBetweenAbstractParagraphs"],
@@ -92,9 +101,16 @@ report = TestReport[{
     VerificationTest[{FreeQ[descriptionCellsIn[opened], _CellGroupData], StringFreeQ[html, {"cell-group", "nb-collapse"}]},
         {True, True}, TestID -> "ResourceDescription-NoAccordionAfterFrontEndGrouping"],
     VerificationTest[rendererRestored, True, TestID -> "ResourceDescription-RendererOverrideIsScoped"],
-    VerificationTest[StringContainsQ[html, "&lt;tag&gt; &amp; detail"], True, TestID -> "ResourceDescription-EscapesLiteralText"]
+    VerificationTest[StringContainsQ[html, "&lt;tag&gt; &amp; detail"], True, TestID -> "ResourceDescription-EscapesLiteralText"],
+    VerificationTest[Lookup[prepared, {"Name", "PacletName"}], {"BioDataLink", "WolframInstitute/BioDataLink"},
+        TestID -> "ResourceDescription-PublisherSplitsFullName"],
+    VerificationTest[{StringContainsQ[otherHTML, "Other description"], StringFreeQ[otherHTML, "biodatalink-description"]},
+        {True, True}, TestID -> "ResourceDescription-OtherPublishersKeepNativeRenderer"],
+    VerificationTest[{resourceDescriptionPresentQ["<main>" <> html <> "</main>", html],
+        resourceDescriptionPresentQ[otherHTML, html], resourceDescriptionPresentQ[$Failed, html]},
+        {True, False, False}, TestID -> "ResourceDescription-PublicCheckRejectsMissingLayout"]
 }];
 If[report["TestsFailedCount"] > 0, Print[report]; Print[{abstractStyles /@ {first["Guide"], third["Guide"]}, imageSizes /@ {third["Guide"], third["Tutorial"]},
     Keys[third["Build"]]}]];
 Print["Page content checks: ", report["TestsSucceededCount"], " passed; ", report["TestsFailedCount"], " failed."];
-Exit[If[report["TestsFailedCount"] === 0 && report["TestsSucceededCount"] === 16, 0, 1]];
+Exit[If[report["TestsFailedCount"] === 0 && report["TestsSucceededCount"] === 19, 0, 1]];

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.7 — 2026-11-05
+
+- Apply the aligned resource description after the publisher separates the
+  paclet name from its publisher. This fixes rows running together on the live
+  page despite rendering correctly in the local preview.
+- Test the complete description preparation step and require the published
+  page to contain the expected layout before reporting publication success.
+
 ## 0.3.6 — 2026-11-05
 
 - Keep both resource-page lists visible. Replace accordion headings with static
