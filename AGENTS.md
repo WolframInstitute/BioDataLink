@@ -37,6 +37,7 @@ required behavior; a new wrapper needs a clear functional difference.
 | Build a paclet archive | `make build` |
 | Build and check publication artifacts without cloud writes | `make check-publish` |
 | Rebuild real-data example assets from pinned downloads (network) | `make example-data` |
+| Rebuild the resource page image from the bundled source directory | `make hero` |
 | Complete local validation | `make all` |
 | Install local git hooks | `make hooks` |
 

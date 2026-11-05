@@ -4,6 +4,7 @@
 root = DirectoryName[$InputFileName, 2];
 pacletDirectory = FileNameJoin[{root, "BioDataLink"}];
 archiveExclusions = {"__pycache__", "*/__pycache__", "*.pyc"};
+heroFile = FileNameJoin[{root, "docs", "Hero.png"}]; (* the resource page image; make hero rebuilds it *)
 command = If[Length[$ScriptCommandLine] > 1, $ScriptCommandLine[[2]], "build"];
 fail[text_] := (Print["ERROR: ", text]; Exit[1]);
 require[result_, label_] := If[AssociationQ[result], result, fail[{label, result}]];
@@ -53,8 +54,9 @@ CheckAbort[
     If[command === "notebooks", Exit[0]];
     built = require[WolframInstitute`PacletPage`DeployPacletResource[pacletDirectory,
         "DryRun" -> True, "TimeConstraint" -> 300, "MaxFailures" -> 0,
-        "Exclude" -> archiveExclusions, "Monitor" -> True], "archive build"];
+        "Exclude" -> archiveExclusions, "HeroImage" -> heroFile, "Monitor" -> True], "archive build"];
     If[!StringQ[built["Archive"]] || !FileExistsQ[built["Archive"]], fail["archive missing"]];
+    If[!TrueQ[built["HeroImage"]], fail["resource page image missing or unreadable; run make hero"]];
     Print["Archive: ", built["Archive"]];
     If[command === "site",
         site = require[WolframInstitute`PacletPage`BuildPacletPageSite[pacletDirectory,
@@ -64,7 +66,7 @@ CheckAbort[
     If[command === "publish",
         published = require[WolframInstitute`PacletPage`PublishPacletPage[pacletDirectory, "BioDataLink",
             "Account" -> $WolframID, "Build" -> False, "Monitor" -> True,
-            "ResourceOptions" -> {"Build" -> False, "Exclude" -> archiveExclusions}], "publication"];
+            "ResourceOptions" -> {"Build" -> False, "Exclude" -> archiveExclusions, "HeroImage" -> heroFile}], "publication"];
         If[!AllTrue[Lookup[published, {"Resource", "Site", "Check"}, None], AssociationQ],
             fail["publication returned incomplete resource, site or verification records"]];
         publicationRecord = Join[KeyTake[published["Resource"], {"Resource", "Version", "Commit"}],

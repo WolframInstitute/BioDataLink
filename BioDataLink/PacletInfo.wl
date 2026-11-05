@@ -5,7 +5,7 @@ PacletObject[
         "Creator" -> "Wolfram Institute",
         "License" -> "MIT",
         "PublisherID" -> "WolframInstitute",
-        "Version" -> "0.3.3",
+        "Version" -> "0.3.4",
         "WolframVersion" -> "15.0+",
         "PrimaryContext" -> "WolframInstitute`BioDataLink`",
         "Keywords" -> {"biology", "datasets", "gene expression", "single cell", "perturbations"},

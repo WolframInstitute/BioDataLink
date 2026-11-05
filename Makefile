@@ -1,10 +1,10 @@
 WOLFRAMSCRIPT ?= wolframscript
 PYTHON ?= python3
 .DEFAULT_GOAL := help
-.PHONY: help all check test python-tests h5ad-tests download-tests documentation-tests lint-docs bootstrap notebooks site build check-publish publish hooks catalog-update sources-update example-data clean
+.PHONY: help all check test python-tests h5ad-tests download-tests documentation-tests lint-docs bootstrap notebooks site build check-publish publish hooks catalog-update sources-update example-data hero clean
 
 help:
-	@printf 'make check | test [FILES="..."] | python-tests | lint-docs\nmake h5ad-tests [BIODATALINK_PYTHON set] | download-tests\nmake documentation-tests | bootstrap | notebooks | site | build | check-publish | all\nmake catalog-update REVISION=<commit> | sources-update | example-data | hooks | publish | clean\n'
+	@printf 'make check | test [FILES="..."] | python-tests | lint-docs\nmake h5ad-tests [BIODATALINK_PYTHON set] | download-tests\nmake documentation-tests | bootstrap | notebooks | site | build | check-publish | all\nmake catalog-update REVISION=<commit> | sources-update | example-data | hero | hooks | publish | clean\n'
 
 all: check test python-tests documentation-tests build
 
@@ -59,6 +59,10 @@ sources-update:
 # Rebuild the real-data example assets from pinned downloads (network; maintainer use).
 example-data:
 	$(WOLFRAMSCRIPT) -file scripts/exampleData.wls
+
+# Rebuild docs/Hero.png, the resource page image, from the bundled source directory (offline).
+hero:
+	$(WOLFRAMSCRIPT) -file scripts/hero.wls
 
 hooks:
 	git config --local core.hooksPath .githooks

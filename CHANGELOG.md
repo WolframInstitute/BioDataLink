@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.4 — 2026-11-05
+
+- Add a resource-page hero showing prefixes from the bundled Identifiers.org
+  directory around the BioDataLink mark. Word size reflects registered access
+  endpoints; colors show keyword-based subject domains.
+- Add `make hero` to rebuild the image offline and include it in publication.
+  Archive builds reject a missing or unreadable hero image.
+
 ## 0.3.3 — 2026-11-05
 
 - Simplify all seven guides, eight symbol references and sixteen tutorials,
