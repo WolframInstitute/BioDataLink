@@ -71,7 +71,7 @@ jobs:
       # The host tool-cache pip launcher has a host-only shebang in containers.
       # Cache its downloads directly and invoke pip through the selected Python.
       - name: Cache optional Python dependencies
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ runner.temp }}/biodatalink-pip-cache
           key: ${{ runner.os }}-${{ runner.arch }}-h5ad-python313-${{ hashFiles('BioDataLink/Assets/Python/requirements-h5ad.txt', 'BioDataLink/Tests/Python/requirements.txt') }}
